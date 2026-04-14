@@ -26,28 +26,26 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
     </div>
 
     <div class="card-stats">
-      <div v-if="model.params_string" class="stat">
+      <span v-if="model.params_string" class="stat">
         <span class="stat-label">Params</span>
         <span class="stat-value">{{ model.params_string }}</span>
-      </div>
-      <div class="stat">
+      </span>
+      <span class="stat">
         <span class="stat-label">Size</span>
         <span class="stat-value">{{ formatBytes(model.size_bytes) }}</span>
-      </div>
-      <div class="stat">
-        <span class="stat-label">Context</span>
+      </span>
+      <span class="stat">
+        <span class="stat-label">Ctx</span>
         <span class="stat-value">{{ formatContext(model.max_context_length) }}</span>
-      </div>
-      <div v-if="model.architecture" class="stat">
+      </span>
+      <span v-if="model.architecture" class="stat">
         <span class="stat-label">Arch</span>
         <span class="stat-value">{{ model.architecture }}</span>
-      </div>
-      <div v-if="model.quantization?.name" class="stat">
+      </span>
+      <span v-if="model.quantization?.name" class="stat">
         <span class="stat-label">Quant</span>
-        <span class="stat-value">
-          {{ model.quantization.name }}
-        </span>
-      </div>
+        <span class="stat-value">{{ model.quantization.name }}</span>
+      </span>
     </div>
 
     <div v-if="model.capabilities" class="card-capabilities">
@@ -55,14 +53,14 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
       <span class="cap-badge" :class="{ active: model.capabilities.trained_for_tool_use }">
         Tool use
       </span>
-    </div>
 
-    <div v-if="isLoaded" class="loaded-instances">
-      <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">
-        <span class="instance-dot" />
-        <span class="instance-label">
-          Running · {{ formatContext(instance.config.context_length) }} ctx
-        </span>
+      <div v-if="isLoaded" class="loaded-instances">
+        <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">
+          <span class="instance-dot" />
+          <span class="instance-label">
+            {{ formatContext(instance.config.context_length) }} ctx
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -76,7 +74,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
@@ -99,7 +97,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .model-name {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 600;
   font-family: var(--font-headline);
   color: var(--text-primary);
@@ -111,7 +109,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   flex-shrink: 0;
   font-size: 0.7rem;
   font-weight: 600;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: var(--radius-full);
   letter-spacing: 0.03em;
 }
@@ -154,34 +152,29 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .card-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 0.5rem;
 }
 
 .stat {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background: var(--surface-elevated);
-  border-radius: var(--radius-lg);
-  padding: 8px 10px;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .stat-label {
   font-size: 0.68rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 
 .stat-value {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  color: var(--text-primary);
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
+  color: var(--text-secondary);
 }
 
 .quant-bits {
@@ -190,6 +183,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .card-capabilities {
+  margin-top: 0.5rem;
   display: flex;
   gap: 6px;
 }
@@ -212,9 +206,10 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 .loaded-instances {
   display: flex;
   flex-direction: column;
+  flex-grow: 1;
+  align-items: end;
   gap: 4px;
   padding-top: 4px;
-  border-top: 1px solid var(--border);
 }
 
 .instance {

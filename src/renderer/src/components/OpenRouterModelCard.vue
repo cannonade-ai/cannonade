@@ -30,24 +30,22 @@ function formatPrice(raw: string): string {
     </div>
 
     <div class="card-stats">
-      <div class="stat">
+      <span class="stat">
         <span class="stat-label">Context</span>
         <span class="stat-value">{{ formatContext(model.context_length) }}</span>
-      </div>
-      <div class="stat">
+      </span>
+      <span class="stat">
         <span class="stat-label">Prompt</span>
         <span class="stat-value">{{ formatPrice(model.pricing.prompt) }}</span>
-      </div>
-      <div class="stat">
+      </span>
+      <span class="stat">
         <span class="stat-label">Completion</span>
         <span class="stat-value">{{ formatPrice(model.pricing.completion) }}</span>
-      </div>
-      <div v-if="model.top_provider.max_completion_tokens" class="stat">
+      </span>
+      <span v-if="model.top_provider.max_completion_tokens" class="stat">
         <span class="stat-label">Max out</span>
-        <span class="stat-value">{{
-          formatContext(model.top_provider.max_completion_tokens)
-        }}</span>
-      </div>
+        <span class="stat-value">{{ formatContext(model.top_provider.max_completion_tokens) }}</span>
+      </span>
     </div>
 
     <p v-if="model.description" class="description">{{ model.description }}</p>
@@ -62,7 +60,7 @@ function formatPrice(raw: string): string {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
@@ -81,7 +79,7 @@ function formatPrice(raw: string): string {
 }
 
 .model-name {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   font-weight: 600;
   font-family: var(--font-headline);
   color: var(--text-primary);
@@ -123,31 +121,29 @@ function formatPrice(raw: string): string {
 }
 
 .card-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-top: 0.5rem;
 }
 
 .stat {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  background: var(--surface-elevated);
-  border-radius: var(--radius-lg);
-  padding: 8px 10px;
+  align-items: baseline;
+  gap: 4px;
 }
 
 .stat-label {
   font-size: 0.68rem;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 
 .stat-value {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 500;
-  color: var(--text-primary);
+  color: var(--text-secondary);
 }
 
 .description {
