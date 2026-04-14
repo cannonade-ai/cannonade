@@ -13,7 +13,6 @@ npm run build
 ```
 
 ## Vue 3 rules
-
 - NEVER write comments on the code.
 - Always use :key with v-for.
 - Never use v-if on the same element as v-for.
@@ -26,7 +25,4 @@ npm run build
 - Elements with multiple attributes should span multiple lines, with one attribute per line.
 - Use kebab-case for events.
 - Use production grade best practises
-- Use shorthands: 
-@ is short for v-on: 
-: is short for v-bind
-# is short for v-slot
+- You can use icons from tabler: import { IconTank } from '@tabler/icons-vue';

@@ -7,8 +7,13 @@ import OpenRouterModelCard from '../components/OpenRouterModelCard.vue'
 
 const store = useModelsStore()
 
-const llms = computed(() => store.lmModels.filter((m) => m.type === 'llm'))
-const embeddings = computed(() => store.lmModels.filter((m) => m.type === 'embedding'))
+const byLoaded = (a: { loaded_instances: unknown[] }, b: { loaded_instances: unknown[] }): number =>
+  b.loaded_instances.length - a.loaded_instances.length
+
+const llms = computed(() => store.lmModels.filter((m) => m.type === 'llm').sort(byLoaded))
+const embeddings = computed(() =>
+  store.lmModels.filter((m) => m.type === 'embedding').sort(byLoaded)
+)
 
 const providerLabel = computed(() => (store.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'))
 

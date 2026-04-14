@@ -1,22 +1,39 @@
 <script setup lang="ts">
-import ThemeToggle from './components/ThemeToggle.vue'
+import { computed, onMounted } from 'vue'
+import { useNavigationStore } from './stores/navigation'
+import { useSettingsStore } from './stores/settings'
+import AppSidebar from './components/AppSidebar.vue'
 import DashboardView from './views/DashboardView.vue'
+import TestSuitesView from './views/TestSuitesView.vue'
+import TestRunsView from './views/TestRunsView.vue'
+import SettingsView from './views/SettingsView.vue'
+
+const nav = useNavigationStore()
+const settings = useSettingsStore()
+
+onMounted(() => {
+  settings.init()
+})
+
+const viewComponent = computed(() => {
+  switch (nav.current) {
+    case 'test-suites':
+      return TestSuitesView
+    case 'test-runs':
+      return TestRunsView
+    case 'settings':
+      return SettingsView
+    default:
+      return DashboardView
+  }
+})
 </script>
 
 <template>
   <div class="layout">
-    <header class="app-header">
-      <div class="header-left">
-        <span class="app-logo">⚡</span>
-        <span class="app-title">Cannonade</span>
-      </div>
-      <div class="header-right">
-        <ThemeToggle />
-      </div>
-    </header>
-
-    <main class="app-main">
-      <DashboardView />
+    <AppSidebar />
+    <main class="app-content">
+      <component :is="viewComponent" />
     </main>
   </div>
 </template>
@@ -108,48 +125,13 @@ body {
 <style scoped>
 .layout {
   display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.app-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 24px;
-  height: 52px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.app-logo {
-  font-size: 1.1rem;
-}
-
-.app-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  font-family: var(--font-headline);
-  color: var(--text-primary);
-  letter-spacing: -0.01em;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.app-main {
+.app-content {
   flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
 }
 </style>

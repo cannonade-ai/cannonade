@@ -36,5 +36,3 @@ export interface Model {
   capabilities?: ModelCapabilities
   description?: string | null
 }
-
-export type FetchModelsResult = Model[]

@@ -31,5 +31,3 @@ export interface Model {
   top_provider: ModelTopProvider
   supported_parameters: string[]
 }
-
-export type FetchOpenRouterModelsResult = Model[]

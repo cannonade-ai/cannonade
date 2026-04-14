@@ -46,26 +46,23 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
         <span class="stat-label">Quant</span>
         <span class="stat-value">
           {{ model.quantization.name }}
-          <span v-if="model.quantization.bits_per_weight" class="quant-bits"
-            >{{ model.quantization.bits_per_weight }}bpw</span
-          >
         </span>
       </div>
     </div>
 
     <div v-if="model.capabilities" class="card-capabilities">
       <span class="cap-badge" :class="{ active: model.capabilities.vision }">Vision</span>
-      <span class="cap-badge" :class="{ active: model.capabilities.trained_for_tool_use }"
-        >Tool use</span
-      >
+      <span class="cap-badge" :class="{ active: model.capabilities.trained_for_tool_use }">
+        Tool use
+      </span>
     </div>
 
     <div v-if="isLoaded" class="loaded-instances">
       <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">
         <span class="instance-dot" />
-        <span class="instance-label"
-          >Running · {{ formatContext(instance.config.context_length) }} ctx</span
-        >
+        <span class="instance-label">
+          Running · {{ formatContext(instance.config.context_length) }} ctx
+        </span>
       </div>
     </div>
   </div>

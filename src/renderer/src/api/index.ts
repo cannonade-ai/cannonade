@@ -1,8 +1,7 @@
-import type { FetchModelsResult } from '@shared/lm-studio/ipc-contracts'
-import type { FetchOpenRouterModelsResult } from '@shared/open-router/ipc-contracts'
+import type { Provider, ProviderModelMap } from '@shared/provider-model-map'
 
 export const api = {
-  fetchModels: (): Promise<FetchModelsResult> => window.api.fetchModels(),
-  fetchOpenRouterModels: (): Promise<FetchOpenRouterModelsResult> =>
-    window.api.fetchOpenRouterModels()
+  fetchModels: <P extends Provider>(provider: P): Promise<ProviderModelMap[P][]> =>
+    window.api.fetchModels(provider),
+  getAppVersion: (): Promise<string> => window.api.getAppVersion()
 }
