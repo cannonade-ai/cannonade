@@ -1,20 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Model } from '@shared/lm-studio/ipc-contracts'
+import { formatBytes, formatContext } from '../utils/format'
 
 const props = defineProps<{ model: Model }>()
-
-function formatBytes(bytes: number): string {
-  if (bytes >= 1_073_741_824) return `${(bytes / 1_073_741_824).toFixed(1)} GB`
-  if (bytes >= 1_048_576) return `${(bytes / 1_048_576).toFixed(0)} MB`
-  return `${(bytes / 1024).toFixed(0)} KB`
-}
-
-function formatContext(tokens: number): string {
-  if (tokens >= 1_000_000) return `${(tokens / 1_000_000).toFixed(1)}M`
-  if (tokens >= 1_000) return `${(tokens / 1_000).toFixed(0)}K`
-  return String(tokens)
-}
 
 const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 </script>
@@ -57,24 +46,26 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
         <span class="stat-label">Quant</span>
         <span class="stat-value">
           {{ model.quantization.name }}
-          <span v-if="model.quantization.bits_per_weight" class="quant-bits">{{ model.quantization.bits_per_weight }}bpw</span>
+          <span v-if="model.quantization.bits_per_weight" class="quant-bits"
+            >{{ model.quantization.bits_per_weight }}bpw</span
+          >
         </span>
       </div>
     </div>
 
     <div v-if="model.capabilities" class="card-capabilities">
       <span class="cap-badge" :class="{ active: model.capabilities.vision }">Vision</span>
-      <span class="cap-badge" :class="{ active: model.capabilities.trained_for_tool_use }">Tool use</span>
+      <span class="cap-badge" :class="{ active: model.capabilities.trained_for_tool_use }"
+        >Tool use</span
+      >
     </div>
 
     <div v-if="isLoaded" class="loaded-instances">
-      <div
-        v-for="instance in model.loaded_instances"
-        :key="instance.id"
-        class="instance"
-      >
+      <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">
         <span class="instance-dot" />
-        <span class="instance-label">Running · {{ formatContext(instance.config.context_length) }} ctx</span>
+        <span class="instance-label"
+          >Running · {{ formatContext(instance.config.context_length) }} ctx</span
+        >
       </div>
     </div>
   </div>
@@ -89,7 +80,9 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   display: flex;
   flex-direction: column;
   gap: 12px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 
 .model-card:hover {

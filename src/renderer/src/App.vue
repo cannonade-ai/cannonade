@@ -34,14 +34,14 @@ import DashboardView from './views/DashboardView.vue'
   --text-primary: #0e0e0e;
   --text-secondary: #484847;
   --text-muted: #767575;
-  --accent:rgb(151, 106, 0);
+  --accent: rgb(151, 106, 0);
   --accent-dim: rgba(255, 179, 0, 0.2);
   --accent-border: rgba(255, 179, 0, 0.5);
   --blue: #1a56a4;
   --blue-dim: rgba(26, 86, 164, 0.08);
   --green: #00873a;
   --green-dim: rgba(0, 135, 58, 0.2);
-  --error: #D50000;
+  --error: #d50000;
   --shadow: rgba(0, 0, 0, 0.08);
   --radius: 0px;
   --radius-lg: 0px;
@@ -78,13 +78,16 @@ import DashboardView from './views/DashboardView.vue'
   --font-body: 'Space Grotesk', system-ui, sans-serif;
 }
 
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-html, body {
+html,
+body {
   height: 100%;
   background: var(--bg);
   color: var(--text-primary);
@@ -92,7 +95,9 @@ html, body {
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 #app {

@@ -1,7 +1,7 @@
 import type { LLMProvider } from './base'
 import type { Model } from '@shared/lm-studio/ipc-contracts'
 
-const API_BASE = 'http://127.0.0.1:1234'
+const API_BASE = 'http://localhost:1234'
 
 export const lmStudioProvider: LLMProvider = {
   async fetchModels(): Promise<Model[]> {
