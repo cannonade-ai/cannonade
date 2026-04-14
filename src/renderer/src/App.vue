@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { useNavigationStore } from './stores/navigation'
 import { useSettingsStore } from './stores/settings'
 import AppSidebar from './components/AppSidebar.vue'
+import AppTitleBar from './components/AppTitleBar.vue'
 import DashboardView from './views/DashboardView.vue'
 import TestSuitesView from './views/TestSuitesView.vue'
 import TestRunsView from './views/TestRunsView.vue'
@@ -31,10 +32,13 @@ const viewComponent = computed(() => {
 
 <template>
   <div class="layout">
-    <AppSidebar />
-    <main class="app-content">
-      <component :is="viewComponent" />
-    </main>
+    <AppTitleBar />
+    <div class="layout-body">
+      <AppSidebar />
+      <main class="app-content">
+        <component :is="viewComponent" />
+      </main>
+    </div>
   </div>
 </template>
 
@@ -125,7 +129,14 @@ body {
 <style scoped>
 .layout {
   display: flex;
+  flex-direction: column;
   height: 100vh;
+  overflow: hidden;
+}
+
+.layout-body {
+  display: flex;
+  flex: 1;
   overflow: hidden;
 }
 

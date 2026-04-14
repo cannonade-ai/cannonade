@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron'
+import { app, ipcMain, BrowserWindow } from 'electron'
 import { lmStudioProvider } from '../../core/providers/lmstudio'
 import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
@@ -15,4 +15,12 @@ export function registerHandlers(): void {
   })
 
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())
+
+  ipcMain.on(APP.MINIMIZE, () => BrowserWindow.getFocusedWindow()?.minimize())
+  ipcMain.on(APP.MAXIMIZE, () => {
+    const win = BrowserWindow.getFocusedWindow()
+    if (win?.isMaximized()) win.unmaximize()
+    else win?.maximize()
+  })
+  ipcMain.on(APP.CLOSE, () => BrowserWindow.getFocusedWindow()?.close())
 }

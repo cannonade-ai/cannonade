@@ -13,7 +13,10 @@ const CHANNEL: Record<Provider, string> = {
 const api = {
   fetchModels: <P extends Provider>(provider: P): Promise<ProviderModelMap[P][]> =>
     ipcRenderer.invoke(CHANNEL[provider]),
-  getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION)
+  getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
+  minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
+  maximize: (): void => ipcRenderer.send(APP.MAXIMIZE),
+  close: (): void => ipcRenderer.send(APP.CLOSE)
 }
 
 if (process.contextIsolated) {

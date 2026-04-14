@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { IconTank, IconBrain, IconFlask, IconPlayerPlay, IconSettings } from '@tabler/icons-vue'
+import { IconBrain, IconFlask, IconPlayerPlay, IconSettings } from '@tabler/icons-vue'
 import { useNavigationStore } from '../stores/navigation'
 import SidebarNavItem from './SidebarNavItem.vue'
 
@@ -8,11 +8,6 @@ const nav = useNavigationStore()
 
 <template>
   <aside class="sidebar">
-    <div class="sidebar-brand">
-      <IconTank color="rgb(151, 106, 0)" :size="22" :stroke-width="1" />
-      <span class="brand-title">Cannonade</span>
-    </div>
-
     <nav class="sidebar-nav">
       <SidebarNavItem
         :icon="IconBrain"
@@ -51,7 +46,6 @@ const nav = useNavigationStore()
   flex-direction: column;
   width: 220px;
   flex-shrink: 0;
-  height: 100vh;
   background: var(--surface);
   border-right: 1px solid var(--border);
   position: sticky;
@@ -73,11 +67,10 @@ const nav = useNavigationStore()
 }
 
 .brand-title {
-  font-size: 0.95rem;
-  font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 600;
   font-family: var(--font-headline);
   color: var(--text-primary);
-  letter-spacing: -0.01em;
 }
 
 .sidebar-nav {
