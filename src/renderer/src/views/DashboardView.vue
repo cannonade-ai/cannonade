@@ -28,20 +28,11 @@ onMounted(() => store.load())
 <template>
   <div class="dashboard">
     <div class="section-header">
-      <h2 class="section-title">Models</h2>
       <div class="section-actions">
         <select class="provider-select" :value="store.provider" @change="onProviderChange">
           <option value="lmstudio">LM Studio</option>
           <option value="openrouter">OpenRouter</option>
         </select>
-        <span v-if="!store.loading && !store.error" class="model-count">
-          {{ store.provider === 'lmstudio' ? store.lmModels.length : store.orModels.length }}
-          model{{
-            (store.provider === 'lmstudio' ? store.lmModels.length : store.orModels.length) !== 1
-              ? 's'
-              : ''
-          }}
-        </span>
         <button class="btn-refresh" :disabled="store.loading" @click="store.load()">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -132,7 +123,6 @@ onMounted(() => store.load())
 
 <style scoped>
 .dashboard {
-  padding: 24px;
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
@@ -140,16 +130,8 @@ onMounted(() => store.load())
 
 .section-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  justify-content: end;
   margin-bottom: 20px;
-}
-
-.section-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  font-family: var(--font-headline);
-  color: var(--text-primary);
 }
 
 .section-actions {
@@ -184,11 +166,6 @@ onMounted(() => store.load())
 
 .provider-select:focus {
   border-color: var(--accent);
-}
-
-.model-count {
-  font-size: 0.78rem;
-  color: var(--text-muted);
 }
 
 .btn-refresh {

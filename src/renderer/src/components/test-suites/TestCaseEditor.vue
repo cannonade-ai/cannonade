@@ -1,0 +1,375 @@
+<script setup lang="ts">
+import { ref, watch } from 'vue'
+import { IconX } from '@tabler/icons-vue'
+import type { TestCase } from '@shared/app/test-suite'
+
+const props = defineProps<{
+  testCase: TestCase | null
+  isNew: boolean
+}>()
+
+const emit = defineEmits<{
+  close: []
+}>()
+
+const evaluationTypes = [
+  { value: 'exact_match', label: 'Exact Match' },
+  { value: 'json_match', label: 'JSON Match' },
+  { value: 'regex', label: 'Regex' },
+  { value: 'bleu', label: 'BLEU' },
+  { value: 'rouge', label: 'ROUGE' },
+  { value: 'mrr', label: 'MRR' },
+  { value: 'custom', label: 'Custom Validator' },
+  { value: 'code_execution', label: 'Code Execution' }
+]
+
+const name = ref('')
+const description = ref('')
+const systemPrompt = ref('')
+const userInput = ref('')
+const selectedEvalType = ref('exact_match')
+const evalExpected = ref('')
+
+watch(
+  () => props.testCase,
+  (tc) => {
+    if (tc) {
+      name.value = tc.name
+      description.value = tc.description ?? ''
+      systemPrompt.value = tc.input.messages?.find((m) => m.role === 'system')?.content ?? ''
+      userInput.value =
+        tc.input.messages?.find((m) => m.role === 'user')?.content ?? tc.input.prompt ?? ''
+      selectedEvalType.value = tc.evaluation.type
+      evalExpected.value = typeof tc.evaluation.expected === 'string' ? tc.evaluation.expected : ''
+    } else {
+      name.value = ''
+      description.value = ''
+      systemPrompt.value = ''
+      userInput.value = ''
+      selectedEvalType.value = 'exact_match'
+      evalExpected.value = ''
+    }
+  },
+  { immediate: true }
+)
+</script>
+
+<template>
+  <div class="editor">
+    <div class="editor-header">
+      <span class="editor-title">{{ isNew ? 'New Test Case' : 'Edit Test Case' }}</span>
+      <button class="btn-close" @click="emit('close')">
+        <IconX :size="14" :stroke-width="2.5" />
+      </button>
+    </div>
+
+    <div class="editor-body">
+      <div class="editor-cols">
+        <div class="left-col">
+          <div class="section">
+            <div class="section-header">
+              <span class="section-title">General</span>
+            </div>
+            <div class="section-body">
+              <div class="field">
+                <label class="field-label">Name</label>
+                <input v-model="name" class="field-input" placeholder="Test case name" />
+              </div>
+              <div class="field">
+                <label class="field-label">Description</label>
+                <input
+                  v-model="description"
+                  class="field-input"
+                  placeholder="Optional description"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-header">
+              <span class="section-title">Input</span>
+            </div>
+            <div class="section-body">
+              <div class="field">
+                <label class="field-label">System Prompt</label>
+                <textarea
+                  v-model="systemPrompt"
+                  class="field-textarea"
+                  rows="4"
+                  placeholder="System instructions for the model..."
+                />
+              </div>
+              <div class="field">
+                <label class="field-label">User Input</label>
+                <textarea
+                  v-model="userInput"
+                  class="field-textarea"
+                  rows="4"
+                  placeholder="User message to send..."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="right-col">
+          <div class="section section-fill">
+            <div class="section-header">
+              <span class="section-title">Evaluation</span>
+            </div>
+            <div class="section-body section-body-fill">
+              <div class="field">
+                <label class="field-label">Method</label>
+                <select v-model="selectedEvalType" class="field-select">
+                  <option v-for="et in evaluationTypes" :key="et.value" :value="et.value">
+                    {{ et.label }}
+                  </option>
+                </select>
+              </div>
+              <div class="field field-fill">
+                <label class="field-label">Expected / Config</label>
+                <textarea
+                  v-model="evalExpected"
+                  class="field-textarea field-textarea-fill"
+                  placeholder="Enter expected output or configuration..."
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="editor-footer">
+      <button class="btn-cancel" @click="emit('close')">Cancel</button>
+      <button class="btn-save">
+        {{ isNew ? 'Add Case' : 'Save Changes' }}
+      </button>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.editor {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent-dim);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.editor-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-headline);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+}
+
+.btn-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 2px;
+  border-radius: var(--radius);
+  transition:
+    color 0.15s,
+    background 0.15s;
+}
+
+.btn-close:hover {
+  color: var(--text-primary);
+  background: var(--surface-elevated);
+}
+
+.editor-body {
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-cols {
+  display: flex;
+  height: 100%;
+  gap: 0;
+}
+
+.left-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+}
+
+.right-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-fill {
+  flex: 1;
+  overflow: hidden;
+  border-bottom: none;
+}
+
+.section-header {
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.section-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.section-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.section-body-fill {
+  flex: 1;
+  overflow: hidden;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field-fill {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.field-input,
+.field-textarea,
+.field-select {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: none;
+}
+
+.field-input:focus,
+.field-textarea:focus,
+.field-select:focus {
+  border-color: var(--accent);
+}
+
+.field-textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field-textarea-fill {
+  flex: 1;
+  resize: none;
+  height: 100%;
+}
+
+.field-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767575' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 26px;
+  cursor: pointer;
+}
+
+.editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.btn-cancel {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.btn-cancel:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-hover);
+}
+
+.btn-save {
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-body);
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  color: #000;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-save:hover {
+  opacity: 0.88;
+}
+</style>

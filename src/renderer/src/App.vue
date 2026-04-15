@@ -142,6 +142,7 @@ body {
 
 .app-content {
   flex: 1;
+  padding: 2rem;
   overflow-y: auto;
   background: var(--bg);
 }

@@ -47,7 +47,6 @@ const settings = useSettingsStore()
 
 <style scoped>
 .settings {
-  padding: 32px;
   max-width: 640px;
 }
 

@@ -1,0 +1,212 @@
+<script setup lang="ts">
+import { IconPlus, IconChevronRight } from '@tabler/icons-vue'
+import type { TestCase } from '@shared/app/test-suite'
+
+defineProps<{
+  cases: TestCase[]
+  selectedId: string | null
+}>()
+
+const emit = defineEmits<{
+  'select-case': [id: string]
+  'add-case': []
+}>()
+</script>
+
+<template>
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title">
+        Test Cases
+        <span class="count-pill">{{ cases.length }}</span>
+      </span>
+      <button class="btn-add" @click="emit('add-case')">
+        <IconPlus :size="13" :stroke-width="2.5" />
+        Add New Case
+      </button>
+    </div>
+    <div class="panel-body">
+      <div v-if="cases.length === 0" class="empty">
+        <span>No test cases yet.</span>
+      </div>
+      <ul v-else class="case-list">
+        <li
+          v-for="tc in cases"
+          :key="tc.id"
+          class="case-item"
+          :class="{ active: selectedId === tc.id }"
+          @click="emit('select-case', tc.id)"
+        >
+          <div class="case-info">
+            <span class="case-name">{{ tc.name }}</span>
+            <span v-if="tc.description" class="case-desc">{{ tc.description }}</span>
+          </div>
+          <div class="case-meta">
+            <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
+            <IconChevronRight :size="14" :stroke-width="2" class="chevron" />
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent-dim);
+  background: var(--surface);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: var(--font-headline);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+}
+
+.count-pill {
+  font-size: 0.68rem;
+  background: var(--surface-elevated);
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.btn-add {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  font-family: var(--font-body);
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-add:hover {
+  background: rgba(255, 179, 0, 0.3);
+}
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+}
+
+.case-list {
+  list-style: none;
+}
+
+.case-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.case-item:hover {
+  background: var(--surface-hover);
+}
+
+.case-item.active {
+  background: var(--accent-dim);
+  border-left: 2px solid var(--accent-dim);
+  padding-left: 12px;
+}
+
+.case-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.case-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.case-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.case-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.eval-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  background: var(--surface-elevated);
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  text-transform: capitalize;
+  letter-spacing: 0.02em;
+}
+
+.case-item.active .eval-badge {
+  background: rgba(255, 179, 0, 0.15);
+  color: var(--accent);
+}
+
+.chevron {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.case-item.active .chevron {
+  color: var(--accent);
+  opacity: 1;
+}
+</style>
