@@ -1,18 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { Model } from '@shared/open-router/ipc-contracts'
-import { formatContext } from '../utils/format'
+import { formatContext, formatPrice } from '../utils/format'
 
 const props = defineProps<{ model: Model }>()
 
 const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
-
-function formatPrice(raw: string): string {
-  const n = parseFloat(raw)
-  if (n === 0) return 'free'
-  const perMillion = n * 1_000_000
-  return `$${perMillion % 1 === 0 ? perMillion.toFixed(0) : perMillion.toPrecision(3)}/M`
-}
 </script>
 
 <template>
@@ -44,7 +37,9 @@ function formatPrice(raw: string): string {
       </span>
       <span v-if="model.top_provider.max_completion_tokens" class="stat">
         <span class="stat-label">Max out</span>
-        <span class="stat-value">{{ formatContext(model.top_provider.max_completion_tokens) }}</span>
+        <span class="stat-value">{{
+          formatContext(model.top_provider.max_completion_tokens)
+        }}</span>
       </span>
     </div>
 

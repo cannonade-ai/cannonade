@@ -9,3 +9,10 @@ export function formatContext(tokens: number): string {
   if (tokens >= 1_000) return `${(tokens / 1_000).toFixed(0)}K`
   return String(tokens)
 }
+
+export function formatPrice(raw: string): string {
+  const n = parseFloat(raw)
+  if (n === 0) return 'free'
+  const perMillion = n * 1_000_000
+  return `$${perMillion % 1 === 0 ? perMillion.toFixed(0) : perMillion.toPrecision(3)}/M`
+}
