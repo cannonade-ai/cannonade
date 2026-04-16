@@ -7,12 +7,13 @@
 ```
 ## Commands
 ```
+npm run lint
 npm run build
-
 ```
 
-## Vue 3 rules
+## Coding Rules
 - NEVER write comments on the code.
+- Always add return type annotations for functions.
 - Always use :key with v-for.
 - Never use v-if on the same element as v-for.
 - Each component should be in its own file.
