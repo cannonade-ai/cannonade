@@ -189,7 +189,7 @@ const emit = defineEmits<{
   font-weight: 600;
   padding: 2px 7px;
   background: var(--surface-elevated);
-  color: var(--text-muted);
+  color: var(--text-secondary);
   border-radius: var(--radius-full);
   text-transform: capitalize;
   letter-spacing: 0.02em;

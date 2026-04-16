@@ -144,7 +144,7 @@ watch(
     <div class="editor-footer">
       <button class="btn-cancel" @click="emit('close')">Cancel</button>
       <button class="btn-save">
-        {{ isNew ? 'Add Case' : 'Save Changes' }}
+        {{ isNew ? 'Add Test Case' : 'Save Test Case' }}
       </button>
     </div>
   </div>

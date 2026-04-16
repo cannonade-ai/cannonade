@@ -43,7 +43,7 @@ defineProps<{
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-border);
+  border-left: 2px solid var(--accent-dim);
   background: var(--surface);
 }
 
