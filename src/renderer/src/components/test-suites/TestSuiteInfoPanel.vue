@@ -53,6 +53,7 @@ defineProps<{
   padding: 10px 14px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  height: 3rem;
 }
 
 .panel-title {

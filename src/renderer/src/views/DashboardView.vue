@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
+import { IconRefresh } from '@tabler/icons-vue'
 import { useModelsStore } from '../stores/models'
 import type { Provider } from '../stores/models'
 import ModelCard from '../components/ModelCard.vue'
 import OpenRouterModelCard from '../components/OpenRouterModelCard.vue'
+import SectionHeader from '../components/SectionHeader.vue'
 
 const store = useModelsStore()
 
@@ -27,33 +29,16 @@ onMounted(() => store.load())
 
 <template>
   <div class="dashboard">
-    <div class="section-header">
-      <div class="section-actions">
-        <select class="provider-select" :value="store.provider" @change="onProviderChange">
-          <option value="lmstudio">LM Studio</option>
-          <option value="openrouter">OpenRouter</option>
-        </select>
-        <button class="btn-refresh" :disabled="store.loading" @click="store.load()">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="14"
-            height="14"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            :class="{ spinning: store.loading }"
-          >
-            <polyline points="23 4 23 10 17 10" />
-            <polyline points="1 20 1 14 7 14" />
-            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
-          </svg>
-          Refresh
-        </button>
-      </div>
-    </div>
+    <section-header>
+      <select class="provider-select" :value="store.provider" @change="onProviderChange">
+        <option value="lmstudio">LM Studio</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+      <button class="btn-refresh" :disabled="store.loading" @click="store.load()">
+        <icon-refresh :size="14" :class="{ spinning: store.loading }" />
+        Refresh
+      </button>
+    </section-header>
 
     <div v-if="store.loading" class="state-message">
       <span class="spinner" />
@@ -123,21 +108,6 @@ onMounted(() => store.load())
 
 <style scoped>
 .dashboard {
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.section-header {
-  display: flex;
-  justify-content: end;
-  margin-bottom: 20px;
-}
-
-.section-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .provider-select {

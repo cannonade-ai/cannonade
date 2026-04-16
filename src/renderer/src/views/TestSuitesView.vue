@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { IconDeviceFloppy } from '@tabler/icons-vue'
 import type { TestSuite, TestCase } from '@shared/app/test-suite'
 import TestSuiteInfoPanel from '../components/test-suites/TestSuiteInfoPanel.vue'
 import TestSuiteRunConfigPanel from '../components/test-suites/TestSuiteRunConfigPanel.vue'
 import TestCaseList from '../components/test-suites/TestCaseList.vue'
 import TestCaseEditor from '../components/test-suites/TestCaseEditor.vue'
+import SectionHeader from '../components/SectionHeader.vue'
 
 const mockSuite: TestSuite = {
   id: 'suite-1',
@@ -133,24 +135,31 @@ function onCloseEditor(): void {
   selectedCaseId.value = null
   isNewCase.value = false
 }
+
+function onSave(): void {
+  // TODO: persist suite
+  console.log('save called')
+}
 </script>
 
 <template>
   <div class="view">
-    <div class="left-panel">
-      <TestSuiteInfoPanel :suite="suite" />
-      <TestSuiteRunConfigPanel :config="suite.defaultRunConfig" />
-    </div>
+    <section-header>
+      <button class="btn-save" @click="onSave">
+        <icon-device-floppy :size="14" />
+        Save
+      </button>
+    </section-header>
 
-    <div class="right-panel">
-      <div class="case-list-area" :class="{ 'editor-visible': editorOpen }">
-        <TestCaseList
-          :cases="suite.testCases"
-          :selected-id="selectedCaseId"
-          @select-case="onSelectCase"
-          @add-case="onAddCase"
-        />
-      </div>
+    <div class="panels" :class="{ 'editor-visible': editorOpen }">
+      <TestSuiteInfoPanel :suite="suite" />
+      <TestCaseList
+        :cases="suite.testCases"
+        :selected-id="selectedCaseId"
+        @select-case="onSelectCase"
+        @add-case="onAddCase"
+      />
+      <TestSuiteRunConfigPanel :config="suite.defaultRunConfig" />
       <div v-if="editorOpen" class="editor-area">
         <TestCaseEditor :test-case="selectedCase" :is-new="isNewCase" @close="onCloseEditor" />
       </div>
@@ -161,43 +170,51 @@ function onCloseEditor(): void {
 <style scoped>
 .view {
   display: flex;
+  flex-direction: column;
   height: 100%;
-  gap: 12px;
   background: var(--bg);
 }
 
-.left-panel {
-  width: 260px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
+.panels {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: auto 1fr;
   gap: 12px;
-  overflow-y: auto;
-}
-
-.right-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: hidden;
-}
-
-.case-list-area {
   flex: 1;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  align-content: start;
 }
 
-.case-list-area.editor-visible {
-  flex: 0 0 45%;
+.editor-visible {
+  align-content: stretch;
+}
+
+.btn-save {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.btn-save:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
 }
 
 .editor-area {
-  flex: 1;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  height: 100%;
 }
 </style>
