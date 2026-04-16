@@ -5,7 +5,7 @@ import {
   IconLoader2,
   IconClock,
   IconCircleMinus,
-  IconAlertCircle,
+  IconAlertCircle
 } from '@tabler/icons-vue'
 import type { TestRun, PerModelRun, RunStatus, ModelRef } from '@shared/app/test-run'
 
@@ -18,7 +18,7 @@ const statusIconMap: Record<RunStatus, unknown> = {
   failed: IconCircleX,
   running: IconLoader2,
   pending: IconClock,
-  cancelled: IconCircleMinus,
+  cancelled: IconCircleMinus
 }
 
 function statusIcon(status: RunStatus) {
@@ -40,7 +40,7 @@ function formatDate(iso: string | undefined): string {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
+    second: '2-digit'
   })
 }
 
@@ -74,7 +74,9 @@ function score(run: PerModelRun): string {
         </span>
       </div>
       <div class="header-meta">
-        <span class="meta-tag">{{ run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter' }}</span>
+        <span class="meta-tag">{{
+          run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'
+        }}</span>
         <span v-if="run.config.parallelRun" class="meta-tag">Parallel</span>
         <span class="meta-date">{{ formatDate(run.createdAt) }}</span>
       </div>
@@ -83,15 +85,16 @@ function score(run: PerModelRun): string {
     <div class="panel-body">
       <div class="section-label">Model Results</div>
       <div class="model-cards">
-        <div
-          v-for="mr in run.modelRuns"
-          :key="mr.id"
-          class="model-card"
-          :class="mr.status"
-        >
+        <div v-for="mr in run.modelRuns" :key="mr.id" class="model-card" :class="mr.status">
           <div class="model-card-header">
             <div class="model-name-row">
-              <component :is="statusIcon(mr.status)" :size="14" :stroke-width="2.5" class="model-status-icon" :class="mr.status" />
+              <component
+                :is="statusIcon(mr.status)"
+                :size="14"
+                :stroke-width="2.5"
+                class="model-status-icon"
+                :class="mr.status"
+              />
               <span class="model-name">{{ modelLabel(mr.modelRef) }}</span>
               <span class="model-source-badge">{{ modelSource(mr.modelRef) }}</span>
             </div>
@@ -147,6 +150,7 @@ function score(run: PerModelRun): string {
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
   flex-wrap: wrap;
+  height: 3rem;
 }
 
 .header-left {
@@ -234,11 +238,19 @@ function score(run: PerModelRun): string {
   flex-shrink: 0;
 }
 
-.model-status-icon.completed { color: #22c55e; }
-.model-status-icon.failed { color: #ef4444; }
-.model-status-icon.running { color: var(--accent); }
+.model-status-icon.completed {
+  color: #22c55e;
+}
+.model-status-icon.failed {
+  color: #ef4444;
+}
+.model-status-icon.running {
+  color: var(--accent);
+}
 .model-status-icon.pending,
-.model-status-icon.cancelled { color: var(--text-muted); }
+.model-status-icon.cancelled {
+  color: var(--text-muted);
+}
 
 .model-name {
   font-size: 0.82rem;
@@ -313,9 +325,21 @@ function score(run: PerModelRun): string {
   text-transform: capitalize;
 }
 
-.status-badge.completed { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
-.status-badge.failed { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-.status-badge.running { background: var(--accent-dim); color: var(--accent); }
+.status-badge.completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+.status-badge.failed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+.status-badge.running {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
 .status-badge.pending,
-.status-badge.cancelled { background: var(--surface-elevated); color: var(--text-muted); }
+.status-badge.cancelled {
+  background: var(--surface-elevated);
+  color: var(--text-muted);
+}
 </style>
