@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { IconTag, IconTestPipe } from '@tabler/icons-vue'
+import { IconTestPipe, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
 import type { TestSuite } from '@shared/app/test-suite'
+import ContextMenu from '../ContextMenu.vue'
+import type { ContextMenuItem } from '../ContextMenu.vue'
 
 defineProps<{
   suites: TestSuite[]
@@ -9,7 +11,25 @@ defineProps<{
 
 const emit = defineEmits<{
   'select-suite': [id: string]
+  'delete-suite': [id: string]
+  'clone-suite': [id: string]
 }>()
+
+function suiteMenuItems(id: string): ContextMenuItem[] {
+  return [
+    {
+      label: 'Delete',
+      icon: IconTrash,
+      danger: true,
+      action: () => emit('delete-suite', id)
+    },
+    {
+      label: 'Clone',
+      icon: IconCopy,
+      action: () => emit('clone-suite', id)
+    }
+  ]
+}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -34,20 +54,19 @@ function formatDate(iso: string): string {
         <div class="suite-main">
           <span class="suite-name">{{ suite.name }}</span>
           <span v-if="suite.description" class="suite-desc">{{ suite.description }}</span>
-          <div v-if="suite.tags && suite.tags.length" class="suite-tags">
-            <icon-tag :size="10" :stroke-width="2" />
-            <span
-              v-for="tag in suite.tags"
-              :key="tag"
-              class="tag"
-            >{{ tag }}</span>
-          </div>
         </div>
         <div class="suite-aside">
-          <span class="case-count">
-            <icon-test-pipe :size="11" :stroke-width="2" />
-            {{ suite.testCases.length }} cases
-          </span>
+          <div class="aside-top">
+            <span class="case-count">
+              <icon-test-pipe :size="11" :stroke-width="2" />
+              {{ suite.testCases.length }} cases
+            </span>
+            <context-menu v-slot="{ toggle }" :items="suiteMenuItems(suite.id)">
+              <button class="btn-menu" @click.stop="toggle">
+                <icon-dots-vertical :size="14" :stroke-width="2" />
+              </button>
+            </context-menu>
+          </div>
           <span class="suite-date">Updated {{ formatDate(suite.updatedAt) }}</span>
         </div>
       </li>
@@ -117,29 +136,18 @@ function formatDate(iso: string): string {
   max-width: 480px;
 }
 
-.suite-tags {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--text-muted);
-  flex-wrap: wrap;
-}
-
-.tag {
-  font-size: 0.68rem;
-  background: var(--surface-elevated);
-  color: var(--text-secondary);
-  padding: 1px 7px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border);
-}
-
 .suite-aside {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 5px;
   flex-shrink: 0;
+}
+
+.aside-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .case-count {
@@ -158,5 +166,29 @@ function formatDate(iso: string): string {
 .suite-date {
   font-size: 0.7rem;
   color: var(--text-muted);
+}
+
+.btn-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.btn-menu:hover {
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  border-color: var(--border);
 }
 </style>

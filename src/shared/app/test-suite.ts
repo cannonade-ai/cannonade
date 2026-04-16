@@ -8,8 +8,6 @@ export interface TestSuite {
   createdAt: string
   updatedAt: string
 
-  tags?: string[]
-
   defaultRunConfig?: RunConfig
 
   testCases: TestCase[]
@@ -29,8 +27,6 @@ export interface TestCase {
   runConfig?: RunConfig
 
   timeoutMs?: number
-
-  tags?: string[]
 }
 
 export interface TestInput {

@@ -20,10 +20,6 @@ defineProps<{
         <label class="field-label">Description</label>
         <textarea class="field-textarea" :value="suite.description" rows="3" />
       </div>
-      <div class="field">
-        <label class="field-label">Version</label>
-        <input class="field-input" :value="suite.version" />
-      </div>
       <div class="meta-rows">
         <div class="meta-row">
           <span class="meta-label">Created</span>

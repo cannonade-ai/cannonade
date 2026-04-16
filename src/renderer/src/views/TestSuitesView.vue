@@ -14,7 +14,6 @@ const mockSuites: TestSuite[] = [
     version: '1.2.0',
     createdAt: '2026-03-15T10:00:00Z',
     updatedAt: '2026-04-10T14:32:00Z',
-    tags: ['customer-support', 'quality', 'llm-eval'],
     defaultRunConfig: {
       provider: 'openrouter',
       model: 'anthropic/claude-3-5-sonnet',
@@ -107,92 +106,6 @@ const mockSuites: TestSuite[] = [
         }
       }
     ]
-  },
-  {
-    id: 'suite-2',
-    name: 'Code Assistant Benchmark',
-    description: 'Tests code generation accuracy, correctness, and style compliance',
-    version: '0.4.1',
-    createdAt: '2026-02-01T08:00:00Z',
-    updatedAt: '2026-04-05T11:20:00Z',
-    tags: ['coding', 'benchmark'],
-    defaultRunConfig: {
-      provider: 'openrouter',
-      model: 'anthropic/claude-3-7-sonnet',
-      temperature: 0.2,
-      maxTokens: 4096
-    },
-    testCases: [
-      {
-        id: 'tc-5',
-        name: 'FizzBuzz implementation',
-        description: 'Generate a correct FizzBuzz in Python',
-        input: {
-          type: 'chat',
-          messages: [
-            { role: 'system', content: 'You are a coding assistant. Write clean Python code.' },
-            { role: 'user', content: 'Implement FizzBuzz for 1 to 100.' }
-          ]
-        },
-        evaluation: {
-          type: 'code_execution',
-          customValidator: { language: 'javascript', code: '' },
-          codeExecution: { language: 'javascript', testCases: [] }
-        }
-      },
-      {
-        id: 'tc-6',
-        name: 'Reverse a linked list',
-        description: 'Returns iterative solution with correct logic',
-        input: {
-          type: 'chat',
-          messages: [
-            { role: 'system', content: 'You are a coding assistant.' },
-            { role: 'user', content: 'Write a function to reverse a singly linked list in Python.' }
-          ]
-        },
-        evaluation: {
-          type: 'code_execution',
-          customValidator: { language: 'javascript', code: '' },
-          codeExecution: { language: 'javascript', testCases: [] }
-        }
-      }
-    ]
-  },
-  {
-    id: 'suite-3',
-    name: 'Multilingual FAQ',
-    description: 'Validates consistent answers in English, Spanish, and French',
-    version: '1.0.0',
-    createdAt: '2026-01-10T09:00:00Z',
-    updatedAt: '2026-03-22T16:45:00Z',
-    tags: ['i18n', 'faq'],
-    defaultRunConfig: {
-      provider: 'lmstudio',
-      model: 'mistral-7b-instruct',
-      temperature: 0.5,
-      maxTokens: 1024
-    },
-    testCases: [
-      {
-        id: 'tc-7',
-        name: 'Return policy — EN',
-        description: 'English return policy question',
-        input: {
-          type: 'chat',
-          messages: [
-            { role: 'system', content: 'You are a support agent. Returns accepted within 30 days.' },
-            { role: 'user', content: 'What is your return policy?' }
-          ]
-        },
-        evaluation: {
-          type: 'regex',
-          expected: '30.day',
-          customValidator: { language: 'javascript', code: '' },
-          codeExecution: { language: 'javascript', testCases: [] }
-        }
-      }
-    ]
   }
 ]
 
@@ -215,21 +128,50 @@ function onSave(updated: TestSuite): void {
   const idx = suites.value.findIndex((s) => s.id === updated.id)
   if (idx !== -1) suites.value[idx] = updated
 }
+
+function onNewSuite(): void {
+  const now = new Date().toISOString()
+  const suite: TestSuite = {
+    id: crypto.randomUUID(),
+    name: 'New Test Suite',
+    version: '1.0.0',
+    createdAt: now,
+    updatedAt: now,
+    testCases: []
+  }
+  suites.value.push(suite)
+  selectedId.value = suite.id
+}
+
+function onDeleteSuite(id: string): void {
+  suites.value = suites.value.filter((s) => s.id !== id)
+  if (selectedId.value === id) selectedId.value = null
+}
+
+function onCloneSuite(id: string): void {
+  const original = suites.value.find((s) => s.id === id)
+  if (!original) return
+  const now = new Date().toISOString()
+  const clone: TestSuite = {
+    ...JSON.parse(JSON.stringify(original)),
+    id: crypto.randomUUID(),
+    name: `Copy of ${original.name}`,
+    createdAt: now,
+    updatedAt: now
+  }
+  suites.value.push(clone)
+}
 </script>
 
 <template>
   <div class="view">
     <template v-if="selectedSuite">
-      <TestSuiteDetail
-        :suite="selectedSuite"
-        @back="onBack"
-        @save="onSave"
-      />
+      <TestSuiteDetail :suite="selectedSuite" @back="onBack" @save="onSave" />
     </template>
 
     <template v-else>
       <section-header>
-        <button class="btn-new">
+        <button class="btn-new" @click="onNewSuite">
           <icon-plus :size="14" :stroke-width="2.5" />
           New Suite
         </button>
@@ -246,6 +188,8 @@ function onSave(updated: TestSuite): void {
           :suites="suites"
           :selected-id="selectedId"
           @select-suite="onSelectSuite"
+          @delete-suite="onDeleteSuite"
+          @clone-suite="onCloneSuite"
         />
       </div>
     </template>
