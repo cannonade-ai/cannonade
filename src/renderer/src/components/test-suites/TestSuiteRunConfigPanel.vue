@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import type { RunConfig } from '@shared/app/test-suite'
+import BaseSelect from '../BaseSelect.vue'
+import type { SelectOption } from '../BaseSelect.vue'
+
+const providerOptions: SelectOption<string>[] = [
+  { value: 'lmstudio', label: 'LM Studio' },
+  { value: 'openrouter', label: 'OpenRouter' }
+]
 
 const config = defineModel<RunConfig | undefined>('config')
 
@@ -23,10 +30,7 @@ function setNumber(key: keyof RunConfig, raw: string): void {
       <template v-else>
         <div class="field">
           <label class="field-label">Provider</label>
-          <select v-model="config.provider" class="field-select">
-            <option value="lmstudio">LM Studio</option>
-            <option value="openrouter">OpenRouter</option>
-          </select>
+          <base-select v-model="config.provider" :options="providerOptions" />
         </div>
         <div class="field">
           <label class="field-label">Model</label>
@@ -184,9 +188,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
   color: var(--text-muted);
 }
 
-.field-input,
-.field-select {
+.field-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 6px 8px;
   font-size: var(--text-sm);
   font-family: var(--font-body);
@@ -195,20 +199,13 @@ function setNumber(key: keyof RunConfig, raw: string): void {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   outline: none;
+  box-shadow: none;
   transition: border-color 0.15s;
+  -webkit-appearance: none;
   appearance: none;
 }
 
-.field-input:focus,
-.field-select:focus {
+.field-input:focus {
   border-color: var(--accent);
-}
-
-.field-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767575' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 26px;
-  cursor: pointer;
 }
 </style>

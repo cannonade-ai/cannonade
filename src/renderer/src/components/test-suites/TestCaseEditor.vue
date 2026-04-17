@@ -2,6 +2,8 @@
 import { ref, watch } from 'vue'
 import { IconX } from '@tabler/icons-vue'
 import type { TestCase, EvaluationConfig } from '@shared/app/test-suite'
+import BaseSelect from '../BaseSelect.vue'
+import type { SelectOption } from '../BaseSelect.vue'
 
 const props = defineProps<{
   testCase: TestCase | null
@@ -13,7 +15,7 @@ const emit = defineEmits<{
   save: [testCase: TestCase]
 }>()
 
-const evaluationTypes = [
+const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'exact_match', label: 'Exact Match' },
   { value: 'json_match', label: 'JSON Match' },
   { value: 'regex', label: 'Regex' },
@@ -149,11 +151,7 @@ function onSave(): void {
             <div class="section-body section-body-fill">
               <div class="field">
                 <label class="field-label">Method</label>
-                <select v-model="selectedEvalType" class="field-select">
-                  <option v-for="et in evaluationTypes" :key="et.value" :value="et.value">
-                    {{ et.label }}
-                  </option>
-                </select>
+                <base-select v-model="selectedEvalType" :options="evaluationTypes" />
               </div>
               <div class="field field-fill">
                 <label class="field-label">Expected / Config</label>
@@ -313,8 +311,7 @@ function onSave(): void {
 }
 
 .field-input,
-.field-textarea,
-.field-select {
+.field-textarea {
   width: 100%;
   padding: 6px 8px;
   font-size: var(--text-sm);
@@ -329,8 +326,7 @@ function onSave(): void {
 }
 
 .field-input:focus,
-.field-textarea:focus,
-.field-select:focus {
+.field-textarea:focus {
   border-color: var(--accent);
 }
 
@@ -345,13 +341,6 @@ function onSave(): void {
   height: 100%;
 }
 
-.field-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767575' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  padding-right: 26px;
-  cursor: pointer;
-}
 
 .editor-footer {
   display: flex;

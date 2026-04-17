@@ -6,8 +6,15 @@ import type { Provider } from '../stores/models'
 import ModelCard from '../components/ModelCard.vue'
 import OpenRouterModelCard from '../components/OpenRouterModelCard.vue'
 import SectionHeader from '../components/SectionHeader.vue'
+import BaseSelect from '../components/BaseSelect.vue'
+import type { SelectOption } from '../components/BaseSelect.vue'
 
 const store = useModelsStore()
+
+const providerOptions: SelectOption<Provider>[] = [
+  { value: 'lmstudio', label: 'LM Studio' },
+  { value: 'openrouter', label: 'OpenRouter' }
+]
 
 const byLoaded = (a: { loaded_instances: unknown[] }, b: { loaded_instances: unknown[] }): number =>
   b.loaded_instances.length - a.loaded_instances.length
@@ -19,10 +26,10 @@ const embeddings = computed(() =>
 
 const providerLabel = computed(() => (store.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'))
 
-function onProviderChange(e: Event): void {
-  store.provider = (e.target as HTMLSelectElement).value as Provider
-  store.load()
-}
+const provider = computed<Provider>({
+  get: () => store.provider,
+  set: (v) => { store.provider = v; store.load() }
+})
 
 onMounted(() => store.load())
 </script>
@@ -30,10 +37,7 @@ onMounted(() => store.load())
 <template>
   <div class="dashboard">
     <section-header>
-      <select class="provider-select" :value="store.provider" @change="onProviderChange">
-        <option value="lmstudio">LM Studio</option>
-        <option value="openrouter">OpenRouter</option>
-      </select>
+      <base-select v-model="provider" :options="providerOptions" class="provider-select" />
       <button class="btn-refresh" :disabled="store.loading" @click="store.load()">
         <icon-refresh :size="14" :class="{ spinning: store.loading }" />
         Refresh
@@ -111,31 +115,9 @@ onMounted(() => store.load())
 }
 
 .provider-select {
-  appearance: none;
-  padding: 6px 28px 6px 10px;
+  width: auto;
   font-size: var(--text-xs);
-  font-weight: 500;
-  font-family: var(--font-body);
-  color: var(--text-primary);
-  background: var(--surface)
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767575' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-    no-repeat right 10px center;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition:
-    border-color 0.15s,
-    background-color 0.15s;
-  outline: none;
-}
-
-.provider-select:hover {
-  border-color: var(--border-hover);
-  background-color: var(--surface-hover);
-}
-
-.provider-select:focus {
-  border-color: var(--accent);
+  background: var(--surface);
 }
 
 .btn-refresh {

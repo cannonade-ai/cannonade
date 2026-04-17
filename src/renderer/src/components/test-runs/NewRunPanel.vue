@@ -6,6 +6,8 @@ import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { SuiteSummary } from '../../stores/test-runs'
 import { useModelsStore } from '../../stores/models'
 import NewRunModelSelector from './NewRunModelSelector.vue'
+import BaseSelect from '../BaseSelect.vue'
+import type { SelectOption } from '../BaseSelect.vue'
 
 const props = defineProps<{
   suites: SuiteSummary[]
@@ -50,6 +52,10 @@ const installedModels = computed(() => {
   return modelsStore.orModels.map((m) => ({ key: m.id, label: m.name }))
 })
 
+const suiteOptions = computed<SelectOption<string>[]>(() =>
+  props.suites.map((s) => ({ value: s.id, label: s.name }))
+)
+
 const canSubmit = computed(() => form.suiteId !== '' && form.models.length > 0)
 
 function onSubmit(): void {
@@ -76,10 +82,7 @@ function onSubmit(): void {
     <div class="panel-body">
       <div class="field">
         <label class="field-label">Test Suite</label>
-        <select v-model="form.suiteId" class="field-select">
-          <option value="" disabled>Select a suite…</option>
-          <option v-for="s in suites" :key="s.id" :value="s.id">{{ s.name }}</option>
-        </select>
+        <base-select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
       </div>
 
       <div class="field">
@@ -209,28 +212,6 @@ function onSubmit(): void {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-}
-
-.field-select {
-  width: 100%;
-  padding: 6px 26px 6px 8px;
-  font-size: var(--text-sm);
-  font-family: var(--font-body);
-  color: var(--text-primary);
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  outline: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23767575' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 8px center;
-  cursor: pointer;
-  transition: border-color 0.15s;
-}
-
-.field-select:focus {
-  border-color: var(--accent);
 }
 
 .provider-options {
