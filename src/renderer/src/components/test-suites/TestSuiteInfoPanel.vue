@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import type { TestSuite } from '@shared/app/test-suite'
+const name = defineModel<string>('name', { required: true })
+const description = defineModel<string | undefined>('description')
 
-defineProps<{
-  suite: TestSuite
+const props = defineProps<{
+  createdAt: string
+  updatedAt: string
 }>()
 </script>
 
@@ -14,20 +16,20 @@ defineProps<{
     <div class="panel-body">
       <div class="field">
         <label class="field-label">Name</label>
-        <input class="field-input" :value="suite.name" />
+        <input v-model="name" class="field-input" />
       </div>
       <div class="field">
         <label class="field-label">Description</label>
-        <textarea class="field-textarea" :value="suite.description" rows="3" />
+        <textarea v-model="description" class="field-textarea" rows="3" />
       </div>
       <div class="meta-rows">
         <div class="meta-row">
           <span class="meta-label">Created</span>
-          <span class="meta-value">{{ new Date(suite.createdAt).toLocaleDateString() }}</span>
+          <span class="meta-value">{{ new Date(props.createdAt).toLocaleDateString() }}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">Updated</span>
-          <span class="meta-value">{{ new Date(suite.updatedAt).toLocaleDateString() }}</span>
+          <span class="meta-value">{{ new Date(props.updatedAt).toLocaleDateString() }}</span>
         </div>
       </div>
     </div>

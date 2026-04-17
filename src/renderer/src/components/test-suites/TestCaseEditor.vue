@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { IconX } from '@tabler/icons-vue'
-import type { TestCase } from '@shared/app/test-suite'
+import type { TestCase, EvaluationConfig } from '@shared/app/test-suite'
 
 const props = defineProps<{
   testCase: TestCase | null
@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   close: []
+  save: [testCase: TestCase]
 }>()
 
 const evaluationTypes = [
@@ -27,7 +28,7 @@ const name = ref('')
 const description = ref('')
 const systemPrompt = ref('')
 const userInput = ref('')
-const selectedEvalType = ref('exact_match')
+const selectedEvalType = ref<EvaluationConfig['type']>('exact_match')
 const evalExpected = ref('')
 
 watch(
@@ -52,6 +53,33 @@ watch(
   },
   { immediate: true }
 )
+
+function onSave(): void {
+  const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = []
+  if (systemPrompt.value) messages.push({ role: 'system' as const, content: systemPrompt.value })
+  messages.push({ role: 'user' as const, content: userInput.value })
+
+  const testCase: TestCase = {
+    id: props.testCase?.id ?? crypto.randomUUID(),
+    name: name.value,
+    description: description.value || undefined,
+    input: { type: 'chat', messages },
+    evaluation: {
+      type: selectedEvalType.value,
+      expected: evalExpected.value || undefined,
+      customValidator: props.testCase?.evaluation.customValidator ?? {
+        language: 'javascript',
+        code: ''
+      },
+      codeExecution: props.testCase?.evaluation.codeExecution ?? {
+        language: 'javascript',
+        testCases: []
+      }
+    }
+  }
+
+  emit('save', testCase)
+}
 </script>
 
 <template>
@@ -143,7 +171,7 @@ watch(
 
     <div class="editor-footer">
       <button class="btn-cancel" @click="emit('close')">Cancel</button>
-      <button class="btn-save">
+      <button class="btn-save" @click="onSave">
         {{ isNew ? 'Add Test Case' : 'Save Test Case' }}
       </button>
     </div>

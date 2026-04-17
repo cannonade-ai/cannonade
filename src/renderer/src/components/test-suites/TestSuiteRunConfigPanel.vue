@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import type { RunConfig } from '@shared/app/test-suite'
 
-defineProps<{
-  config: RunConfig | undefined
-}>()
+const config = defineModel<RunConfig | undefined>('config')
+
+function setNumber(key: keyof RunConfig, raw: string): void {
+  if (!config.value) return
+  const n = parseFloat(raw)
+  ;(config.value as unknown as Record<string, unknown>)[key] = raw === '' ? undefined : n
+}
 </script>
 
 <template>
@@ -19,14 +23,14 @@ defineProps<{
       <template v-else>
         <div class="field">
           <label class="field-label">Provider</label>
-          <select class="field-select" :value="config.provider">
+          <select v-model="config.provider" class="field-select">
             <option value="lmstudio">LM Studio</option>
             <option value="openrouter">OpenRouter</option>
           </select>
         </div>
         <div class="field">
           <label class="field-label">Model</label>
-          <input class="field-input" :value="config.model" />
+          <input v-model="config.model" class="field-input" />
         </div>
         <div class="field-row">
           <div class="field">
@@ -38,6 +42,7 @@ defineProps<{
               max="2"
               step="0.1"
               :value="config.temperature ?? ''"
+              @change="setNumber('temperature', ($event.target as HTMLInputElement).value)"
             />
           </div>
           <div class="field">
@@ -49,12 +54,19 @@ defineProps<{
               max="1"
               step="0.05"
               :value="config.topP ?? ''"
+              @change="setNumber('topP', ($event.target as HTMLInputElement).value)"
             />
           </div>
         </div>
         <div class="field">
           <label class="field-label">Max Tokens</label>
-          <input class="field-input" type="number" min="1" :value="config.maxTokens ?? ''" />
+          <input
+            class="field-input"
+            type="number"
+            min="1"
+            :value="config.maxTokens ?? ''"
+            @change="setNumber('maxTokens', ($event.target as HTMLInputElement).value)"
+          />
         </div>
         <div class="field-row">
           <div class="field">
@@ -66,6 +78,7 @@ defineProps<{
               max="2"
               step="0.1"
               :value="config.frequencyPenalty ?? ''"
+              @change="setNumber('frequencyPenalty', ($event.target as HTMLInputElement).value)"
             />
           </div>
           <div class="field">
@@ -77,6 +90,7 @@ defineProps<{
               max="2"
               step="0.1"
               :value="config.presencePenalty ?? ''"
+              @change="setNumber('presencePenalty', ($event.target as HTMLInputElement).value)"
             />
           </div>
         </div>
@@ -118,7 +132,6 @@ defineProps<{
   flex-direction: column;
   gap: 10px;
   overflow-y: auto;
-  flex: 1;
 }
 
 .empty-config {

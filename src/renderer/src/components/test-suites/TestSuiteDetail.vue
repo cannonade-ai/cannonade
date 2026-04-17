@@ -42,6 +42,16 @@ function onCloseEditor(): void {
   isNewCase.value = false
 }
 
+function onSaveCase(testCase: TestCase): void {
+  const idx = suite.value.testCases.findIndex((tc) => tc.id === testCase.id)
+  if (idx !== -1) {
+    suite.value.testCases[idx] = testCase
+  } else {
+    suite.value.testCases.push(testCase)
+  }
+  onCloseEditor()
+}
+
 function onSave(): void {
   emit('save', suite.value)
 }
@@ -68,16 +78,26 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
     </div>
 
     <div class="panels" :class="{ 'editor-visible': editorOpen }">
-      <TestSuiteInfoPanel :suite="suite" />
+      <TestSuiteInfoPanel
+        v-model:name="suite.name"
+        v-model:description="suite.description"
+        :created-at="suite.createdAt"
+        :updated-at="suite.updatedAt"
+      />
       <TestCaseList
         :cases="suite.testCases"
         :selected-id="selectedCaseId"
         @select-case="onSelectCase"
         @add-case="onAddCase"
       />
-      <TestSuiteRunConfigPanel :config="suite.defaultRunConfig" />
+      <TestSuiteRunConfigPanel v-model:config="suite.defaultRunConfig" />
       <div v-if="editorOpen" class="editor-area">
-        <TestCaseEditor :test-case="selectedCase" :is-new="isNewCase" @close="onCloseEditor" />
+        <TestCaseEditor
+          :test-case="selectedCase"
+          :is-new="isNewCase"
+          @close="onCloseEditor"
+          @save="onSaveCase"
+        />
       </div>
     </div>
   </div>

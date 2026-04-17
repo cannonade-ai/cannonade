@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
 import { api } from '../api'
 import type { TestSuite } from '@shared/app/test-suite'
@@ -18,7 +18,7 @@ export const useTestSuitesStore = defineStore('test-suites', () => {
 
   async function save(suite: TestSuite): Promise<void> {
     suite.updatedAt = new Date().toISOString()
-    await api.saveSuite(suite)
+    await api.saveSuite(JSON.parse(JSON.stringify(toRaw(suite))))
     const idx = suites.value.findIndex((s) => s.id === suite.id)
     if (idx !== -1) {
       suites.value[idx] = suite
