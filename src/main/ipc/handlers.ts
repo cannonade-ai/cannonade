@@ -4,8 +4,10 @@ import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
 import { APP } from '@shared/app/ipc-channels'
+import { registerSuiteHandlers } from './suite-handlers'
 
 export function registerHandlers(): void {
+  registerSuiteHandlers()
   ipcMain.handle(LMSTUDIO.FETCH_MODELS, async () => {
     return await lmStudioProvider.fetchModels()
   })

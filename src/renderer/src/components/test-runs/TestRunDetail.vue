@@ -21,7 +21,7 @@ const statusIconMap: Record<RunStatus, unknown> = {
   cancelled: IconCircleMinus
 }
 
-function statusIcon(status: RunStatus) {
+function statusIcon(status: RunStatus): unknown {
   return statusIconMap[status]
 }
 

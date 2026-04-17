@@ -1,9 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import type { ProviderModelMap, Provider } from '@shared/provider-model-map'
+import type { TestSuite } from '@shared/app/test-suite'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
-import { APP } from '@shared/app/ipc-channels'
+import { APP, SUITES } from '@shared/app/ipc-channels'
 
 const CHANNEL: Record<Provider, string> = {
   lmstudio: LMSTUDIO.FETCH_MODELS,
@@ -16,7 +17,10 @@ const api = {
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
   maximize: (): void => ipcRenderer.send(APP.MAXIMIZE),
-  close: (): void => ipcRenderer.send(APP.CLOSE)
+  close: (): void => ipcRenderer.send(APP.CLOSE),
+  listSuites: (): Promise<TestSuite[]> => ipcRenderer.invoke(SUITES.LIST),
+  saveSuite: (suite: TestSuite): Promise<void> => ipcRenderer.invoke(SUITES.SAVE, suite),
+  deleteSuite: (id: string): Promise<void> => ipcRenderer.invoke(SUITES.DELETE, id)
 }
 
 if (process.contextIsolated) {
