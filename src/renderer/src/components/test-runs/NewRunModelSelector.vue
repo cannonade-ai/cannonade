@@ -57,12 +57,7 @@ function onHfKeydown(e: KeyboardEvent): void {
 <template>
   <div class="model-selector">
     <div v-if="modelValue.length > 0" class="selected-chips">
-      <span
-        v-for="(m, i) in modelValue"
-        :key="i"
-        class="chip"
-        :class="m.source"
-      >
+      <span v-for="(m, i) in modelValue" :key="i" class="chip" :class="m.source">
         <span class="chip-label">{{ modelChipLabel(m) }}</span>
         <button class="chip-remove" @click="removeModel(i)">
           <IconX :size="10" :stroke-width="2.5" />
@@ -86,7 +81,14 @@ function onHfKeydown(e: KeyboardEvent): void {
         >
           <span class="checkbox" :class="{ checked: isChecked(m.key) }">
             <svg v-if="isChecked(m.key)" width="10" height="10" viewBox="0 0 10 10">
-              <polyline points="1.5,5 4,7.5 8.5,2.5" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline
+                points="1.5,5 4,7.5 8.5,2.5"
+                stroke="currentColor"
+                stroke-width="1.5"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
             </svg>
           </span>
           <span class="installed-label">{{ m.label }}</span>
@@ -229,7 +231,9 @@ function onHfKeydown(e: KeyboardEvent): void {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background 0.1s, border-color 0.1s;
+  transition:
+    background 0.1s,
+    border-color 0.1s;
 }
 
 .checkbox.checked {

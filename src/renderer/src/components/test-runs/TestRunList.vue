@@ -173,7 +173,7 @@ function modelCount(run: TestRun): string {
 }
 
 .run-suite {
-  font-size: 0.84rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -182,7 +182,7 @@ function modelCount(run: TestRun): string {
 }
 
 .run-meta {
-  font-size: 0.74rem;
+  font-size: 0.8rem;
   color: var(--text-secondary);
 }
 

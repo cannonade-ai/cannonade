@@ -35,10 +35,7 @@ function onSubmit(config: TestRunConfig): void {
         @cancel="store.cancelNewRun"
         @submit="onSubmit"
       />
-      <TestRunDetail
-        v-else-if="store.selectedRun"
-        :run="store.selectedRun"
-      />
+      <TestRunDetail v-else-if="store.selectedRun" :run="store.selectedRun" />
       <div v-else class="empty-detail">
         <IconPlayerPlay :size="24" :stroke-width="1.5" class="empty-icon" />
         <span>Select a run or click New Run</span>
