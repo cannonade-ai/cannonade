@@ -171,7 +171,7 @@ watch(
 }
 
 .editor-title {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -188,7 +188,6 @@ watch(
   cursor: pointer;
   color: var(--text-muted);
   padding: 2px;
-  border-radius: var(--radius);
   transition:
     color 0.15s,
     background 0.15s;
@@ -244,7 +243,7 @@ watch(
 }
 
 .section-title {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -277,7 +276,7 @@ watch(
 }
 
 .field-label {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -290,7 +289,7 @@ watch(
 .field-select {
   width: 100%;
   padding: 6px 8px;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--surface-elevated);
@@ -338,7 +337,7 @@ watch(
 
 .btn-cancel {
   padding: 6px 14px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   font-family: var(--font-body);
   background: none;
@@ -358,7 +357,7 @@ watch(
 
 .btn-save {
   padding: 6px 16px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-body);
   background: var(--accent);

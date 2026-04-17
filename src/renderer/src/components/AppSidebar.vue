@@ -71,7 +71,7 @@ const collapsed = ref(false)
 }
 
 .sidebar.collapsed {
-  width: 3rem;
+  width: 2.75rem;
 }
 
 .sidebar-nav {

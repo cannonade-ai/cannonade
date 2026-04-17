@@ -74,7 +74,7 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
 }
 
 .model-name {
-  font-size: 0.85rem;
+  font-size: var(--text-base);
   font-weight: 600;
   font-family: var(--font-headline);
   color: var(--text-primary);
@@ -84,7 +84,7 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
 
 .modality-badge {
   flex-shrink: 0;
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-full);
@@ -101,15 +101,14 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
 }
 
 .publisher {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 
 .badge {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   padding: 1px 6px;
-  border-radius: var(--radius);
   letter-spacing: 0.04em;
   background: var(--accent-dim);
   color: var(--accent);
@@ -129,20 +128,20 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
 }
 
 .stat-label {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .stat-value {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
 }
 
 .description {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   line-height: 1.5;
   display: -webkit-box;

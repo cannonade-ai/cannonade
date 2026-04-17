@@ -160,7 +160,7 @@ function score(run: PerModelRun): string {
 }
 
 .panel-title {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 700;
   font-family: var(--font-headline);
   color: var(--text-primary);
@@ -173,7 +173,7 @@ function score(run: PerModelRun): string {
 }
 
 .meta-tag {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   padding: 2px 7px;
   background: var(--surface-elevated);
@@ -183,7 +183,7 @@ function score(run: PerModelRun): string {
 }
 
 .meta-date {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
@@ -197,7 +197,7 @@ function score(run: PerModelRun): string {
 }
 
 .section-label {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.07em;
@@ -253,7 +253,7 @@ function score(run: PerModelRun): string {
 }
 
 .model-name {
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -262,7 +262,7 @@ function score(run: PerModelRun): string {
 }
 
 .model-source-badge {
-  font-size: 0.64rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   padding: 1px 6px;
   background: var(--surface);
@@ -273,7 +273,7 @@ function score(run: PerModelRun): string {
 }
 
 .duration {
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   flex-shrink: 0;
 }
@@ -291,7 +291,7 @@ function score(run: PerModelRun): string {
 }
 
 .metric-label {
-  font-size: 0.64rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -299,7 +299,7 @@ function score(run: PerModelRun): string {
 }
 
 .metric-value {
-  font-size: 0.9rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   font-family: var(--font-headline);
   color: var(--text-primary);
@@ -309,7 +309,7 @@ function score(run: PerModelRun): string {
   display: flex;
   align-items: flex-start;
   gap: 6px;
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: #ef4444;
   line-height: 1.4;
 }
@@ -319,7 +319,7 @@ function score(run: PerModelRun): string {
   align-items: center;
   gap: 4px;
   padding: 2px 7px;
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   border-radius: var(--radius-full);
   text-transform: capitalize;

@@ -79,7 +79,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   gap: 8px;
   width: 100%;
   padding: 8px 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   font-family: var(--font-body);
   color: var(--text-secondary);

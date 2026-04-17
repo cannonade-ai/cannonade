@@ -75,7 +75,7 @@ const emit = defineEmits<{
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -84,7 +84,7 @@ const emit = defineEmits<{
 }
 
 .count-pill {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   background: var(--surface-elevated);
   color: var(--text-muted);
   padding: 1px 6px;
@@ -99,7 +99,7 @@ const emit = defineEmits<{
   align-items: center;
   gap: 5px;
   padding: 5px 10px;
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   font-family: var(--font-body);
   background: var(--accent-dim);
@@ -125,7 +125,7 @@ const emit = defineEmits<{
   justify-content: center;
   padding: 40px;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
 }
 
 .case-list {
@@ -161,7 +161,7 @@ const emit = defineEmits<{
 }
 
 .case-name {
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -170,7 +170,7 @@ const emit = defineEmits<{
 }
 
 .case-desc {
-  font-size: 0.75rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -185,7 +185,7 @@ const emit = defineEmits<{
 }
 
 .eval-badge {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   padding: 2px 7px;
   background: var(--surface-elevated);

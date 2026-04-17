@@ -131,7 +131,7 @@ function onHfKeydown(e: KeyboardEvent): void {
   align-items: center;
   gap: 5px;
   padding: 3px 8px 3px 9px;
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   border-radius: var(--radius-full);
   max-width: 100%;
@@ -179,7 +179,7 @@ function onHfKeydown(e: KeyboardEvent): void {
 }
 
 .sub-label {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -188,7 +188,7 @@ function onHfKeydown(e: KeyboardEvent): void {
 
 .loading-hint,
 .empty-hint {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   padding: 6px 0;
 }
@@ -243,7 +243,7 @@ function onHfKeydown(e: KeyboardEvent): void {
 }
 
 .installed-label {
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
@@ -258,7 +258,7 @@ function onHfKeydown(e: KeyboardEvent): void {
 .field-input {
   flex: 1;
   padding: 6px 8px;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--surface-elevated);

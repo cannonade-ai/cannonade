@@ -26,7 +26,7 @@ defineEmits<{ click: [] }>()
   width: 12rem;
   height: 3rem;
   padding: 8px 12px;
-  font-size: 0.85rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   font-family: var(--font-body);
   color: var(--text-secondary);

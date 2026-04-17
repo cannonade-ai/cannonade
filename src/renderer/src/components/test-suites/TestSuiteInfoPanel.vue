@@ -53,7 +53,7 @@ defineProps<{
 }
 
 .panel-title {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -76,7 +76,7 @@ defineProps<{
 }
 
 .field-label {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -87,7 +87,7 @@ defineProps<{
 .field-textarea {
   width: 100%;
   padding: 6px 8px;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--surface-elevated);
@@ -119,12 +119,12 @@ defineProps<{
 }
 
 .meta-label {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
 .meta-value {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 </style>

@@ -107,7 +107,7 @@ function modelCount(run: TestRun): string {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -116,7 +116,7 @@ function modelCount(run: TestRun): string {
 }
 
 .count-pill {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   background: var(--surface-elevated);
   color: var(--text-muted);
   padding: 1px 6px;
@@ -137,7 +137,7 @@ function modelCount(run: TestRun): string {
   justify-content: center;
   padding: 40px;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
 }
 
 .run-list {
@@ -149,10 +149,11 @@ function modelCount(run: TestRun): string {
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  padding: 10px 14px;
+  padding: var(--list-item-padding);
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.12s;
+  border-left: 2px solid transparent;
 }
 
 .run-item:hover {
@@ -162,7 +163,6 @@ function modelCount(run: TestRun): string {
 .run-item.active {
   background: var(--accent-dim);
   border-left: 2px solid var(--accent);
-  padding-left: 12px;
 }
 
 .run-info {
@@ -173,7 +173,7 @@ function modelCount(run: TestRun): string {
 }
 
 .run-suite {
-  font-size: 1rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -182,7 +182,7 @@ function modelCount(run: TestRun): string {
 }
 
 .run-meta {
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 
@@ -199,7 +199,7 @@ function modelCount(run: TestRun): string {
   align-items: center;
   gap: 4px;
   padding: 2px 7px;
-  font-size: 0.66rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   border-radius: var(--radius-full);
   text-transform: capitalize;
@@ -228,7 +228,7 @@ function modelCount(run: TestRun): string {
 }
 
 .run-date {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 </style>

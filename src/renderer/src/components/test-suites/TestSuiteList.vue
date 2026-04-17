@@ -86,7 +86,7 @@ function formatDate(iso: string): string {
   justify-content: center;
   padding: 60px;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
 }
 
 .suite-list {
@@ -98,8 +98,9 @@ function formatDate(iso: string): string {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 14px 20px;
+  padding: var(--list-item-padding);
   border-bottom: 1px solid var(--border);
+  border-left: 2px solid transparent;
   cursor: pointer;
   transition: background 0.12s;
 }
@@ -122,13 +123,13 @@ function formatDate(iso: string): string {
 }
 
 .suite-name {
-  font-size: 0.88rem;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
 }
 
 .suite-desc {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
   white-space: nowrap;
   overflow: hidden;
@@ -154,7 +155,7 @@ function formatDate(iso: string): string {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.74rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface-elevated);
@@ -164,7 +165,7 @@ function formatDate(iso: string): string {
 }
 
 .suite-date {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 

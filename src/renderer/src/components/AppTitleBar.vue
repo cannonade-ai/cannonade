@@ -46,7 +46,7 @@ import { api } from '../api'
 
 .app-name {
   font-family: var(--font-headline);
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.02em;

@@ -161,7 +161,7 @@ function onSubmit(): void {
 }
 
 .panel-title {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -200,11 +200,11 @@ function onSubmit(): void {
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .field-label {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -214,7 +214,7 @@ function onSubmit(): void {
 .field-select {
   width: 100%;
   padding: 6px 26px 6px 8px;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--surface-elevated);
@@ -243,7 +243,7 @@ function onSubmit(): void {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface-elevated);
@@ -268,7 +268,7 @@ function onSubmit(): void {
 
 .divider {
   border-top: 1px solid var(--border);
-  margin: 0 -14px;
+  margin: 0 -0.875rem;
 }
 
 .options-list {
@@ -286,7 +286,7 @@ function onSubmit(): void {
 }
 
 .toggle-label {
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   color: var(--text-secondary);
 }
 
@@ -352,7 +352,7 @@ function onSubmit(): void {
 .btn-cancel,
 .btn-run {
   padding: 6px 14px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   font-family: var(--font-body);
   border-radius: var(--radius-lg);

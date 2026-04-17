@@ -112,7 +112,7 @@ async function onCloneSuite(id: string): Promise<void> {
   display: flex;
   align-items: center;
   gap: 7px;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -121,7 +121,7 @@ async function onCloneSuite(id: string): Promise<void> {
 }
 
 .count-pill {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   background: var(--surface-elevated);
   color: var(--text-muted);
   padding: 1px 6px;
@@ -136,7 +136,7 @@ async function onCloneSuite(id: string): Promise<void> {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--accent);
   background: var(--accent-dim);

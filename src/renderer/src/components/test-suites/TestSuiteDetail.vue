@@ -103,7 +103,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
   background: transparent;
@@ -127,7 +127,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface);
@@ -148,7 +148,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 
 .panels {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 20rem 1fr;
   grid-template-rows: auto 1fr;
   gap: 12px;
   flex: 1;

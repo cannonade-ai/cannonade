@@ -97,7 +97,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .model-name {
-  font-size: 1rem;
+  font-size: var(--text-base);
   font-weight: 600;
   font-family: var(--font-headline);
   color: var(--text-primary);
@@ -107,7 +107,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 
 .status-badge {
   flex-shrink: 0;
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   padding: 3px 9px;
   border-radius: var(--radius-full);
@@ -132,15 +132,14 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .publisher {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 
 .badge {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   padding: 1px 6px;
-  border-radius: var(--radius);
   letter-spacing: 0.04em;
   background: var(--accent-dim);
   color: var(--accent);
@@ -165,20 +164,20 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .stat-label {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .stat-value {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
 }
 
 .quant-bits {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 
@@ -189,9 +188,8 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .cap-badge {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   padding: 2px 8px;
-  border-radius: var(--radius);
   border: 1px solid var(--border);
   color: var(--text-muted);
   background: transparent;
@@ -227,7 +225,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 }
 
 .instance-label {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text-secondary);
 }
 </style>

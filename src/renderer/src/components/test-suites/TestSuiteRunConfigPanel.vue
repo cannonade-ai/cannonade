@@ -104,7 +104,7 @@ defineProps<{
 }
 
 .panel-title {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -129,11 +129,11 @@ defineProps<{
   gap: 10px;
   padding: 24px 0;
   color: var(--text-muted);
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
 }
 
 .btn-add-config {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   padding: 5px 12px;
   background: var(--surface-elevated);
@@ -164,7 +164,7 @@ defineProps<{
 }
 
 .field-label {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -175,7 +175,7 @@ defineProps<{
 .field-select {
   width: 100%;
   padding: 6px 8px;
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--surface-elevated);

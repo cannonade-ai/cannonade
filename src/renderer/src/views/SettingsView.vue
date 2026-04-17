@@ -51,7 +51,7 @@ const settings = useSettingsStore()
 }
 
 .page-title {
-  font-size: 1.1rem;
+  font-size: var(--text-lg);
   font-weight: 700;
   font-family: var(--font-headline);
   color: var(--text-primary);
@@ -63,7 +63,7 @@ const settings = useSettingsStore()
 }
 
 .group-title {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -98,19 +98,19 @@ const settings = useSettingsStore()
 }
 
 .setting-label {
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-primary);
 }
 
 .setting-desc {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
 }
 
 .empty-group {
   padding: 14px 16px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   color: var(--text-muted);
   background: var(--surface);
 }

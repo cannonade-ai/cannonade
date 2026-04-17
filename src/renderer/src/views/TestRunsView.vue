@@ -54,7 +54,7 @@ function onSubmit(config: TestRunConfig): void {
 
 .panels {
   display: grid;
-  grid-template-columns: 280px 1fr;
+  grid-template-columns: 20rem 1fr;
   gap: 12px;
   flex: 1;
   overflow: hidden;
@@ -65,7 +65,7 @@ function onSubmit(config: TestRunConfig): void {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--accent);
   background: var(--accent-dim);
@@ -86,7 +86,7 @@ function onSubmit(config: TestRunConfig): void {
   justify-content: center;
   gap: 10px;
   color: var(--text-muted);
-  font-size: 0.82rem;
+  font-size: var(--text-sm);
   border: 1px solid var(--border);
   background: var(--surface);
 }

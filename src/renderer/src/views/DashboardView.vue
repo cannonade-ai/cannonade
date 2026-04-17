@@ -113,7 +113,7 @@ onMounted(() => store.load())
 .provider-select {
   appearance: none;
   padding: 6px 28px 6px 10px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   font-family: var(--font-body);
   color: var(--text-primary);
@@ -143,7 +143,7 @@ onMounted(() => store.load())
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  font-size: 0.8rem;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-secondary);
   background: var(--surface);
@@ -182,7 +182,7 @@ onMounted(() => store.load())
 }
 
 .model-section-label {
-  font-size: 0.78rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   font-family: var(--font-headline);
   text-transform: uppercase;
@@ -195,7 +195,7 @@ onMounted(() => store.load())
 }
 
 .count-pill {
-  font-size: 0.7rem;
+  font-size: var(--text-xs);
   background: var(--surface-elevated);
   color: var(--text-muted);
   padding: 1px 6px;
@@ -207,7 +207,7 @@ onMounted(() => store.load())
 
 .models-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
   gap: 12px;
 }
 
@@ -216,7 +216,7 @@ onMounted(() => store.load())
   align-items: center;
   gap: 10px;
   color: var(--text-muted);
-  font-size: 0.875rem;
+  font-size: var(--text-sm);
   padding: 40px 0;
 }
 
