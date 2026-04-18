@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-vue'
+import BaseButton from '../BaseButton.vue'
 import type { TestSuite, TestCase } from '@shared/app/test-suite'
 import TestSuiteInfoPanel from './TestSuiteInfoPanel.vue'
 import TestSuiteRunConfigPanel from './TestSuiteRunConfigPanel.vue'
@@ -85,14 +86,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 <template>
   <div class="detail">
     <div class="detail-header">
-      <button class="btn-back" @click="emit('back')">
-        <icon-arrow-left :size="14" :stroke-width="2.5" />
+      <base-button :icon="IconArrowLeft" :icon-stroke-width="2.5" @click="emit('back')">
         Test Suites
-      </button>
-      <button class="btn-save" @click="onSave">
-        <icon-device-floppy :size="14" />
+      </base-button>
+      <base-button type="secondary" :icon="IconDeviceFloppy" @click="onSave">
         Save Test Suite
-      </button>
+      </base-button>
     </div>
 
     <div class="panels" :class="{ 'editor-visible': editorOpen }">
@@ -137,54 +136,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   justify-content: space-between;
   margin-bottom: 20px;
   flex-shrink: 0;
-}
-
-.btn-back {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s,
-    border-color 0.15s;
-}
-
-.btn-back:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-  border-color: var(--border-hover);
-}
-
-.btn-save {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s,
-    border-color 0.15s;
-}
-
-.btn-save:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-  border-color: var(--border-hover);
 }
 
 .panels {

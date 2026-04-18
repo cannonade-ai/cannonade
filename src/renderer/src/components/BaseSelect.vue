@@ -128,14 +128,14 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  padding: 6px 8px;
-  padding-right: 26px;
+  padding: 0.375rem 0.75rem;
+  padding-right: 2rem;
   font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
   background: var(--surface-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   cursor: pointer;
   outline: none;
   transition: border-color 0.15s;
@@ -179,7 +179,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   z-index: 200;
   background: var(--surface-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
@@ -187,17 +187,16 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
 ul {
   list-style: none;
   margin: 0;
-  padding: 4px;
-  max-height: 200px;
+  max-height: 14rem;
   overflow-y: auto;
 }
 
 .option {
   padding: 6px 8px;
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
   font-family: var(--font-body);
   color: var(--text-secondary);
-  border-radius: calc(var(--radius-lg) - 2px);
+  border-radius: calc(var(--radius) - 2px);
   cursor: pointer;
   transition:
     background 0.1s,

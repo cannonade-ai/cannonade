@@ -144,6 +144,7 @@ const viewComponent = computed(() => {
   --radius-3xl: 1.5rem;
   --radius-4xl: 2rem;
   --radius-full: 999px;
+  --radius: 0px;
 
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);

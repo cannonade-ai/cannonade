@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue'
 import { IconRefresh } from '@tabler/icons-vue'
 import { useModelsStore } from '../stores/models'
 import type { Provider } from '../stores/models'
+import BaseButton from '../components/BaseButton.vue'
 import ModelCard from '../components/ModelCard.vue'
 import OpenRouterModelCard from '../components/OpenRouterModelCard.vue'
 import SectionHeader from '../components/SectionHeader.vue'
@@ -41,10 +42,7 @@ onMounted(() => store.load())
   <div class="dashboard">
     <section-header>
       <base-select v-model="provider" :options="providerOptions" class="provider-select" />
-      <button class="btn-refresh" :disabled="store.loading" @click="store.load()">
-        <icon-refresh :size="14" :class="{ spinning: store.loading }" />
-        Refresh
-      </button>
+      <base-button :icon="IconRefresh" @click="store.load()">Refresh</base-button>
     </section-header>
 
     <div v-if="store.loading" class="state-message">

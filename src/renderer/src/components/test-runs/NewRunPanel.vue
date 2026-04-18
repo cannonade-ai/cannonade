@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { reactive, computed, watch } from 'vue'
-import { IconX } from '@tabler/icons-vue'
+import { IconPlayerPlay } from '@tabler/icons-vue'
 import type { Provider } from '@shared/provider-model-map'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { SuiteSummary } from '../../stores/test-runs'
 import { useModelsStore } from '../../stores/models'
 import NewRunModelSelector from './NewRunModelSelector.vue'
 import BaseSelect from '../BaseSelect.vue'
+import BaseButton from '../BaseButton.vue'
 import type { SelectOption } from '../BaseSelect.vue'
 
 const props = defineProps<{
@@ -145,8 +146,8 @@ function onSubmit(): void {
     </div>
 
     <div class="panel-footer">
-      <button class="btn-cancel" @click="emit('cancel')">Cancel</button>
-      <button class="btn-run" :disabled="!canSubmit" @click="onSubmit">Run</button>
+      <base-button @click="emit('cancel')">Cancel</base-button>
+      <base-button type="primary" :icon="IconPlayerPlay" @click="onSubmit">Run</base-button>
     </div>
   </div>
 </template>

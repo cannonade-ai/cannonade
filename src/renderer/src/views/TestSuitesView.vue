@@ -5,6 +5,7 @@ import type { TestSuite } from '@shared/app/test-suite'
 import SectionHeader from '../components/SectionHeader.vue'
 import TestSuiteList from '../components/test-suites/TestSuiteList.vue'
 import TestSuiteDetail from '../components/test-suites/TestSuiteDetail.vue'
+import BaseButton from '../components/BaseButton.vue'
 import { storeToRefs } from 'pinia'
 import { useTestSuitesStore } from '../stores/test-suites'
 
@@ -56,10 +57,7 @@ async function onCloneSuite(id: string): Promise<void> {
 
     <template v-else>
       <section-header>
-        <button class="btn-new" @click="onNewSuite">
-          <icon-plus :size="14" :stroke-width="2.5" />
-          New Suite
-        </button>
+        <base-button type="secondary" :icon="IconPlus" @click="onNewSuite">New Suite</base-button>
       </section-header>
 
       <div class="list-panel">

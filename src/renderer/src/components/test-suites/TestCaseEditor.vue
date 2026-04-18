@@ -4,6 +4,7 @@ import { IconX, IconTrash } from '@tabler/icons-vue'
 import type { TestCase, EvaluationConfig } from '@shared/app/test-suite'
 import BaseSelect from '../BaseSelect.vue'
 import type { SelectOption } from '../BaseSelect.vue'
+import BaseButton from '../BaseButton.vue'
 
 const props = defineProps<{
   testCase: TestCase | null
@@ -169,15 +170,14 @@ function onSave(): void {
     </div>
 
     <div class="editor-footer">
-      <button v-if="!isNew" class="btn-delete" @click="emit('delete')">
-        <IconTrash :size="13" :stroke-width="2" />
+      <base-button v-if="!isNew" type="danger" :icon="IconTrash" @click="emit('delete')">
         Delete
-      </button>
+      </base-button>
       <div class="footer-right">
-        <button class="btn-cancel" @click="emit('close')">Cancel</button>
-        <button class="btn-save" @click="onSave">
+        <base-button @click="emit('close')">Cancel</base-button>
+        <base-button type="primary" @click="onSave">
           {{ isNew ? 'Add Test Case' : 'Save Test Case' }}
-        </button>
+        </base-button>
       </div>
     </div>
   </div>
@@ -361,67 +361,5 @@ function onSave(): void {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.btn-delete {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  font-family: var(--font-body);
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s,
-    color 0.15s;
-}
-
-.btn-delete:hover {
-  background: color-mix(in srgb, var(--error, #e05252) 10%, transparent);
-  border-color: var(--error, #e05252);
-  color: var(--error, #e05252);
-}
-
-.btn-cancel {
-  padding: 6px 14px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  font-family: var(--font-body);
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-}
-
-.btn-cancel:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-hover);
-}
-
-.btn-save {
-  padding: 6px 16px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-body);
-  background: var(--accent);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  color: #000;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.btn-save:hover {
-  opacity: 0.88;
 }
 </style>

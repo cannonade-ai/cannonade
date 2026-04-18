@@ -4,6 +4,7 @@ import { IconPlayerPlay } from '@tabler/icons-vue'
 import { useTestRunsStore } from '../stores/test-runs'
 import { useTestSuitesStore } from '../stores/test-suites'
 import type { TestRunConfig } from '@shared/app/test-run'
+import BaseButton from '../components/BaseButton.vue'
 import SectionHeader from '../components/SectionHeader.vue'
 import TestRunList from '../components/test-runs/TestRunList.vue'
 import TestRunDetail from '../components/test-runs/TestRunDetail.vue'
@@ -24,10 +25,9 @@ function onSubmit(config: TestRunConfig, suiteName: string): void {
 <template>
   <div class="view">
     <section-header>
-      <button class="btn-new-run" @click="store.startNewRun">
-        <IconPlayerPlay :size="14" :stroke-width="2.5" />
+      <base-button type="secondary" :icon="IconPlayerPlay" @click="store.startNewRun">
         New Run
-      </button>
+      </base-button>
     </section-header>
 
     <div class="panels">
