@@ -5,7 +5,7 @@ import type { ModelRef } from '@shared/app/test-run'
 
 const props = defineProps<{
   modelValue: ModelRef[]
-  installedModels: Array<{ key: string; label: string }>
+  installedModels: Array<{ key: string; label: string; loaded: boolean }>
   loadingModels: boolean
 }>()
 
@@ -64,6 +64,9 @@ function onHfKeydown(e: KeyboardEvent): void {
         </button>
       </span>
     </div>
+    <div v-else class="selected-chips">
+      <span class="chip">No models selected</span>
+    </div>
 
     <div class="sub-section">
       <span class="sub-label">Installed Models</span>
@@ -92,6 +95,7 @@ function onHfKeydown(e: KeyboardEvent): void {
             </svg>
           </span>
           <span class="installed-label">{{ m.label }}</span>
+          <span v-if="m.loaded" class="loaded-badge">Loaded</span>
         </li>
       </ul>
     </div>
@@ -135,6 +139,7 @@ function onHfKeydown(e: KeyboardEvent): void {
   font-weight: 500;
   border-radius: var(--radius-full);
   max-width: 100%;
+  min-height: 1.75rem;
 }
 
 .chip.installed {
@@ -153,7 +158,7 @@ function onHfKeydown(e: KeyboardEvent): void {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 220px;
+  max-width: 15rem;
 }
 
 .chip-remove {
@@ -220,6 +225,16 @@ function onHfKeydown(e: KeyboardEvent): void {
 
 .installed-item.checked {
   background: var(--accent-dim);
+}
+
+.loaded-badge {
+  font-size: var(--text-xs);
+  color: var(--green);
+  font-weight: 600;
+  background: var(--green-dim);
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  margin-left: auto;
 }
 
 .checkbox {

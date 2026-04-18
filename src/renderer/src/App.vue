@@ -84,8 +84,8 @@ const viewComponent = computed(() => {
   --accent-border: rgba(255, 179, 0, 0.5);
   --blue: #1a56a4;
   --blue-dim: rgba(26, 86, 164, 0.08);
-  --green: #00873a;
-  --green-dim: rgba(0, 135, 58, 0.2);
+  --green: #22c55e;
+  --green-dim: rgba(34, 197, 94, 0.15);
   --error: #d50000;
   --shadow: rgba(0, 0, 0, 0.08);
   --list-item-padding: 14px 20px;
@@ -145,8 +145,8 @@ const viewComponent = computed(() => {
   --accent-border: rgba(255, 197, 99, 0.3);
   --blue: #dae2fd;
   --blue-dim: rgba(218, 226, 253, 0.1);
-  --green: #4ade80;
-  --green-dim: rgba(74, 222, 128, 0.12);
+  --green: #22c55e;
+  --green-dim: rgba(34, 197, 94, 0.15);
   --error: #ffb4ab;
   --shadow: rgba(0, 0, 0, 0.6);
   --radius: 0px;

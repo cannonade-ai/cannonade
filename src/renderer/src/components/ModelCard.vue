@@ -12,9 +12,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   <div class="model-card" :class="{ loaded: isLoaded }">
     <div class="card-header">
       <h3 class="model-name">{{ model.display_name }}</h3>
-      <span class="status-badge" :class="isLoaded ? 'status-loaded' : 'status-idle'">
-        {{ isLoaded ? 'Loaded' : 'Idle' }}
-      </span>
+      <span v-if="isLoaded" class="status-badge status-loaded">Loaded</span>
     </div>
 
     <div class="card-meta">

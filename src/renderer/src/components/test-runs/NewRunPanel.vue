@@ -47,9 +47,13 @@ watch(
 
 const installedModels = computed(() => {
   if (form.provider === 'lmstudio') {
-    return modelsStore.lmModels.map((m) => ({ key: m.key, label: m.display_name }))
+    return modelsStore.lmModels.map((m) => ({
+      key: m.key,
+      label: m.display_name,
+      loaded: m.loaded_instances?.length > 0
+    }))
   }
-  return modelsStore.orModels.map((m) => ({ key: m.id, label: m.name }))
+  return modelsStore.orModels.map((m) => ({ key: m.id, label: m.name, loaded: false }))
 })
 
 const suiteOptions = computed<SelectOption<string>[]>(() =>
