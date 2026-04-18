@@ -32,7 +32,6 @@ defineEmits<{ click: [] }>()
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-radius: var(--radius-lg);
   cursor: pointer;
   text-align: left;
   overflow: hidden;

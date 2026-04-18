@@ -46,6 +46,30 @@ const viewComponent = computed(() => {
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
+  --color-red-50: #fef2f2;
+  --color-red-100: #ffe2e2;
+  --color-red-200: #ffcaca;
+  --color-red-300: #ffa3a3;
+  --color-red-400: #ff6568;
+  --color-red-500: #fb2c36;
+  --color-red-600: #e40014;
+  --color-red-700: #bf000f;
+  --color-red-800: #9f0712;
+  --color-red-900: #82181a;
+  --color-red-950: #460809;
+
+  --color-green-50: #f0fdf4;
+  --color-green-100: #dcfce7;
+  --color-green-200: #b9f8cf;
+  --color-green-300: #7bf1a8;
+  --color-green-400: #05df72;
+  --color-green-500: #00c758;
+  --color-green-600: #00a544;
+  --color-green-700: #008138;
+  --color-green-800: #016630;
+  --color-green-900: #0d542b;
+  --color-green-950: #032e15;
+
   --color-amber-50: #fffbeb;
   --color-amber-100: #fef3c6;
   --color-amber-200: #fee685;
@@ -86,7 +110,7 @@ const viewComponent = computed(() => {
   --blue-dim: rgba(26, 86, 164, 0.08);
   --green: #22c55e;
   --green-dim: rgba(34, 197, 94, 0.15);
-  --error: #d50000;
+  --error: var(--color-red-500);
   --shadow: rgba(0, 0, 0, 0.08);
   --list-item-padding: 14px 20px;
 
@@ -119,7 +143,7 @@ const viewComponent = computed(() => {
   --radius-2xl: 1rem;
   --radius-3xl: 1.5rem;
   --radius-4xl: 2rem;
-  --radius-full: 50%;
+  --radius-full: 999px;
 
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
@@ -147,12 +171,8 @@ const viewComponent = computed(() => {
   --blue-dim: rgba(218, 226, 253, 0.1);
   --green: #22c55e;
   --green-dim: rgba(34, 197, 94, 0.15);
-  --error: #ffb4ab;
+  --error: var(--color-red-800);
   --shadow: rgba(0, 0, 0, 0.6);
-  --radius: 0px;
-  --radius-lg: 2px;
-  --radius-xl: 4px;
-  --radius-full: 9999px;
   --font-headline: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;
 }

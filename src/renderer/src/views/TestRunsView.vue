@@ -77,7 +77,6 @@ function onSubmit(config: TestRunConfig, suiteName: string): void {
   color: var(--accent);
   background: var(--accent-dim);
   border: 1px solid var(--accent-border);
-  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: background 0.15s;
 }
