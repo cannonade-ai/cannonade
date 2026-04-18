@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { IconPlayerPlay } from '@tabler/icons-vue'
 import { useTestRunsStore } from '../stores/test-runs'
+import { useTestSuitesStore } from '../stores/test-suites'
 import type { TestRunConfig } from '@shared/app/test-run'
 import SectionHeader from '../components/SectionHeader.vue'
 import TestRunList from '../components/test-runs/TestRunList.vue'
@@ -8,9 +10,14 @@ import TestRunDetail from '../components/test-runs/TestRunDetail.vue'
 import NewRunPanel from '../components/test-runs/NewRunPanel.vue'
 
 const store = useTestRunsStore()
+const suitesStore = useTestSuitesStore()
 
-function onSubmit(config: TestRunConfig): void {
-  store.submitRun(config)
+onMounted(() => {
+  if (suitesStore.suites.length === 0) suitesStore.load()
+})
+
+function onSubmit(config: TestRunConfig, suiteName: string): void {
+  store.submitRun(config, suiteName)
 }
 </script>
 
@@ -31,7 +38,7 @@ function onSubmit(config: TestRunConfig): void {
       />
       <NewRunPanel
         v-if="store.isCreatingNew"
-        :suites="store.suites"
+        :suites="suitesStore.suites"
         @cancel="store.cancelNewRun"
         @submit="onSubmit"
       />

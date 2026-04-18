@@ -28,7 +28,10 @@ const providerLabel = computed(() => (store.provider === 'lmstudio' ? 'LM Studio
 
 const provider = computed<Provider>({
   get: () => store.provider,
-  set: (v) => { store.provider = v; store.load() }
+  set: (v) => {
+    store.provider = v
+    store.load()
+  }
 })
 
 onMounted(() => store.load())

@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { IconTank } from '@tabler/icons-vue'
 import { api } from '../api'
+
+declare const __APP_VERSION__: string
+const appVersion = __APP_VERSION__
 </script>
 
 <template>
@@ -8,6 +11,7 @@ import { api } from '../api'
     <div class="title-bar-left">
       <IconTank color="rgb(151, 106, 0)" :size="22" :stroke-width="1" />
       <span class="app-name">Cannonade</span>
+      <span class="app-version">v{{ appVersion }}</span>
     </div>
     <div class="title-bar-controls">
       <button class="control-btn minimize" @click="api.minimize()">
@@ -50,6 +54,12 @@ import { api } from '../api'
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: 0.02em;
+}
+
+.app-version {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: 1px;
 }
 
 .title-bar-controls {

@@ -89,7 +89,9 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
     @click="toggle"
     @keydown="onKeydown"
   >
-    <span class="trigger-label" :class="{ placeholder: !model && !!placeholder }">{{ selectedLabel }}</span>
+    <span class="trigger-label" :class="{ placeholder: !model && !!placeholder }">{{
+      selectedLabel
+    }}</span>
     <svg class="trigger-icon" width="10" height="6" viewBox="0 0 10 6" fill="none">
       <path
         d="M1 1l4 4 4-4"

@@ -15,7 +15,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   cancel: []
-  submit: [config: TestRunConfig]
+  submit: [config: TestRunConfig, suiteName: string]
 }>()
 
 const modelsStore = useModelsStore()
@@ -64,13 +64,18 @@ const canSubmit = computed(() => form.suiteId !== '' && form.models.length > 0)
 
 function onSubmit(): void {
   if (!canSubmit.value) return
-  emit('submit', {
-    suiteId: form.suiteId,
-    provider: form.provider,
-    models: form.models,
-    deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
-    parallelRun: form.provider === 'openrouter' ? form.parallelRun : undefined
-  })
+  const suiteName = suiteOptions.value.find((o) => o.value === form.suiteId)?.label ?? ''
+  emit(
+    'submit',
+    {
+      suiteId: form.suiteId,
+      provider: form.provider,
+      models: form.models,
+      deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
+      parallelRun: form.provider === 'openrouter' ? form.parallelRun : undefined
+    },
+    suiteName
+  )
 }
 </script>
 

@@ -1,17 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { TestRun, TestRunConfig } from '@shared/app/test-run'
-
 export interface SuiteSummary {
   id: string
   name: string
 }
-
-const mockSuites: SuiteSummary[] = [
-  { id: 'suite-1', name: 'Customer Support Eval' },
-  { id: 'suite-2', name: 'Code Generation Benchmark' },
-  { id: 'suite-3', name: 'RAG Retrieval Quality' }
-]
 
 const mockRuns: TestRun[] = [
   {
@@ -111,7 +104,6 @@ const mockRuns: TestRun[] = [
 
 export const useTestRunsStore = defineStore('test-runs', () => {
   const runs = ref<TestRun[]>(mockRuns)
-  const suites = ref<SuiteSummary[]>(mockSuites)
   const selectedRunId = ref<string | null>(null)
   const isCreatingNew = ref(false)
 
@@ -133,14 +125,12 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     isCreatingNew.value = false
   }
 
-  function submitRun(config: TestRunConfig): void {
-    const suite = suites.value.find((s) => s.id === config.suiteId)
-    if (!suite) return
+  function submitRun(config: TestRunConfig, suiteName: string): void {
     const now = new Date().toISOString()
     const run: TestRun = {
       id: `run-${Date.now()}`,
       suiteId: config.suiteId,
-      suiteName: suite.name,
+      suiteName,
       config,
       status: 'pending',
       createdAt: now,
@@ -159,7 +149,6 @@ export const useTestRunsStore = defineStore('test-runs', () => {
 
   return {
     runs,
-    suites,
     selectedRunId,
     selectedRun,
     isCreatingNew,
