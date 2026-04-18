@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import { IconPlus, IconChevronRight } from '@tabler/icons-vue'
+import {
+  IconPlus,
+  IconChevronRight,
+  IconDotsVertical,
+  IconTrash,
+  IconCopy
+} from '@tabler/icons-vue'
 import type { TestCase } from '@shared/app/test-suite'
+import ContextMenu from '@renderer/components/ContextMenu.vue'
+import type { ContextMenuItem } from '@renderer/components/ContextMenu.vue'
 
 defineProps<{
   cases: TestCase[]
@@ -10,7 +18,16 @@ defineProps<{
 const emit = defineEmits<{
   'select-case': [id: string]
   'add-case': []
+  'delete-case': [id: string]
+  'clone-case': [id: string]
 }>()
+
+function menuItems(id: string): ContextMenuItem[] {
+  return [
+    { label: 'Clone', icon: IconCopy, action: () => emit('clone-case', id) },
+    { label: 'Delete', icon: IconTrash, danger: true, action: () => emit('delete-case', id) }
+  ]
+}
 </script>
 
 <template>
@@ -43,6 +60,13 @@ const emit = defineEmits<{
           </div>
           <div class="case-meta">
             <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
+            <ContextMenu :items="menuItems(tc.id)">
+              <template #default="{ toggle }">
+                <button class="btn-menu" @click.stop="toggle">
+                  <IconDotsVertical :size="14" :stroke-width="2" />
+                </button>
+              </template>
+            </ContextMenu>
             <IconChevronRight :size="14" :stroke-width="2" class="chevron" />
           </div>
         </li>
@@ -208,5 +232,25 @@ const emit = defineEmits<{
 .case-item.active .chevron {
   color: var(--accent);
   opacity: 1;
+}
+
+.btn-menu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.btn-menu:hover {
+  background: var(--surface-elevated);
 }
 </style>

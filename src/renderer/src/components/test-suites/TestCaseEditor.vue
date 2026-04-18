@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { IconX } from '@tabler/icons-vue'
+import { IconX, IconTrash } from '@tabler/icons-vue'
 import type { TestCase, EvaluationConfig } from '@shared/app/test-suite'
 import BaseSelect from '../BaseSelect.vue'
 import type { SelectOption } from '../BaseSelect.vue'
@@ -13,6 +13,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   close: []
   save: [testCase: TestCase]
+  delete: []
 }>()
 
 const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
@@ -168,10 +169,16 @@ function onSave(): void {
     </div>
 
     <div class="editor-footer">
-      <button class="btn-cancel" @click="emit('close')">Cancel</button>
-      <button class="btn-save" @click="onSave">
-        {{ isNew ? 'Add Test Case' : 'Save Test Case' }}
+      <button v-if="!isNew" class="btn-delete" @click="emit('delete')">
+        <IconTrash :size="13" :stroke-width="2" />
+        Delete
       </button>
+      <div class="footer-right">
+        <button class="btn-cancel" @click="emit('close')">Cancel</button>
+        <button class="btn-save" @click="onSave">
+          {{ isNew ? 'Add Test Case' : 'Save Test Case' }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -247,7 +254,7 @@ function onSave(): void {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .section {
@@ -258,7 +265,6 @@ function onSave(): void {
 
 .section-fill {
   flex: 1;
-  overflow: hidden;
   border-bottom: none;
 }
 
@@ -341,15 +347,45 @@ function onSave(): void {
   height: 100%;
 }
 
-
 .editor-footer {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: 8px;
   padding: 10px 14px;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-delete {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  font-family: var(--font-body);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.btn-delete:hover {
+  background: color-mix(in srgb, var(--error, #e05252) 10%, transparent);
+  border-color: var(--error, #e05252);
+  color: var(--error, #e05252);
 }
 
 .btn-cancel {

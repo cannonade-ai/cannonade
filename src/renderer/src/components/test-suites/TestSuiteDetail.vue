@@ -49,7 +49,25 @@ function onSaveCase(testCase: TestCase): void {
   } else {
     suite.value.testCases.push(testCase)
   }
+  //onCloseEditor()
+}
+
+function onDeleteCase(): void {
+  suite.value.testCases = suite.value.testCases.filter((tc) => tc.id !== selectedCaseId.value)
   onCloseEditor()
+}
+
+function onDeleteCaseById(id: string): void {
+  suite.value.testCases = suite.value.testCases.filter((tc) => tc.id !== id)
+  if (selectedCaseId.value === id) onCloseEditor()
+}
+
+function onCloneCaseById(id: string): void {
+  const tc = suite.value.testCases.find((c) => c.id === id)
+  if (!tc) return
+  const clone = { ...tc, id: crypto.randomUUID(), name: `${tc.name} (copy)` }
+  const idx = suite.value.testCases.findIndex((c) => c.id === id)
+  suite.value.testCases.splice(idx + 1, 0, clone)
 }
 
 function onSave(): void {
@@ -89,6 +107,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
         :selected-id="selectedCaseId"
         @select-case="onSelectCase"
         @add-case="onAddCase"
+        @delete-case="onDeleteCaseById"
+        @clone-case="onCloneCaseById"
       />
       <TestSuiteRunConfigPanel v-model:config="suite.defaultRunConfig" />
       <div v-if="editorOpen" class="editor-area">
@@ -97,6 +117,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
           :is-new="isNewCase"
           @close="onCloseEditor"
           @save="onSaveCase"
+          @delete="onDeleteCase"
         />
       </div>
     </div>
