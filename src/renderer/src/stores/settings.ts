@@ -38,6 +38,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const fontSize = ref<FontSize>(saved.fontSize)
   const language = ref(saved.language)
   const appVersion = ref('')
+  const suitesDir = ref('')
 
   applyTheme(isDark.value)
 
@@ -55,12 +56,15 @@ export const useSettingsStore = defineStore('settings', () => {
   })
 
   async function init(): Promise<void> {
-    appVersion.value = await api.getAppVersion()
+    ;[appVersion.value, suitesDir.value] = await Promise.all([
+      api.getAppVersion(),
+      api.getSuitesDir()
+    ])
   }
 
   function toggleTheme(): void {
     isDark.value = !isDark.value
   }
 
-  return { isDark, fontSize, language, appVersion, init, toggleTheme }
+  return { isDark, fontSize, language, appVersion, suitesDir, init, toggleTheme }
 })

@@ -4,6 +4,7 @@ import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
 import { APP } from '@shared/app/ipc-channels'
+import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 
 export function registerHandlers(): void {
@@ -17,6 +18,7 @@ export function registerHandlers(): void {
   })
 
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())
+  ipcMain.handle(APP.GET_SUITES_DIR, () => join(app.getPath('userData'), 'suites'))
 
   ipcMain.on(APP.MINIMIZE, () => BrowserWindow.getFocusedWindow()?.minimize())
   ipcMain.on(APP.MAXIMIZE, () => {

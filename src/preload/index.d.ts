@@ -5,6 +5,7 @@ import type { TestSuite } from '@shared/app/test-suite'
 export interface AppAPI {
   fetchModels<P extends Provider>(provider: P): Promise<ProviderModelMap[P][]>
   getAppVersion(): Promise<string>
+  getSuitesDir(): Promise<string>
   minimize(): void
   maximize(): void
   close(): void

@@ -11,7 +11,13 @@ const settings = useSettingsStore()
     <section class="settings-group">
       <h3 class="group-title">General</h3>
       <div class="group-body">
-        <p class="empty-group">No settings yet.</p>
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-label">Suites folder</span>
+            <span class="setting-desc">Where test suite files are stored on disk</span>
+          </div>
+          <span class="setting-value">{{ settings.suitesDir }}</span>
+        </div>
       </div>
     </section>
 
@@ -106,6 +112,15 @@ const settings = useSettingsStore()
 .setting-desc {
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
+.setting-value {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono, monospace);
+  color: var(--text-muted);
+  word-break: break-all;
+  text-align: right;
+  max-width: 60%;
 }
 
 .empty-group {

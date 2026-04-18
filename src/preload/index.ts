@@ -15,6 +15,7 @@ const api = {
   fetchModels: <P extends Provider>(provider: P): Promise<ProviderModelMap[P][]> =>
     ipcRenderer.invoke(CHANNEL[provider]),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
+  getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
   maximize: (): void => ipcRenderer.send(APP.MAXIMIZE),
   close: (): void => ipcRenderer.send(APP.CLOSE),

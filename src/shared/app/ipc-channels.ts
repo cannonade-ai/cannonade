@@ -1,5 +1,6 @@
 export const APP = {
   GET_VERSION: 'app:getVersion',
+  GET_SUITES_DIR: 'app:getSuitesDir',
   MINIMIZE: 'app:minimize',
   MAXIMIZE: 'app:maximize',
   CLOSE: 'app:close'
