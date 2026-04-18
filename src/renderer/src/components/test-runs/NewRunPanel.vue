@@ -8,6 +8,7 @@ import { useModelsStore } from '../../stores/models'
 import NewRunModelSelector from './NewRunModelSelector.vue'
 import BaseSelect from '../BaseSelect.vue'
 import BaseButton from '../BaseButton.vue'
+import BaseRadioGroup from '../BaseRadioGroup.vue'
 import type { SelectOption } from '../BaseSelect.vue'
 
 const props = defineProps<{
@@ -97,16 +98,13 @@ function onSubmit(): void {
 
       <div class="field">
         <label class="field-label">Provider</label>
-        <div class="provider-options">
-          <label class="provider-option" :class="{ active: form.provider === 'lmstudio' }">
-            <input v-model="form.provider" type="radio" value="lmstudio" />
-            LM Studio
-          </label>
-          <label class="provider-option" :class="{ active: form.provider === 'openrouter' }">
-            <input v-model="form.provider" type="radio" value="openrouter" />
-            OpenRouter
-          </label>
-        </div>
+        <base-radio-group
+          v-model="form.provider"
+          :options="[
+            { value: 'lmstudio', label: 'LM Studio' },
+            { value: 'openrouter', label: 'OpenRouter' }
+          ]"
+        />
       </div>
 
       <div class="field">
@@ -222,39 +220,6 @@ function onSubmit(): void {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-}
-
-.provider-options {
-  display: flex;
-  gap: 8px;
-}
-
-.provider-option {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition:
-    background 0.12s,
-    border-color 0.12s,
-    color 0.12s;
-}
-
-.provider-option input {
-  display: none;
-}
-
-.provider-option.active {
-  background: var(--accent-dim);
-  border-color: var(--accent-border);
-  color: var(--accent);
 }
 
 .divider {
