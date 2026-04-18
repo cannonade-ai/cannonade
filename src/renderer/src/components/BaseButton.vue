@@ -1,24 +1,29 @@
 <script setup lang="ts">
+import { computed, toRaw } from 'vue'
 import type { Component } from 'vue'
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     type?: 'primary' | 'secondary' | 'danger' | 'default'
+    disabled?: boolean
     icon?: Component
     iconSize?: number
     iconStrokeWidth?: number
   }>(),
   {
     type: 'default',
+    disabled: false,
     iconSize: 14,
     iconStrokeWidth: 2
   }
 )
+
+const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
 </script>
 
 <template>
-  <button class="base-btn" :class="`base-btn--${type}`">
-    <component :is="icon" v-if="icon" :size="iconSize" :stroke-width="iconStrokeWidth" />
+  <button class="base-btn" :class="`base-btn--${type}`" :disabled="disabled">
+    <component :is="rawIcon" v-if="rawIcon" :size="iconSize" :stroke-width="iconStrokeWidth" />
     <slot />
   </button>
 </template>
@@ -38,11 +43,17 @@ withDefaults(
   border-radius: var(--radius);
   border: 1px solid transparent;
   cursor: pointer;
+  opacity: 1;
   transition:
     background 0.15s,
     border-color 0.15s,
     color 0.15s,
     opacity 0.15s;
+}
+
+.base-btn:disabled {
+  opacity: 0.5;
+  cursor: unset;
 }
 
 .base-btn--default {
@@ -51,7 +62,7 @@ withDefaults(
   color: var(--text-secondary);
 }
 
-.base-btn--default:hover {
+.base-btn--default:not(:disabled):hover {
   background: var(--surface-hover);
   border-color: var(--border-hover);
 }
@@ -64,7 +75,7 @@ withDefaults(
   color: #000;
 }
 
-.base-btn--primary:hover {
+.base-btn--primary:not(:disabled):hover {
   opacity: 0.7;
 }
 
@@ -74,7 +85,7 @@ withDefaults(
   color: var(--accent);
 }
 
-.base-btn--secondary:hover {
+.base-btn--secondary:not(:disabled):hover {
   background: rgba(255, 179, 0, 0.3);
 }
 
@@ -84,7 +95,7 @@ withDefaults(
   color: var(--text-secondary);
 }
 
-.base-btn--danger:hover {
+.base-btn--danger:not(:disabled):hover {
   background: color-mix(in srgb, var(--error) 10%, transparent);
   border-color: var(--error);
   color: var(--error);

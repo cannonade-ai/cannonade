@@ -33,7 +33,8 @@ export default defineConfig(
             lang: 'ts'
           }
         }
-      ]
+      ],
+      'max-len': ['warn', { code: 100 }]
     }
   },
   eslintConfigPrettier

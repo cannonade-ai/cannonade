@@ -145,7 +145,9 @@ function onSubmit(): void {
 
     <div class="panel-footer">
       <base-button @click="emit('cancel')">Cancel</base-button>
-      <base-button type="primary" :icon="IconPlayerPlay" @click="onSubmit">Run</base-button>
+      <base-button type="primary" :disabled="!canSubmit" :icon="IconPlayerPlay" @click="onSubmit">
+        Run
+      </base-button>
     </div>
   </div>
 </template>

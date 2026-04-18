@@ -112,9 +112,6 @@ onMounted(() => store.load())
 </template>
 
 <style scoped>
-.dashboard {
-}
-
 .provider-select {
   width: auto;
   font-size: var(--text-xs);

@@ -37,17 +37,8 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div
-        v-if="modelValue"
-        class="modal-backdrop"
-        @click.self="onBackdropClick"
-      >
-        <div
-          class="modal-panel"
-          :class="`modal-panel--${size}`"
-          role="dialog"
-          aria-modal="true"
-        >
+      <div v-if="modelValue" class="modal-backdrop" @click.self="onBackdropClick">
+        <div class="modal-panel" :class="`modal-panel--${size}`" role="dialog" aria-modal="true">
           <div v-if="title" class="modal-header">
             <h2 class="modal-title">{{ title }}</h2>
           </div>

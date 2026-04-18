@@ -1,29 +1,11 @@
 <script setup lang="ts">
-import {
-  IconCircleCheck,
-  IconCircleX,
-  IconLoader2,
-  IconClock,
-  IconCircleMinus,
-  IconAlertCircle
-} from '@tabler/icons-vue'
-import type { TestRun, PerModelRun, RunStatus, ModelRef } from '@shared/app/test-run'
+import { IconAlertCircle } from '@tabler/icons-vue'
+import type { TestRun, PerModelRun, ModelRef } from '@shared/app/test-run'
+import BaseBadge from '@renderer/components/BaseBadge.vue'
 
 defineProps<{
   run: TestRun
 }>()
-
-const statusIconMap: Record<RunStatus, unknown> = {
-  completed: IconCircleCheck,
-  failed: IconCircleX,
-  running: IconLoader2,
-  pending: IconClock,
-  cancelled: IconCircleMinus
-}
-
-function statusIcon(status: RunStatus): unknown {
-  return statusIconMap[status]
-}
 
 function modelLabel(ref: ModelRef): string {
   return ref.source === 'installed' ? ref.modelKey : ref.modelId
@@ -68,10 +50,7 @@ function score(run: PerModelRun): string {
     <div class="panel-header">
       <div class="header-left">
         <span class="panel-title">{{ run.suiteName }}</span>
-        <span class="status-badge" :class="run.status">
-          <component :is="statusIcon(run.status)" :size="11" :stroke-width="2.5" />
-          {{ run.status }}
-        </span>
+        <base-badge :status="run.status">{{ run.status }}</base-badge>
       </div>
       <div class="header-meta">
         <span class="meta-tag">{{
@@ -88,13 +67,7 @@ function score(run: PerModelRun): string {
         <div v-for="mr in run.modelRuns" :key="mr.id" class="model-card" :class="mr.status">
           <div class="model-card-header">
             <div class="model-name-row">
-              <component
-                :is="statusIcon(mr.status)"
-                :size="14"
-                :stroke-width="2.5"
-                class="model-status-icon"
-                :class="mr.status"
-              />
+              <base-badge :status="mr.status" />
               <span class="model-name">{{ modelLabel(mr.modelRef) }}</span>
               <span class="model-source-badge">{{ modelSource(mr.modelRef) }}</span>
             </div>
@@ -312,34 +285,5 @@ function score(run: PerModelRun): string {
   font-size: var(--text-xs);
   color: #ef4444;
   line-height: 1.4;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  border-radius: var(--radius-full);
-  text-transform: capitalize;
-}
-
-.status-badge.completed {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
-.status-badge.failed {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-.status-badge.running {
-  background: var(--accent-dim);
-  color: var(--accent);
-}
-.status-badge.pending,
-.status-badge.cancelled {
-  background: var(--surface-elevated);
-  color: var(--text-muted);
 }
 </style>

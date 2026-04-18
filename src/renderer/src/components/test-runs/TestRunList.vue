@@ -1,12 +1,6 @@
 <script setup lang="ts">
-import {
-  IconCircleCheck,
-  IconCircleX,
-  IconLoader2,
-  IconClock,
-  IconCircleMinus
-} from '@tabler/icons-vue'
-import type { TestRun, RunStatus } from '@shared/app/test-run'
+import type { TestRun } from '@shared/app/test-run'
+import BaseBadge from '../BaseBadge.vue'
 
 defineProps<{
   runs: TestRun[]
@@ -16,18 +10,6 @@ defineProps<{
 const emit = defineEmits<{
   'select-run': [id: string]
 }>()
-
-const statusIconMap: Record<RunStatus, unknown> = {
-  completed: IconCircleCheck,
-  failed: IconCircleX,
-  running: IconLoader2,
-  pending: IconClock,
-  cancelled: IconCircleMinus
-}
-
-function statusIcon(status: RunStatus) {
-  return statusIconMap[status]
-}
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-US', {
@@ -70,10 +52,7 @@ function modelCount(run: TestRun): string {
             </span>
           </div>
           <div class="run-aside">
-            <span class="status-badge" :class="run.status">
-              <component :is="statusIcon(run.status)" :size="11" :stroke-width="2.5" />
-              {{ run.status }}
-            </span>
+            <base-badge :status="run.status">{{ run.status }}</base-badge>
             <span class="run-date">{{ formatDate(run.createdAt) }}</span>
           </div>
         </li>

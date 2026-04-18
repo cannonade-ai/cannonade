@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { IconPlus, IconX } from '@tabler/icons-vue'
 import type { ModelRef } from '@shared/app/test-run'
+import BaseBadge from '@renderer/components/BaseBadge.vue'
 
 const props = defineProps<{
   modelValue: ModelRef[]
@@ -95,7 +96,7 @@ function onHfKeydown(e: KeyboardEvent): void {
             </svg>
           </span>
           <span class="installed-label">{{ m.label }}</span>
-          <span v-if="m.loaded" class="loaded-badge">Loaded</span>
+          <base-badge v-if="m.loaded" class="loaded-badge" type="success"> Loaded </base-badge>
         </li>
       </ul>
     </div>
@@ -211,7 +212,7 @@ function onHfKeydown(e: KeyboardEvent): void {
   gap: 8px;
   padding: 7px 10px;
   cursor: pointer;
-  transition: background 0.1s;
+  transition: background-color 0.1s;
   border-bottom: 1px solid var(--border);
 }
 
@@ -220,20 +221,14 @@ function onHfKeydown(e: KeyboardEvent): void {
 }
 
 .installed-item:hover {
-  background: var(--surface-hover);
+  background-color: var(--surface-hover);
 }
 
 .installed-item.checked {
-  background: var(--accent-dim);
+  background-color: var(--accent-dim);
 }
 
 .loaded-badge {
-  font-size: var(--text-xs);
-  color: var(--green);
-  font-weight: 600;
-  background: var(--green-dim);
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
   margin-left: auto;
 }
 
@@ -247,12 +242,12 @@ function onHfKeydown(e: KeyboardEvent): void {
   justify-content: center;
   flex-shrink: 0;
   transition:
-    background 0.1s,
+    background-color 0.1s,
     border-color 0.1s;
 }
 
 .checkbox.checked {
-  background: var(--accent);
+  background-color: var(--accent);
   border-color: var(--accent);
   color: #000;
 }
