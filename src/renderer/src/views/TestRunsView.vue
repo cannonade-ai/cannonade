@@ -4,6 +4,7 @@ import { IconPlayerPlay } from '@tabler/icons-vue'
 import { useTestRunsStore } from '../stores/test-runs'
 import { useTestSuitesStore } from '../stores/test-suites'
 import type { TestRunConfig } from '@shared/app/test-run'
+import type { TestSuite } from '@shared/app/test-suite'
 import BaseButton from '../components/BaseButton.vue'
 import SectionHeader from '../components/SectionHeader.vue'
 import TestRunList from '../components/test-runs/TestRunList.vue'
@@ -17,8 +18,8 @@ onMounted(() => {
   if (suitesStore.suites.length === 0) suitesStore.load()
 })
 
-function onSubmit(config: TestRunConfig, suiteName: string): void {
-  store.submitRun(config, suiteName)
+function onSubmit(config: TestRunConfig, suite: TestSuite): void {
+  store.submitRun(config, suite)
 }
 </script>
 

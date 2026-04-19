@@ -3,7 +3,7 @@ import { reactive, computed, watch } from 'vue'
 import { IconPlayerPlay } from '@tabler/icons-vue'
 import type { Provider } from '@shared/provider-model-map'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
-import type { SuiteSummary } from '../../stores/test-runs'
+import type { TestSuite } from '@shared/app/test-suite'
 import { useModelsStore } from '../../stores/models'
 import NewRunModelSelector from './NewRunModelSelector.vue'
 import BaseSelect from '../BaseSelect.vue'
@@ -12,12 +12,12 @@ import BaseRadioGroup from '../BaseRadioGroup.vue'
 import type { SelectOption } from '../BaseSelect.vue'
 
 const props = defineProps<{
-  suites: SuiteSummary[]
+  suites: TestSuite[]
 }>()
 
 const emit = defineEmits<{
   cancel: []
-  submit: [config: TestRunConfig, suiteName: string]
+  submit: [config: TestRunConfig, suite: TestSuite]
 }>()
 
 const modelsStore = useModelsStore()
@@ -65,8 +65,15 @@ const suiteOptions = computed<SelectOption<string>[]>(() =>
 const canSubmit = computed(() => form.suiteId !== '' && form.models.length > 0)
 
 function onSubmit(): void {
-  if (!canSubmit.value) return
-  const suiteName = suiteOptions.value.find((o) => o.value === form.suiteId)?.label ?? ''
+  if (!canSubmit.value) {
+    console.warn('[NewRunPanel] Cannot submit: invalid form')
+    return
+  }
+  const suite = props.suites.find((s) => s.id === form.suiteId)
+  if (!suite) {
+    console.error('[NewRunPanel] Suite not found:', form.suiteId)
+    return
+  }
   emit(
     'submit',
     {
@@ -76,7 +83,7 @@ function onSubmit(): void {
       deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
       parallelRun: form.provider === 'openrouter' ? form.parallelRun : undefined
     },
-    suiteName
+    suite
   )
 }
 </script>

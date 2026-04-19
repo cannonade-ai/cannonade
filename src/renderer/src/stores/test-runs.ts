@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { TestRun, TestRunConfig } from '@shared/app/test-run'
+import type { TestRun, TestRunConfig, RunStatus } from '@shared/app/test-run'
+import type { TestSuite, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
+import { executeTestRun } from '../services/test-runner'
 export interface SuiteSummary {
   id: string
   name: string
@@ -136,12 +138,20 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     })
   }
 
-  function submitRun(config: TestRunConfig, suiteName: string): void {
+  function findModelRun(modelRunId: string): (typeof runs.value)[0]['modelRuns'][0] | undefined {
+    for (const run of runs.value) {
+      const mr = run.modelRuns.find((m) => m.id === modelRunId)
+      if (mr) return mr
+    }
+    return undefined
+  }
+
+  async function submitRun(config: TestRunConfig, suite: TestSuite): Promise<void> {
     const now = new Date().toISOString()
     const run: TestRun = {
       id: `run-${Date.now()}`,
       suiteId: config.suiteId,
-      suiteName,
+      suiteName: suite.name,
       config,
       status: 'pending',
       createdAt: now,
@@ -156,6 +166,43 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     runs.value.unshift(run)
     selectedRunId.value = run.id
     isCreatingNew.value = false
+
+    await executeTestRun(run, suite, {
+      onRunStart(runId: string): void {
+        const r = runs.value.find((r) => r.id === runId)
+        if (!r) return
+        r.status = 'running'
+        r.startedAt = new Date().toISOString()
+      },
+      onModelRunStart(modelRunId: string): void {
+        const mr = findModelRun(modelRunId)
+        if (!mr) return
+        mr.status = 'running'
+        mr.startedAt = new Date().toISOString()
+      },
+      onCaseComplete(modelRunId: string, result: TestCaseResult): void {
+        findModelRun(modelRunId)?.results.push(result)
+      },
+      onModelRunComplete(
+        modelRunId: string,
+        status: RunStatus,
+        aggregate: AggregateMetrics,
+        error?: string
+      ): void {
+        const mr = findModelRun(modelRunId)
+        if (!mr) return
+        mr.status = status
+        mr.completedAt = new Date().toISOString()
+        mr.aggregate = aggregate
+        if (error) mr.error = error
+      },
+      onRunComplete(runId: string, status: RunStatus): void {
+        const r = runs.value.find((r) => r.id === runId)
+        if (!r) return
+        r.status = status
+        r.completedAt = new Date().toISOString()
+      }
+    })
   }
 
   return {

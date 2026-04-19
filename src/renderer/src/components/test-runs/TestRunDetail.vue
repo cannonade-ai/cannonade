@@ -112,12 +112,14 @@ function score(run: PerModelRun): string {
               <span class="metric-value">{{ score(mr) }}</span>
             </div>
             <div v-if="mr.aggregate.avgTokensPerSecond != null" class="metric">
-              <span class="metric-label">Tok/s</span>
+              <span class="metric-label">Tok/s (avg)</span>
               <span class="metric-value">{{ mr.aggregate.avgTokensPerSecond?.toFixed(1) }}</span>
             </div>
             <div v-if="mr.aggregate.avgTimeToFirstTokenMs != null" class="metric">
-              <span class="metric-label">TTFT</span>
-              <span class="metric-value">{{ mr.aggregate.avgTimeToFirstTokenMs }}ms</span>
+              <span class="metric-label">TTFT (avg)</span>
+              <span class="metric-value"
+                >{{ mr.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms</span
+              >
             </div>
           </div>
 
