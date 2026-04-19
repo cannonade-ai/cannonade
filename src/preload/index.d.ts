@@ -1,9 +1,11 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
 import type { Provider, ProviderModelMap } from '@shared/provider-model-map'
 import type { TestSuite } from '@shared/app/test-suite'
+import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 
 export interface AppAPI {
   fetchModels<P extends Provider>(provider: P): Promise<ProviderModelMap[P][]>
+  lmStudioChat(request: ChatRequest, apiToken?: string): Promise<ChatResponse>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   minimize(): void
