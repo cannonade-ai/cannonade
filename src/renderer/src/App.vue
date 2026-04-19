@@ -111,6 +111,7 @@ const viewComponent = computed(() => {
   --green: #22c55e;
   --green-dim: rgba(34, 197, 94, 0.15);
   --error: var(--color-red-500);
+  --error-dim: var(--color-red-600);
   --shadow: rgba(0, 0, 0, 0.08);
   --list-item-padding: 14px 20px;
 
@@ -173,6 +174,7 @@ const viewComponent = computed(() => {
   --green: #22c55e;
   --green-dim: rgba(34, 197, 94, 0.15);
   --error: var(--color-red-800);
+  --error-dim: var(--color-red-900);
   --shadow: rgba(0, 0, 0, 0.6);
   --font-headline: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;

@@ -4,7 +4,7 @@ import type { Component } from 'vue'
 
 const props = withDefaults(
   defineProps<{
-    type?: 'primary' | 'secondary' | 'danger' | 'default'
+    type?: 'primary' | 'secondary' | 'danger' | 'danger-outline' | 'default'
     disabled?: boolean
     icon?: Component
     iconSize?: number
@@ -89,15 +89,25 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
   background: rgba(255, 179, 0, 0.3);
 }
 
-.base-btn--danger {
+.base-btn--danger-outline {
   background: none;
   border-color: var(--border);
   color: var(--text-secondary);
 }
 
-.base-btn--danger:not(:disabled):hover {
+.base-btn--danger-outline:not(:disabled):hover {
   background: color-mix(in srgb, var(--error) 10%, transparent);
   border-color: var(--error);
   color: var(--error);
+}
+
+.base-btn--danger {
+  background: var(--error);
+  border-color: transparent;
+  color: var(--text-primary);
+}
+
+.base-btn--danger:not(:disabled):hover {
+  background: var(--error-dim);
 }
 </style>

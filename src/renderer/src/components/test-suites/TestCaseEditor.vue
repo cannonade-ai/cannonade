@@ -170,7 +170,7 @@ function onSave(): void {
     </div>
 
     <div class="editor-footer">
-      <base-button v-if="!isNew" type="danger" :icon="IconTrash" @click="emit('delete')">
+      <base-button v-if="!isNew" type="danger-outline" :icon="IconTrash" @click="emit('delete')">
         Delete
       </base-button>
       <div class="footer-right">

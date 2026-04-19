@@ -125,6 +125,17 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     isCreatingNew.value = false
   }
 
+  function cancelRun(id: string): void {
+    const run = runs.value.find((r) => r.id === id)
+    if (!run) return
+    run.status = 'cancelled'
+    run.modelRuns.forEach((mr) => {
+      if (mr.status === 'pending' || mr.status === 'running') {
+        mr.status = 'cancelled'
+      }
+    })
+  }
+
   function submitRun(config: TestRunConfig, suiteName: string): void {
     const now = new Date().toISOString()
     const run: TestRun = {
@@ -155,6 +166,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     selectRun,
     startNewRun,
     cancelNewRun,
+    cancelRun,
     submitRun
   }
 })

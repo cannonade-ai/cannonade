@@ -1,11 +1,25 @@
 <script setup lang="ts">
-import { IconAlertCircle } from '@tabler/icons-vue'
+import { ref, computed } from 'vue'
+import { IconAlertCircle, IconPlayerStop } from '@tabler/icons-vue'
 import type { TestRun, PerModelRun, ModelRef } from '@shared/app/test-run'
 import BaseBadge from '@renderer/components/BaseBadge.vue'
+import BaseButton from '@renderer/components/BaseButton.vue'
+import BaseModal from '@renderer/components/BaseModal.vue'
+import { useTestRunsStore } from '@renderer/stores/test-runs'
 
-defineProps<{
+const props = defineProps<{
   run: TestRun
 }>()
+
+const store = useTestRunsStore()
+const showCancelModal = ref(false)
+
+const isActive = computed(() => props.run.status === 'running' || props.run.status === 'pending')
+
+function confirmCancel(): void {
+  store.cancelRun(props.run.id)
+  showCancelModal.value = false
+}
 
 function modelLabel(ref: ModelRef): string {
   return ref.source === 'installed' ? ref.modelKey : ref.modelId
@@ -60,6 +74,20 @@ function score(run: PerModelRun): string {
         <span class="meta-date">{{ formatDate(run.createdAt) }}</span>
       </div>
     </div>
+
+    <div v-if="isActive" class="panel-toolbar">
+      <base-button type="danger-outline" :icon="IconPlayerStop" @click="showCancelModal = true">
+        Stop Run
+      </base-button>
+    </div>
+
+    <base-modal v-model="showCancelModal" title="Stop Run">
+      Are you sure you want to stop this run? Any in-progress model evaluations will be cancelled.
+      <template #actions="{ close }">
+        <base-button @click="close">Cancel</base-button>
+        <base-button type="danger-outline" @click="confirmCancel">Stop Run</base-button>
+      </template>
+    </base-modal>
 
     <div class="panel-body">
       <div class="section-label">Model Results</div>
@@ -158,6 +186,14 @@ function score(run: PerModelRun): string {
 .meta-date {
   font-size: var(--text-xs);
   color: var(--text-muted);
+}
+
+.panel-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .panel-body {

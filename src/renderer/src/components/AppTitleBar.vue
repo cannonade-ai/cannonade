@@ -4,6 +4,7 @@ import { IconTank } from '@tabler/icons-vue'
 import { api } from '../api'
 import { useTestRunsStore } from '../stores/test-runs'
 import BaseModal from './BaseModal.vue'
+import BaseButton from './BaseButton.vue'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
@@ -50,8 +51,8 @@ function confirmClose(): void {
   <BaseModal v-model="showCloseConfirm" title="Quit Cannonade?">
     <p>A test run is currently in progress. Quitting now will stop it.</p>
     <template #actions="{ close }">
-      <button class="btn btn-ghost" @click="close">Cancel</button>
-      <button class="btn btn-danger" @click="confirmClose">Quit anyway</button>
+      <base-button @click="close">Cancel</base-button>
+      <base-button type="danger" @click="confirmClose">Quit anyway</base-button>
     </template>
   </BaseModal>
 </template>
@@ -180,44 +181,5 @@ function confirmClose(): void {
 
 .close .control-icon::after {
   transform: translateY(-50%) rotate(-45deg);
-}
-
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 7px 14px;
-  border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: var(--text-sm);
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition:
-    background 0.15s,
-    border-color 0.15s,
-    color 0.15s;
-  white-space: nowrap;
-}
-
-.btn-ghost {
-  background: transparent;
-  border-color: var(--border);
-  color: var(--text-secondary);
-}
-
-.btn-ghost:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
-
-.btn-danger {
-  background: var(--error);
-  color: #fff;
-  border-color: var(--error);
-}
-
-.btn-danger:hover {
-  opacity: 0.88;
 }
 </style>
