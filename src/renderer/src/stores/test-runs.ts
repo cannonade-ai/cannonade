@@ -36,7 +36,7 @@ const mockRuns: TestRun[] = [
         startedAt: '2026-04-15T09:01:00Z',
         completedAt: '2026-04-15T09:03:10Z',
         results: [],
-        aggregate: { total: 4, passed: 4, failed: 0, avgCorrectnessScore: 0.96 }
+        aggregate: { total: 4, passed: 4, failed: 0, avgCorrectnessScore: 1 }
       },
       {
         id: 'mr-2',

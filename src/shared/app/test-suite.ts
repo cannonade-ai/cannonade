@@ -146,6 +146,12 @@ export interface AggregateMetrics {
   failed: number
 
   avgTokensPerSecond?: number
+  minTokensPerSecond?: number
+  maxTokensPerSecond?: number
+
   avgTimeToFirstTokenMs?: number
+  minTimeToFirstTokenMs?: number
+  maxTimeToFirstTokenMs?: number
+
   avgCorrectnessScore?: number
 }

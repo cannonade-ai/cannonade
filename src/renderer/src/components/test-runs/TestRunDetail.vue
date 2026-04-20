@@ -25,10 +25,6 @@ function modelLabel(ref: ModelRef): string {
   return ref.source === 'installed' ? ref.modelKey : ref.modelId
 }
 
-function modelSource(ref: ModelRef): string {
-  return ref.source === 'huggingface' ? 'HuggingFace' : 'Installed'
-}
-
 function formatDate(iso: string | undefined): string {
   if (!iso) return '—'
   return new Date(iso).toLocaleString('en-US', {
@@ -97,7 +93,6 @@ function score(run: PerModelRun): string {
             <div class="model-name-row">
               <base-badge :status="mr.status" />
               <span class="model-name">{{ modelLabel(mr.modelRef) }}</span>
-              <span class="model-source-badge">{{ modelSource(mr.modelRef) }}</span>
             </div>
             <span class="duration">{{ duration(mr) }}</span>
           </div>
@@ -111,16 +106,42 @@ function score(run: PerModelRun): string {
               <span class="metric-label">Score</span>
               <span class="metric-value">{{ score(mr) }}</span>
             </div>
-            <div v-if="mr.aggregate.avgTokensPerSecond != null" class="metric">
-              <span class="metric-label">Tok/s (avg)</span>
-              <span class="metric-value">{{ mr.aggregate.avgTokensPerSecond?.toFixed(1) }}</span>
-            </div>
-            <div v-if="mr.aggregate.avgTimeToFirstTokenMs != null" class="metric">
-              <span class="metric-label">TTFT (avg)</span>
-              <span class="metric-value"
-                >{{ mr.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms</span
-              >
-            </div>
+            <template v-if="mr.aggregate.avgTokensPerSecond != null">
+              <div class="metric-divider" />
+              <div class="metric">
+                <span class="metric-label">Tok/s (avg)</span>
+                <span class="metric-value">{{ mr.aggregate.avgTokensPerSecond.toFixed(1) }}</span>
+              </div>
+              <div v-if="mr.aggregate.minTokensPerSecond != null" class="metric">
+                <span class="metric-label">Tok/s (min)</span>
+                <span class="metric-value">{{ mr.aggregate.minTokensPerSecond.toFixed(1) }}</span>
+              </div>
+              <div v-if="mr.aggregate.maxTokensPerSecond != null" class="metric">
+                <span class="metric-label">Tok/s (max)</span>
+                <span class="metric-value">{{ mr.aggregate.maxTokensPerSecond.toFixed(1) }}</span>
+              </div>
+            </template>
+            <template v-if="mr.aggregate.avgTimeToFirstTokenMs != null">
+              <div class="metric-divider" />
+              <div class="metric">
+                <span class="metric-label">TTFT (avg)</span>
+                <span class="metric-value"
+                  >{{ mr.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms</span
+                >
+              </div>
+              <div v-if="mr.aggregate.minTimeToFirstTokenMs != null" class="metric">
+                <span class="metric-label">TTFT (min)</span>
+                <span class="metric-value"
+                  >{{ mr.aggregate.minTimeToFirstTokenMs.toFixed(0) }}ms</span
+                >
+              </div>
+              <div v-if="mr.aggregate.maxTimeToFirstTokenMs != null" class="metric">
+                <span class="metric-label">TTFT (max)</span>
+                <span class="metric-value"
+                  >{{ mr.aggregate.maxTimeToFirstTokenMs.toFixed(0) }}ms</span
+                >
+              </div>
+            </template>
           </div>
 
           <div v-if="mr.error" class="error-row">
@@ -272,17 +293,6 @@ function score(run: PerModelRun): string {
   text-overflow: ellipsis;
 }
 
-.model-source-badge {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 1px 6px;
-  background: var(--surface);
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  flex-shrink: 0;
-}
-
 .duration {
   font-size: var(--text-xs);
   color: var(--text-muted);
@@ -293,6 +303,14 @@ function score(run: PerModelRun): string {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  align-items: flex-start;
+}
+
+.metric-divider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  flex-shrink: 0;
 }
 
 .metric {
@@ -310,7 +328,7 @@ function score(run: PerModelRun): string {
 }
 
 .metric-value {
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   font-weight: 700;
   font-family: var(--font-headline);
   color: var(--text-primary);
