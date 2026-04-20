@@ -22,7 +22,16 @@ export const useModelsStore = defineStore('models', () => {
         orModels.value = await api.fetchModels('openrouter')
       }
     } catch (e) {
-      error.value = e instanceof Error ? e.message : 'Failed to load models'
+      if (e instanceof Error) {
+        if (e.message.includes('fetch failed')) {
+          error.value =
+            'Cannot connect to LM Studio. Make sure LM Studio is running and the local server is started on port 1234.'
+        } else {
+          error.value = e.message
+        }
+      } else {
+        error.value = 'Failed to load models'
+      }
       console.error(e)
     } finally {
       loading.value = false
