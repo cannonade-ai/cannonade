@@ -65,6 +65,7 @@ export interface RunConfig {
 export interface EvaluationConfig {
   type:
     | 'exact_match'
+    | 'contains'
     | 'json_match'
     | 'regex'
     | 'bleu'

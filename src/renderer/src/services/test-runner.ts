@@ -2,6 +2,7 @@ import { api } from '../api'
 import type { TestRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+import { evaluate } from './evaluator'
 
 export interface RunnerCallbacks {
   onRunStart(runId: string): void
@@ -104,14 +105,19 @@ export async function executeTestRun(
           const response = await api.lmStudioChat(request)
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
+          const output = extractTextOutput(response.output)
+          const evaluation = evaluate(output, testCase.evaluation)
           const result: TestCaseResult = {
             testCaseId: testCase.id,
-            output: extractTextOutput(response.output),
+            output,
             metrics: {
               tokensPerSecond: response.stats.tokens_per_second,
-              timeToFirstTokenMs: response.stats.time_to_first_token_seconds * 1000
+              timeToFirstTokenMs: response.stats.time_to_first_token_seconds * 1000,
+              correctnessScore: evaluation.correctnessScore
             },
-            passed: true
+            passed: evaluation.passed,
+            details: evaluation.details,
+            error: evaluation.error
           }
 
           results.push(result)

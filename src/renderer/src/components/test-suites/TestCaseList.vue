@@ -80,6 +80,7 @@ function menuItems(id: string): ContextMenuItem[] {
   display: flex;
   flex-direction: column;
   height: 100%;
+  max-height: 19rem;
   overflow: hidden;
   border: 1px solid var(--border);
   border-left: 2px solid var(--accent-dim);

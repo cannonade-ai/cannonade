@@ -19,6 +19,7 @@ const emit = defineEmits<{
 
 const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'exact_match', label: 'Exact Match' },
+  { value: 'contains', label: 'Contains' },
   { value: 'json_match', label: 'JSON Match' },
   { value: 'regex', label: 'Regex' },
   { value: 'bleu', label: 'BLEU' },
@@ -160,7 +161,11 @@ function onSave(): void {
                 <textarea
                   v-model="evalExpected"
                   class="field-textarea field-textarea-fill"
-                  placeholder="Enter expected output or configuration..."
+                  :placeholder="
+                    selectedEvalType === 'contains'
+                      ? 'Comma-separated values, e.g. hello,world'
+                      : 'Enter expected output or configuration...'
+                  "
                 />
               </div>
             </div>
