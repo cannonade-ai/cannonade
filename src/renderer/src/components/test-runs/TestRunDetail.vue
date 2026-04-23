@@ -2,17 +2,24 @@
 import { ref, computed } from 'vue'
 import { IconPlayerStop } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
+import type { TestCase } from '@shared/app/test-suite'
 import BaseBadge from '@renderer/components/BaseBadge.vue'
 import BaseButton from '@renderer/components/BaseButton.vue'
 import BaseModal from '@renderer/components/BaseModal.vue'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
+import { useTestSuitesStore } from '@renderer/stores/test-suites'
 
 const props = defineProps<{
   run: TestRun
 }>()
 
 const store = useTestRunsStore()
+const suitesStore = useTestSuitesStore()
+
+const testCases = computed<TestCase[]>(
+  () => suitesStore.suites.find((s) => s.id === props.run.suiteId)?.testCases ?? []
+)
 const showCancelModal = ref(false)
 
 const isActive = computed(() => props.run.status === 'running' || props.run.status === 'pending')
@@ -67,7 +74,12 @@ function formatDate(iso: string | undefined): string {
     <div class="panel-body">
       <div class="section-label">Model Results</div>
       <div class="model-list">
-        <model-run-row v-for="mr in run.modelRuns" :key="mr.id" :model-run="mr" />
+        <model-run-row
+          v-for="mr in run.modelRuns"
+          :key="mr.id"
+          :model-run="mr"
+          :test-cases="testCases"
+        />
       </div>
     </div>
   </div>

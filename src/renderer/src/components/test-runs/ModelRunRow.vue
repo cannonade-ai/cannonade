@@ -10,9 +10,12 @@ import {
   IconAlertCircle
 } from '@tabler/icons-vue'
 import type { PerModelRun, ModelRef } from '@shared/app/test-run'
+import type { TestCase } from '@shared/app/test-suite'
+import ModelRunTestCaseRow from './ModelRunTestCaseRow.vue'
 
-const props = defineProps<{
+defineProps<{
   modelRun: PerModelRun
+  testCases: TestCase[]
 }>()
 
 const expanded = ref(false)
@@ -146,6 +149,17 @@ function toggle(): void {
         <IconAlertCircle :size="13" :stroke-width="2" />
         {{ modelRun.error }}
       </div>
+
+      <div v-if="modelRun.results.length > 0" class="test-cases">
+        <div class="test-case-list">
+          <model-run-test-case-row
+            v-for="result in modelRun.results"
+            :key="result.testCaseId"
+            :result="result"
+            :test-case="testCases.find((tc) => tc.id === result.testCaseId)!"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -271,7 +285,6 @@ function toggle(): void {
 
 .row-details {
   border-top: 1px solid var(--border);
-  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -282,6 +295,7 @@ function toggle(): void {
   align-items: flex-start;
   gap: 16px;
   flex-wrap: wrap;
+  padding: 0.5rem 0.75rem;
 }
 
 .metric-group-divider {
@@ -338,5 +352,15 @@ function toggle(): void {
   font-size: var(--text-xs);
   color: #ef4444;
   line-height: 1.4;
+}
+
+.test-cases {
+  display: flex;
+  flex-direction: column;
+}
+
+.test-case-list {
+  display: flex;
+  flex-direction: column;
 }
 </style>
