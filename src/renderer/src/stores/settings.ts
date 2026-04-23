@@ -10,6 +10,7 @@ interface PersistedSettings {
   isDark: boolean
   fontSize: FontSize
   language: string
+  lastSuiteId: string | null
 }
 
 function loadPersisted(): PersistedSettings {
@@ -22,7 +23,8 @@ function loadPersisted(): PersistedSettings {
   return {
     isDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
     fontSize: 'md',
-    language: 'en'
+    language: 'en',
+    lastSuiteId: null
   }
 }
 
@@ -37,6 +39,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const isDark = ref(saved.isDark)
   const fontSize = ref<FontSize>(saved.fontSize)
   const language = ref(saved.language)
+  const lastSuiteId = ref<string | null>(saved.lastSuiteId)
   const appVersion = ref('')
   const suitesDir = ref('')
 
@@ -44,13 +47,14 @@ export const useSettingsStore = defineStore('settings', () => {
 
   watch(isDark, (dark) => applyTheme(dark))
 
-  watch([isDark, fontSize, language], () => {
+  watch([isDark, fontSize, language, lastSuiteId], () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
         isDark: isDark.value,
         fontSize: fontSize.value,
-        language: language.value
+        language: language.value,
+        lastSuiteId: lastSuiteId.value
       })
     )
   })
@@ -66,5 +70,5 @@ export const useSettingsStore = defineStore('settings', () => {
     isDark.value = !isDark.value
   }
 
-  return { isDark, fontSize, language, appVersion, suitesDir, init, toggleTheme }
+  return { isDark, fontSize, language, lastSuiteId, appVersion, suitesDir, init, toggleTheme }
 })

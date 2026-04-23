@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { reactive, computed, watch } from 'vue'
+import { reactive, computed, watch, onMounted } from 'vue'
 import { IconPlayerPlay } from '@tabler/icons-vue'
 import type { Provider } from '@shared/provider-model-map'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import { useModelsStore } from '../../stores/models'
+import { useSettingsStore } from '../../stores/settings'
 import NewRunModelSelector from './NewRunModelSelector.vue'
 import BaseSelect from '../BaseSelect.vue'
 import BaseButton from '../BaseButton.vue'
@@ -21,6 +22,7 @@ const emit = defineEmits<{
 }>()
 
 const modelsStore = useModelsStore()
+const settingsStore = useSettingsStore()
 
 const form = reactive<{
   suiteId: string
@@ -36,6 +38,16 @@ const form = reactive<{
   parallelRun: false
 })
 
+onMounted(() => {
+  const lastId = settingsStore.lastSuiteId
+  const suites = props.suites
+  if (lastId && suites.some((s) => s.id === lastId)) {
+    form.suiteId = lastId
+  } else if (suites.length > 0) {
+    form.suiteId = suites[0].id
+  }
+})
+
 watch(
   () => form.provider,
   (next) => {
@@ -45,6 +57,15 @@ watch(
     modelsStore.load()
   },
   { immediate: true }
+)
+
+watch(
+  () => modelsStore.loading,
+  (loading) => {
+    if (loading || form.provider !== 'lmstudio' || form.models.length > 0) return
+    const loaded = installedModels.value.find((m) => m.loaded)
+    if (loaded) form.models = [{ source: 'installed', modelKey: loaded.key }]
+  }
 )
 
 const installedModels = computed(() => {
@@ -74,6 +95,7 @@ function onSubmit(): void {
     console.error('[NewRunPanel] Suite not found:', form.suiteId)
     return
   }
+  settingsStore.lastSuiteId = form.suiteId
   emit(
     'submit',
     {

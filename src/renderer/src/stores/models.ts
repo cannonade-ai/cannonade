@@ -23,7 +23,7 @@ export const useModelsStore = defineStore('models', () => {
       }
     } catch (e) {
       if (e instanceof Error) {
-        if (e.message.includes('fetch failed')) {
+        if (provider.value === 'lmstudio' && e.message.includes('fetch failed')) {
           error.value =
             'Cannot connect to LM Studio. Make sure LM Studio is running and the local server is started on port 1234.'
         } else {
