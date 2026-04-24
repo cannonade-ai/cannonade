@@ -5,6 +5,7 @@ import type { TestCase, EvaluationConfig } from '@shared/app/test-suite'
 import BaseSelect from '../BaseSelect.vue'
 import type { SelectOption } from '../BaseSelect.vue'
 import BaseButton from '../BaseButton.vue'
+import BaseModal from '../BaseModal.vue'
 
 const props = defineProps<{
   testCase: TestCase | null
@@ -84,6 +85,13 @@ function onSave(): void {
   }
 
   emit('save', testCase)
+}
+
+const showDeleteModal = ref(false)
+
+function onConfirmDelete(): void {
+  showDeleteModal.value = false
+  emit('delete')
 }
 </script>
 
@@ -175,17 +183,28 @@ function onSave(): void {
     </div>
 
     <div class="editor-footer">
-      <base-button v-if="!isNew" type="danger-outline" :icon="IconTrash" @click="emit('delete')">
+      <base-button
+        v-if="!isNew"
+        type="danger-outline"
+        :icon="IconTrash"
+        @click="showDeleteModal = true"
+      >
         Delete
       </base-button>
       <div class="footer-right">
         <base-button @click="emit('close')">Cancel</base-button>
-        <base-button type="primary" @click="onSave">
-          {{ isNew ? 'Add Test Case' : 'Save Test Case' }}
-        </base-button>
+        <base-button type="primary" @click="onSave"> Save Test Case </base-button>
       </div>
     </div>
   </div>
+
+  <base-modal v-model="showDeleteModal" title="Delete Test Case">
+    Are you sure you want to delete this test case? This action cannot be undone.
+    <template #actions="{ close }">
+      <base-button @click="close">Cancel</base-button>
+      <base-button type="danger" @click="onConfirmDelete">Delete</base-button>
+    </template>
+  </base-modal>
 </template>
 
 <style scoped>
@@ -366,5 +385,6 @@ function onSave(): void {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-left: auto;
 }
 </style>

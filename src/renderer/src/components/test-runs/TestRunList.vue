@@ -133,6 +133,7 @@ function modelCount(run: TestRun): string {
   cursor: pointer;
   transition: background 0.12s;
   border-left: 2px solid transparent;
+  height: var(--list-item-height);
 }
 
 .run-item:hover {

@@ -114,6 +114,7 @@ const viewComponent = computed(() => {
   --error-dim: var(--color-red-600);
   --shadow: rgba(0, 0, 0, 0.08);
   --list-item-padding: 14px 20px;
+  --list-item-height: 4.5rem;
 
   --font-headline: 'Space Grotesk', system-ui, sans-serif;
   --font-body: 'Inter', system-ui, sans-serif;

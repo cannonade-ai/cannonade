@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { IconArrowLeft, IconDeviceFloppy } from '@tabler/icons-vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { IconArrowLeft } from '@tabler/icons-vue'
 import BaseButton from '../BaseButton.vue'
 import type { TestSuite, TestCase } from '@shared/app/test-suite'
 import TestSuiteInfoPanel from './TestSuiteInfoPanel.vue'
@@ -50,17 +50,20 @@ function onSaveCase(testCase: TestCase): void {
   } else {
     suite.value.testCases.push(testCase)
   }
-  //onCloseEditor()
+  onCloseEditor()
+  onSave()
 }
 
 function onDeleteCase(): void {
   suite.value.testCases = suite.value.testCases.filter((tc) => tc.id !== selectedCaseId.value)
   onCloseEditor()
+  onSave()
 }
 
 function onDeleteCaseById(id: string): void {
   suite.value.testCases = suite.value.testCases.filter((tc) => tc.id !== id)
   if (selectedCaseId.value === id) onCloseEditor()
+  onSave()
 }
 
 function onCloneCaseById(id: string): void {
@@ -69,11 +72,22 @@ function onCloneCaseById(id: string): void {
   const clone = { ...tc, id: crypto.randomUUID(), name: `${tc.name} (copy)` }
   const idx = suite.value.testCases.findIndex((c) => c.id === id)
   suite.value.testCases.splice(idx + 1, 0, clone)
+  onSave()
 }
 
 function onSave(): void {
   emit('save', suite.value)
 }
+
+let debounceTimer: ReturnType<typeof setTimeout> | null = null
+
+function scheduleSave(): void {
+  if (debounceTimer !== null) clearTimeout(debounceTimer)
+  debounceTimer = setTimeout(onSave, 500)
+}
+
+watch([() => suite.value.name, () => suite.value.description], scheduleSave)
+watch(() => suite.value.defaultRunConfig, scheduleSave, { deep: true })
 
 function onKeyDown(e: KeyboardEvent): void {
   if (e.key === 'Escape') emit('back')
@@ -88,9 +102,6 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
     <div class="detail-header">
       <base-button :icon="IconArrowLeft" :icon-stroke-width="2.5" @click="emit('back')">
         Test Suites
-      </base-button>
-      <base-button type="secondary" :icon="IconDeviceFloppy" @click="onSave">
-        Save Test Suite
       </base-button>
     </div>
 

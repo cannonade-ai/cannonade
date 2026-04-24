@@ -103,6 +103,7 @@ function formatDate(iso: string): string {
   border-left: 2px solid transparent;
   cursor: pointer;
   transition: background 0.12s;
+  height: var(--list-item-height);
 }
 
 .suite-item:hover {
