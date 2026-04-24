@@ -56,7 +56,15 @@ function ttft(result: TestCaseResult): string {
   return result.metrics.timeToFirstTokenMs.toFixed(0) + 'ms'
 }
 
+function duration(cr: TestCaseRun): string {
+  if (!cr.startedAt || !cr.completedAt) return '—'
+  const ms = new Date(cr.completedAt).getTime() - new Date(cr.startedAt).getTime()
+  if (ms < 1000) return `${ms}ms`
+  return `${(ms / 1000).toFixed(1)}s`
+}
+
 const hasMetrics = computed<boolean>(() => {
+  if (props.caseRun?.startedAt && props.caseRun?.completedAt) return true
   const m = props.caseRun?.result?.metrics
   if (!m) return false
   return m.tokensPerSecond != null || m.timeToFirstTokenMs != null || m.correctnessScore != null
@@ -160,6 +168,10 @@ const hasMetrics = computed<boolean>(() => {
           <div v-if="caseRun.result.metrics.correctnessScore != null" class="case-metric">
             <span class="case-metric-label">Score</span>
             <span class="case-metric-value">{{ scoreLabel(caseRun.result) }}</span>
+          </div>
+          <div v-if="caseRun.startedAt && caseRun.completedAt" class="case-metric">
+            <span class="case-metric-label">Duration</span>
+            <span class="case-metric-value">{{ duration(caseRun) }}</span>
           </div>
         </div>
       </div>
