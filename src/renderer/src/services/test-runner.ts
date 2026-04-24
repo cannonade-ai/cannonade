@@ -8,7 +8,12 @@ export interface RunnerCallbacks {
   onRunStart(runId: string): void
   onModelRunStart(modelRunId: string): void
   onCaseStart(modelRunId: string, testCaseId: string): void
-  onCaseComplete(modelRunId: string, testCaseId: string, result: TestCaseResult): void
+  onCaseComplete(
+    modelRunId: string,
+    testCaseId: string,
+    result: TestCaseResult,
+    aggregate: AggregateMetrics
+  ): void
   onModelRunComplete(
     modelRunId: string,
     status: RunStatus,
@@ -123,7 +128,7 @@ export async function executeTestRun(
           }
 
           results.push(result)
-          callbacks.onCaseComplete(modelRun.id, testCase.id, result)
+          callbacks.onCaseComplete(modelRun.id, testCase.id, result, computeAggregate(results))
           console.log('[test-runner] Test case completed:', result)
         } catch (err) {
           const error = err instanceof Error ? err.message : String(err)
@@ -135,7 +140,7 @@ export async function executeTestRun(
             error
           }
           results.push(result)
-          callbacks.onCaseComplete(modelRun.id, testCase.id, result)
+          callbacks.onCaseComplete(modelRun.id, testCase.id, result, computeAggregate(results))
           console.log('[test-runner] Test case completed with error:', result)
         }
       }

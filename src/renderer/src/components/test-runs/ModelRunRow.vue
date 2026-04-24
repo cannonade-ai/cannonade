@@ -46,7 +46,7 @@ function duration(mr: PerModelRun): string {
 
 function passRate(mr: PerModelRun): string {
   if (!mr.aggregate) return '—'
-  return `${mr.aggregate.passed}/${mr.aggregate.total}`
+  return `${mr.aggregate.passed}/${mr.caseRuns.length}`
 }
 
 function score(mr: PerModelRun): string {

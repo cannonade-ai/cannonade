@@ -141,12 +141,12 @@ const mockRuns: TestRun[] = [
 ]
 
 export const useTestRunsStore = defineStore('test-runs', () => {
-  const runs = ref<TestRun[]>(mockRuns)
+  const testRuns = ref<TestRun[]>(mockRuns)
   const selectedRunId = ref<string | null>(null)
   const isCreatingNew = ref(false)
 
   const selectedRun = computed<TestRun | null>(
-    () => runs.value.find((r) => r.id === selectedRunId.value) ?? null
+    () => testRuns.value.find((r) => r.id === selectedRunId.value) ?? null
   )
 
   function selectRun(id: string): void {
@@ -164,7 +164,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   }
 
   function cancelRun(id: string): void {
-    const run = runs.value.find((r) => r.id === id)
+    const run = testRuns.value.find((r) => r.id === id)
     if (!run) return
     run.status = 'cancelled'
     run.modelRuns.forEach((mr) => {
@@ -180,7 +180,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   }
 
   function findModelRun(modelRunId: string): PerModelRun | undefined {
-    for (const run of runs.value) {
+    for (const run of testRuns.value) {
       const mr = run.modelRuns.find((m) => m.id === modelRunId)
       if (mr) return mr
     }
@@ -207,37 +207,45 @@ export const useTestRunsStore = defineStore('test-runs', () => {
         }))
       }))
     }
-    runs.value.unshift(run)
+    testRuns.value.unshift(run)
     selectedRunId.value = run.id
     isCreatingNew.value = false
 
     await executeTestRun(run, suite, {
       onRunStart(runId: string): void {
-        const r = runs.value.find((r) => r.id === runId)
-        if (!r) return
-        r.status = 'running'
-        r.startedAt = new Date().toISOString()
+        const testRun = testRuns.value.find((r) => r.id === runId)
+        if (!testRun) return
+        testRun.status = 'running'
+        testRun.startedAt = new Date().toISOString()
       },
       onModelRunStart(modelRunId: string): void {
-        const mr = findModelRun(modelRunId)
-        if (!mr) return
-        mr.status = 'running'
-        mr.startedAt = new Date().toISOString()
+        const modelRun = findModelRun(modelRunId)
+        if (!modelRun) return
+        modelRun.status = 'running'
+        modelRun.startedAt = new Date().toISOString()
       },
       onCaseStart(modelRunId: string, testCaseId: string): void {
-        const mr = findModelRun(modelRunId)
-        const cr = mr?.caseRuns.find((c) => c.testCaseId === testCaseId)
-        if (!cr) return
-        cr.status = 'running'
-        cr.startedAt = new Date().toISOString()
+        const modelRun = findModelRun(modelRunId)
+        const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
+        if (!caseRun) return
+        caseRun.status = 'running'
+        caseRun.startedAt = new Date().toISOString()
       },
-      onCaseComplete(modelRunId: string, testCaseId: string, result: TestCaseResult): void {
-        const mr = findModelRun(modelRunId)
-        const cr = mr?.caseRuns.find((c) => c.testCaseId === testCaseId)
-        if (!cr) return
-        cr.status = 'completed'
-        cr.completedAt = new Date().toISOString()
-        cr.result = result
+      onCaseComplete(
+        modelRunId: string,
+        testCaseId: string,
+        result: TestCaseResult,
+        aggregate: AggregateMetrics
+      ): void {
+        const modelRun = findModelRun(modelRunId)
+        const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
+        if (modelRun) {
+          modelRun.aggregate = aggregate
+        }
+        if (!caseRun) return
+        caseRun.status = 'completed'
+        caseRun.completedAt = new Date().toISOString()
+        caseRun.result = result
       },
       onModelRunComplete(
         modelRunId: string,
@@ -245,24 +253,24 @@ export const useTestRunsStore = defineStore('test-runs', () => {
         aggregate: AggregateMetrics,
         error?: string
       ): void {
-        const mr = findModelRun(modelRunId)
-        if (!mr) return
-        mr.status = status
-        mr.completedAt = new Date().toISOString()
-        mr.aggregate = aggregate
-        if (error) mr.error = error
+        const modelRun = findModelRun(modelRunId)
+        if (!modelRun) return
+        modelRun.status = status
+        modelRun.completedAt = new Date().toISOString()
+        modelRun.aggregate = aggregate
+        if (error) modelRun.error = error
       },
       onRunComplete(runId: string, status: RunStatus): void {
-        const r = runs.value.find((r) => r.id === runId)
-        if (!r) return
-        r.status = status
-        r.completedAt = new Date().toISOString()
+        const testRun = testRuns.value.find((r) => r.id === runId)
+        if (!testRun) return
+        testRun.status = status
+        testRun.completedAt = new Date().toISOString()
       }
     })
   }
 
   return {
-    runs,
+    runs: testRuns,
     selectedRunId,
     selectedRun,
     isCreatingNew,
