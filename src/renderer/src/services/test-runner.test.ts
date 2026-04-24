@@ -24,6 +24,7 @@ function makeCallbacks(): RunnerCallbacks {
   return {
     onRunStart: vi.fn(),
     onModelRunStart: vi.fn(),
+    onCaseStart: vi.fn(),
     onCaseComplete: vi.fn(),
     onModelRunComplete: vi.fn(),
     onRunComplete: vi.fn()
@@ -52,7 +53,7 @@ function makeModelRun(overrides: Partial<PerModelRun> = {}): PerModelRun {
     modelRef: { source: 'installed', modelKey: 'llama-3' },
     status: 'pending',
     autoDownloaded: false,
-    results: [],
+    caseRuns: [],
     ...overrides
   }
 }
@@ -255,6 +256,7 @@ describe('executeTestRun – case result construction', () => {
     await executeTestRun(makeRun(), makeSuite(), callbacks)
     expect(callbacks.onCaseComplete).toHaveBeenCalledWith(
       'mr-1',
+      'tc-1',
       expect.objectContaining({
         metrics: {
           tokensPerSecond: 100,
@@ -276,6 +278,7 @@ describe('executeTestRun – case result construction', () => {
     await executeTestRun(makeRun(), makeSuite(), callbacks)
     expect(callbacks.onCaseComplete).toHaveBeenCalledWith(
       'mr-1',
+      'tc-1',
       expect.objectContaining({
         passed: false,
         details: 'mismatch',
@@ -297,6 +300,7 @@ describe('executeTestRun – error handling', () => {
     expect(callbacks.onCaseComplete).toHaveBeenNthCalledWith(
       1,
       'mr-1',
+      'tc-1',
       expect.objectContaining({
         testCaseId: 'tc-1',
         passed: false,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   IconCheck,
   IconX,
@@ -9,16 +9,29 @@ import {
   IconChevronDown,
   IconAlertCircle
 } from '@tabler/icons-vue'
-import type { PerModelRun, ModelRef } from '@shared/app/test-run'
+
+import type { PerModelRun, ModelRef, TestCaseRun } from '@shared/app/test-run'
 import type { TestCase } from '@shared/app/test-suite'
 import ModelRunTestCaseRow from './ModelRunTestCaseRow.vue'
 
-defineProps<{
+const props = defineProps<{
   modelRun: PerModelRun
   testCases: TestCase[]
+  expanded?: boolean
 }>()
 
-const expanded = ref(false)
+const expanded = ref(props.expanded ?? false)
+
+function caseRunFor(testCaseId: string): TestCaseRun | undefined {
+  return props.modelRun.caseRuns.find((cr) => cr.testCaseId === testCaseId)
+}
+
+const showTestCases = computed<boolean>(() => {
+  const s = props.modelRun.status
+  return (
+    props.modelRun.caseRuns.length > 0 && (s === 'running' || s === 'completed' || s === 'failed')
+  )
+})
 
 function modelLabel(ref: ModelRef): string {
   return ref.source === 'installed' ? ref.modelKey : ref.modelId
@@ -150,13 +163,13 @@ function toggle(): void {
         {{ modelRun.error }}
       </div>
 
-      <div v-if="modelRun.results.length > 0" class="test-cases">
+      <div v-if="showTestCases" class="test-cases">
         <div class="test-case-list">
           <model-run-test-case-row
-            v-for="result in modelRun.results"
-            :key="result.testCaseId"
-            :result="result"
-            :test-case="testCases.find((tc) => tc.id === result.testCaseId)!"
+            v-for="tc in testCases"
+            :key="tc.id"
+            :test-case="tc"
+            :case-run="caseRunFor(tc.id)"
           />
         </div>
       </div>

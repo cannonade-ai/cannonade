@@ -75,10 +75,11 @@ function formatDate(iso: string | undefined): string {
       <div class="section-label">Model Results</div>
       <div class="model-list">
         <model-run-row
-          v-for="mr in run.modelRuns"
+          v-for="(mr, i) in run.modelRuns"
           :key="mr.id"
           :model-run="mr"
           :test-cases="testCases"
+          :expanded="i === 0"
         />
       </div>
     </div>

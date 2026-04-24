@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { TestRun, TestRunConfig, RunStatus } from '@shared/app/test-run'
+import type { TestRun, TestRunConfig, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import { executeTestRun } from '../services/test-runner'
 export interface SuiteSummary {
@@ -35,7 +35,7 @@ const mockRuns: TestRun[] = [
         autoDownloaded: false,
         startedAt: '2026-04-15T09:01:00Z',
         completedAt: '2026-04-15T09:03:10Z',
-        results: [],
+        caseRuns: [],
         aggregate: { total: 4, passed: 4, failed: 0, avgCorrectnessScore: 1 }
       },
       {
@@ -45,7 +45,7 @@ const mockRuns: TestRun[] = [
         autoDownloaded: false,
         startedAt: '2026-04-15T09:01:00Z',
         completedAt: '2026-04-15T09:04:22Z',
-        results: [],
+        caseRuns: [],
         aggregate: { total: 4, passed: 3, failed: 1, avgCorrectnessScore: 0.81 }
       }
     ]
@@ -72,7 +72,7 @@ const mockRuns: TestRun[] = [
         autoDownloaded: true,
         startedAt: '2026-04-14T16:31:00Z',
         completedAt: '2026-04-14T16:33:45Z',
-        results: [],
+        caseRuns: [],
         aggregate: { total: 4, passed: 1, failed: 3 },
         error: 'Model output exceeded context limit on test case 3'
       }
@@ -98,7 +98,43 @@ const mockRuns: TestRun[] = [
         status: 'running',
         autoDownloaded: false,
         startedAt: '2026-04-16T08:00:30Z',
-        results: []
+        caseRuns: [
+          {
+            testCaseId: 'tc-1',
+            status: 'completed',
+            startedAt: '2026-04-16T08:00:35Z',
+            completedAt: '2026-04-16T08:00:52Z',
+            result: {
+              testCaseId: 'tc-1',
+              output:
+                'function fibonacci(n) { return n <= 1 ? n : fibonacci(n-1) + fibonacci(n-2); }',
+              metrics: { tokensPerSecond: 42.3, timeToFirstTokenMs: 310, correctnessScore: 1 },
+              passed: true
+            }
+          },
+          {
+            testCaseId: 'tc-2',
+            status: 'failed',
+            startedAt: '2026-04-16T08:00:53Z',
+            completedAt: '2026-04-16T08:01:10Z',
+            result: {
+              testCaseId: 'tc-2',
+              output: 'def sort(arr): return arr.sort()',
+              metrics: { tokensPerSecond: 38.7, timeToFirstTokenMs: 290, correctnessScore: 0 },
+              passed: false,
+              error: 'Output mutates input array instead of returning a new sorted array'
+            }
+          },
+          {
+            testCaseId: 'tc-3',
+            status: 'running',
+            startedAt: '2026-04-16T08:01:11Z'
+          },
+          {
+            testCaseId: 'tc-4',
+            status: 'pending'
+          }
+        ]
       }
     ]
   }
@@ -134,11 +170,16 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     run.modelRuns.forEach((mr) => {
       if (mr.status === 'pending' || mr.status === 'running') {
         mr.status = 'cancelled'
+        mr.caseRuns.forEach((cr) => {
+          if (cr.status === 'pending' || cr.status === 'running') {
+            cr.status = 'cancelled'
+          }
+        })
       }
     })
   }
 
-  function findModelRun(modelRunId: string): (typeof runs.value)[0]['modelRuns'][0] | undefined {
+  function findModelRun(modelRunId: string): PerModelRun | undefined {
     for (const run of runs.value) {
       const mr = run.modelRuns.find((m) => m.id === modelRunId)
       if (mr) return mr
@@ -160,7 +201,10 @@ export const useTestRunsStore = defineStore('test-runs', () => {
         modelRef,
         status: 'pending',
         autoDownloaded: false,
-        results: []
+        caseRuns: suite.testCases.map((tc) => ({
+          testCaseId: tc.id,
+          status: 'pending' as RunStatus
+        }))
       }))
     }
     runs.value.unshift(run)
@@ -180,8 +224,20 @@ export const useTestRunsStore = defineStore('test-runs', () => {
         mr.status = 'running'
         mr.startedAt = new Date().toISOString()
       },
-      onCaseComplete(modelRunId: string, result: TestCaseResult): void {
-        findModelRun(modelRunId)?.results.push(result)
+      onCaseStart(modelRunId: string, testCaseId: string): void {
+        const mr = findModelRun(modelRunId)
+        const cr = mr?.caseRuns.find((c) => c.testCaseId === testCaseId)
+        if (!cr) return
+        cr.status = 'running'
+        cr.startedAt = new Date().toISOString()
+      },
+      onCaseComplete(modelRunId: string, testCaseId: string, result: TestCaseResult): void {
+        const mr = findModelRun(modelRunId)
+        const cr = mr?.caseRuns.find((c) => c.testCaseId === testCaseId)
+        if (!cr) return
+        cr.status = 'completed'
+        cr.completedAt = new Date().toISOString()
+        cr.result = result
       },
       onModelRunComplete(
         modelRunId: string,

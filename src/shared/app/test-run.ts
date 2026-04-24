@@ -23,6 +23,14 @@ export interface TestRunConfig {
 
 export type RunStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
 
+export interface TestCaseRun {
+  testCaseId: string
+  status: RunStatus
+  startedAt?: string
+  completedAt?: string
+  result?: TestCaseResult
+}
+
 export interface PerModelRun {
   id: string
   modelRef: ModelRef
@@ -30,7 +38,7 @@ export interface PerModelRun {
   autoDownloaded: boolean
   startedAt?: string
   completedAt?: string
-  results: TestCaseResult[]
+  caseRuns: TestCaseRun[]
   aggregate?: AggregateMetrics
   error?: string
 }

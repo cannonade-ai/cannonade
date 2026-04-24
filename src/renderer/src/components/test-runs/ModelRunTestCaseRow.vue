@@ -1,19 +1,26 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { IconChevronDown } from '@tabler/icons-vue'
-import type { TestCase, ChatMessage } from '@shared/app/test-suite'
-import type { TestCaseResult } from '@shared/app/test-suite'
+import { IconCheck, IconX, IconClock, IconLoader2, IconChevronDown } from '@tabler/icons-vue'
+import type { TestCase, ChatMessage, TestCaseResult } from '@shared/app/test-suite'
+import type { TestCaseRun } from '@shared/app/test-run'
 
 const props = defineProps<{
   testCase: TestCase
-  result: TestCaseResult
+  caseRun?: TestCaseRun
 }>()
 
 const expanded = ref(false)
 
 function toggle(): void {
+  if (!props.caseRun?.result) return
   expanded.value = !expanded.value
 }
+
+const effectiveStatus = computed<string>(() => {
+  const result = props.caseRun?.result
+  if (result) return result.passed ? 'passed' : 'failed'
+  return props.caseRun?.status ?? 'pending'
+})
 
 function scoreLabel(result: TestCaseResult): string {
   if (result.metrics.correctnessScore == null) return '—'
@@ -50,18 +57,31 @@ function ttft(result: TestCaseResult): string {
 }
 
 const hasMetrics = computed<boolean>(() => {
-  const m = props.result.metrics
+  const m = props.caseRun?.result?.metrics
+  if (!m) return false
   return m.tokensPerSecond != null || m.timeToFirstTokenMs != null || m.correctnessScore != null
 })
 </script>
 
 <template>
-  <div class="test-case-row" :class="result.passed ? 'passed' : 'failed'">
-    <button class="case-summary" @click="toggle">
+  <div class="test-case-row" :class="effectiveStatus">
+    <button class="case-summary" :class="{ inactive: !caseRun?.result }" @click="toggle">
       <span class="status-bar" />
       <div class="summary-left">
-        <span class="status-pill" :class="result.passed ? 'passed' : 'failed'">
-          {{ result.passed ? 'PASS' : 'FAIL' }}
+        <span class="status-icon-wrap" :class="effectiveStatus">
+          <IconCheck v-if="caseRun?.result?.passed" :size="13" :stroke-width="2.5" />
+          <IconX
+            v-else-if="caseRun?.result && !caseRun.result.passed"
+            :size="13"
+            :stroke-width="2.5"
+          />
+          <IconLoader2
+            v-else-if="caseRun?.status === 'running'"
+            :size="13"
+            :stroke-width="2"
+            class="spin"
+          />
+          <IconClock v-else :size="13" :stroke-width="2" />
         </span>
         <div class="case-info">
           <span class="case-name">{{ testCase.name }}</span>
@@ -71,9 +91,9 @@ const hasMetrics = computed<boolean>(() => {
         </div>
       </div>
 
-      <div class="summary-right">
+      <div v-if="caseRun?.result" class="summary-right">
         <span class="eval-type">{{ testCase.evaluation.type }}</span>
-        <span class="score">{{ scoreLabel(result) }}</span>
+        <span class="score">{{ scoreLabel(caseRun.result) }}</span>
         <IconChevronDown
           :size="13"
           :stroke-width="2"
@@ -83,10 +103,10 @@ const hasMetrics = computed<boolean>(() => {
       </div>
     </button>
 
-    <div v-if="expanded" class="case-details">
-      <div v-if="result.error" class="detail-block error-block">
+    <div v-if="expanded && caseRun?.result" class="case-details">
+      <div v-if="caseRun.result.error" class="detail-block error-block">
         <span class="detail-label">Error</span>
-        <span class="detail-value error-text">{{ result.error }}</span>
+        <span class="detail-value error-text">{{ caseRun.result.error }}</span>
       </div>
 
       <div v-if="systemPrompt" class="detail-block">
@@ -113,33 +133,33 @@ const hasMetrics = computed<boolean>(() => {
           <span class="detail-label">Expected Output</span>
           <pre class="detail-pre output-pre">{{ expectedOutput }}</pre>
         </div>
-        <div v-if="result.output" class="output-col">
+        <div v-if="caseRun.result.output" class="output-col">
           <span class="detail-label">Actual Output</span>
-          <pre class="detail-pre output-pre">{{ result.output }}</pre>
+          <pre class="detail-pre output-pre">{{ caseRun.result.output }}</pre>
         </div>
       </div>
 
-      <div v-if="result.details != null" class="detail-block">
+      <div v-if="caseRun.result.details != null" class="detail-block">
         <span class="detail-label">Details</span>
-        <pre class="detail-pre">{{ JSON.stringify(result.details, null, 2) }}</pre>
+        <pre class="detail-pre">{{ JSON.stringify(caseRun.result.details, null, 2) }}</pre>
       </div>
 
       <div v-if="hasMetrics" class="detail-block">
         <span class="detail-label">Metrics</span>
         <div class="case-metrics">
-          <div v-if="result.metrics.tokensPerSecond != null" class="case-metric">
+          <div v-if="caseRun.result.metrics.tokensPerSecond != null" class="case-metric">
             <span class="case-metric-label">Tok/s</span>
             <span class="case-metric-value">{{
-              formatMetricValue(result.metrics.tokensPerSecond, '')
+              formatMetricValue(caseRun.result.metrics.tokensPerSecond, '')
             }}</span>
           </div>
-          <div v-if="result.metrics.timeToFirstTokenMs != null" class="case-metric">
+          <div v-if="caseRun.result.metrics.timeToFirstTokenMs != null" class="case-metric">
             <span class="case-metric-label">TTFT</span>
-            <span class="case-metric-value">{{ ttft(result) }}</span>
+            <span class="case-metric-value">{{ ttft(caseRun.result) }}</span>
           </div>
-          <div v-if="result.metrics.correctnessScore != null" class="case-metric">
+          <div v-if="caseRun.result.metrics.correctnessScore != null" class="case-metric">
             <span class="case-metric-label">Score</span>
-            <span class="case-metric-value">{{ scoreLabel(result) }}</span>
+            <span class="case-metric-value">{{ scoreLabel(caseRun.result) }}</span>
           </div>
         </div>
       </div>
@@ -170,6 +190,14 @@ const hasMetrics = computed<boolean>(() => {
   background: var(--surface-hover, rgba(255, 255, 255, 0.04));
 }
 
+.case-summary.inactive {
+  cursor: default;
+}
+
+.case-summary.inactive:hover {
+  background: none;
+}
+
 .summary-left {
   display: flex;
   align-items: center;
@@ -193,20 +221,46 @@ const hasMetrics = computed<boolean>(() => {
   background: #ef4444;
 }
 
-.status-pill {
-  font-size: var(--text-xs);
+.test-case-row.running .status-bar {
+  background: var(--accent);
+}
+
+.test-case-row.pending .status-bar {
+  background: transparent;
+}
+
+.status-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 2.5rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
   flex-shrink: 0;
 }
 
-.status-pill.passed {
+.status-icon-wrap.passed {
   color: #22c55e;
 }
 
-.status-pill.failed {
+.status-icon-wrap.failed {
   color: #ef4444;
+}
+
+.status-icon-wrap.running {
+  color: var(--accent);
+}
+
+.status-icon-wrap.pending {
+  color: var(--text-muted);
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .case-info {
@@ -224,6 +278,11 @@ const hasMetrics = computed<boolean>(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   text-align: left;
+}
+
+.test-case-row.pending .case-name,
+.test-case-row.running .case-name {
+  color: var(--text-secondary);
 }
 
 .case-description {

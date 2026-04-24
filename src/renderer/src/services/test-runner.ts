@@ -7,7 +7,8 @@ import { evaluate } from './evaluator'
 export interface RunnerCallbacks {
   onRunStart(runId: string): void
   onModelRunStart(modelRunId: string): void
-  onCaseComplete(modelRunId: string, result: TestCaseResult): void
+  onCaseStart(modelRunId: string, testCaseId: string): void
+  onCaseComplete(modelRunId: string, testCaseId: string, result: TestCaseResult): void
   onModelRunComplete(
     modelRunId: string,
     status: RunStatus,
@@ -98,6 +99,7 @@ export async function executeTestRun(
 
     try {
       for (const testCase of suite.testCases) {
+        callbacks.onCaseStart(modelRun.id, testCase.id)
         console.log('[test-runner] Starting test case:', testCase)
         const request = buildRequest(testCase, modelKey)
 
@@ -121,7 +123,7 @@ export async function executeTestRun(
           }
 
           results.push(result)
-          callbacks.onCaseComplete(modelRun.id, result)
+          callbacks.onCaseComplete(modelRun.id, testCase.id, result)
           console.log('[test-runner] Test case completed:', result)
         } catch (err) {
           const error = err instanceof Error ? err.message : String(err)
@@ -133,7 +135,7 @@ export async function executeTestRun(
             error
           }
           results.push(result)
-          callbacks.onCaseComplete(modelRun.id, result)
+          callbacks.onCaseComplete(modelRun.id, testCase.id, result)
           console.log('[test-runner] Test case completed with error:', result)
         }
       }
