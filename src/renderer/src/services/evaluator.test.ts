@@ -294,6 +294,93 @@ describe('f1', () => {
   })
 })
 
+describe('json_match', () => {
+  const base: EvaluationConfig = {
+    type: 'json_match',
+    customValidator: { language: 'javascript', code: '' },
+    codeExecution: { language: 'javascript', testCases: [] }
+  }
+
+  it('passes when all keys match', () => {
+    const expected = JSON.stringify({ id: 'u1', name: 'Alice' })
+    const result = evaluate(JSON.stringify({ id: 'u1', name: 'Alice' }), { ...base, expected })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+    expect(result.details).toContain('2/2')
+  })
+
+  it('passes when output has extra keys not in expected', () => {
+    const expected = JSON.stringify({ id: 'u1' })
+    const result = evaluate(JSON.stringify({ id: 'u1', name: 'Alice' }), { ...base, expected })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBeCloseTo(0.5)
+  })
+
+  it('counts nested object keys individually', () => {
+    const json = JSON.stringify({ user: { id: 'u1', name: 'Alice' } })
+    const result = evaluate(json, { ...base, expected: json })
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('fails when output is missing expected keys', () => {
+    const expected = JSON.stringify({ id: 'u1', name: 'Alice', age: 30 })
+    const result = evaluate(JSON.stringify({ id: 'u1' }), { ...base, expected })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBeCloseTo(0.33)
+  })
+
+  it('counts array items and their keys', () => {
+    const json = JSON.stringify({
+      id: 'u1',
+      orders: [
+        { id: 'o1', amount: 10 },
+        { id: 'o2', amount: 20 }
+      ]
+    })
+    const result = evaluate(json, { ...base, expected: json })
+    expect(result.details).toContain('6/6')
+    expect(result.passed).toBe(true)
+  })
+
+  it('matches flat keys regardless of value differences', () => {
+    const expected = JSON.stringify({ id: 'u1', name: 'Alice' })
+    const actual = JSON.stringify({ name: 'Bob', id: 'u999' })
+    const result = evaluate(actual, { ...base, expected })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('passes for empty expected object', () => {
+    const result = evaluate(JSON.stringify({ id: 'u1' }), { ...base, expected: '{}' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0)
+  })
+
+  it('returns error when expected is empty string', () => {
+    const result = evaluate(JSON.stringify({ id: 'u1' }), { ...base, expected: '' })
+    expect(result.passed).toBe(false)
+    expect(result.error).toBeTruthy()
+  })
+
+  it('returns error when expected is not valid JSON', () => {
+    const result = evaluate(JSON.stringify({ id: 'u1' }), { ...base, expected: 'not json' })
+    expect(result.passed).toBe(false)
+    expect(result.error).toBeTruthy()
+  })
+
+  it('returns error when output is not valid JSON', () => {
+    const result = evaluate('not json', { ...base, expected: JSON.stringify({ id: 'u1' }) })
+    expect(result.passed).toBe(false)
+    expect(result.error).toBeTruthy()
+  })
+
+  it('returns error when output is empty', () => {
+    const result = evaluate('', { ...base, expected: JSON.stringify({ id: 'u1' }) })
+    expect(result.passed).toBe(false)
+    expect(result.error).toBeTruthy()
+  })
+})
+
 describe('unknown type', () => {
   it('returns error for unimplemented type', () => {
     const config = {

@@ -263,6 +263,11 @@ describe('executeTestRun – case result construction', () => {
           timeToFirstTokenMs: 200,
           correctnessScore: 1
         }
+      }),
+      expect.objectContaining({
+        avgCorrectnessScore: 1,
+        avgTokensPerSecond: 100,
+        avgTimeToFirstTokenMs: 200
       })
     )
   })
@@ -283,6 +288,11 @@ describe('executeTestRun – case result construction', () => {
         passed: false,
         details: 'mismatch',
         error: 'no match'
+      }),
+      expect.objectContaining({
+        avgCorrectnessScore: 0,
+        avgTokensPerSecond: 50,
+        avgTimeToFirstTokenMs: 100
       })
     )
   })
@@ -307,6 +317,11 @@ describe('executeTestRun – error handling', () => {
         error: 'network error',
         output: '',
         metrics: {}
+      }),
+      expect.objectContaining({
+        avgCorrectnessScore: 0,
+        failed: 1,
+        passed: 0
       })
     )
   })
