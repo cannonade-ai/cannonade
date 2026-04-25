@@ -25,6 +25,8 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
       return evaluateLevenshtein(output, evaluation)
     case 'f1':
       return evaluateF1(output, evaluation)
+    case 'json_match':
+      return evaluateJsonMatch(output, evaluation)
     default:
       return {
         correctnessScore: 0,
@@ -116,4 +118,62 @@ function evaluateLevenshtein(output: string, evaluation: EvaluationConfig): Eval
   const distance = levenshteinDistance(output.toLocaleLowerCase(), expected.toLocaleLowerCase())
   const correctnessScore = 1 - distance / Math.max(output.length, expected.length)
   return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+}
+
+function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
+  const expectedRaw = typeof evaluation.expected === 'string' ? evaluation.expected : ''
+  if (expectedRaw.length === 0) {
+    return { correctnessScore: 0, passed: false, error: 'No expected JSON provided' }
+  }
+  if (output.length === 0) {
+    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+  }
+
+  let actualJson: object
+  let expectedJson: object
+
+  try {
+    expectedJson = JSON.parse(expectedRaw)
+  } catch {
+    return { correctnessScore: 0, passed: false, error: 'Expected value is not valid JSON' }
+  }
+
+  try {
+    actualJson = JSON.parse(output)
+  } catch {
+    return { correctnessScore: 0, passed: false, error: 'Model output is not valid JSON' }
+  }
+
+  const expectedPaths = collectJsonPaths(expectedJson)
+  const actualPaths = collectJsonPaths(actualJson)
+  const totalFields = Math.max(expectedPaths.size, actualPaths.size)
+
+  if (totalFields === 0) {
+    return { correctnessScore: 1, passed: true }
+  }
+
+  let matchedFields = 0
+  for (const path of expectedPaths) {
+    if (actualPaths.has(path)) matchedFields++
+  }
+
+  const correctnessScore = matchedFields / totalFields
+  return {
+    correctnessScore,
+    passed: correctnessScore >= PASS_THRESHOLD,
+    details: `Matched ${matchedFields}/${totalFields} keys`
+  }
+}
+
+function collectJsonPaths(obj: unknown, prefix = '', paths = new Set<string>()): Set<string> {
+  if (Array.isArray(obj)) {
+    obj.forEach((item, index) => collectJsonPaths(item, `${prefix}[${index}]`, paths))
+  } else if (typeof obj === 'object' && obj !== null) {
+    for (const key of Object.keys(obj)) {
+      const path = prefix ? `${prefix}.${key}` : key
+      paths.add(path)
+      collectJsonPaths(obj[key], path, paths)
+    }
+  }
+  return paths
 }

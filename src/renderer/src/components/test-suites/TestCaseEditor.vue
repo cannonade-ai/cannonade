@@ -21,11 +21,12 @@ const emit = defineEmits<{
 const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'exact_match', label: 'Exact Match' },
   { value: 'contains', label: 'Contains' },
-  { value: 'json_match', label: 'JSON Match' },
   { value: 'regex', label: 'Regex' },
-  { value: 'bleu', label: 'BLEU' },
   { value: 'rouge', label: 'ROUGE' },
   { value: 'levenshtein', label: 'Levenshtein' },
+  { value: 'f1', label: 'F1' },
+  { value: 'json_match', label: 'JSON Match' },
+  { value: 'bleu', label: 'BLEU' },
   { value: 'mrr', label: 'MRR' },
   { value: 'custom', label: 'Custom Validator' },
   { value: 'code_execution', label: 'Code Execution' }
