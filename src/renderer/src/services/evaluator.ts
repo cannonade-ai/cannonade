@@ -1,4 +1,5 @@
 import type { EvaluationConfig } from '@shared/app/test-suite'
+import { l as rougeL } from 'js-rouge'
 
 export interface EvaluationResult {
   correctnessScore: number
@@ -17,8 +18,14 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
       return evaluateContains(output, evaluation)
     case 'regex':
       return evaluateRegex(output, evaluation)
+    case 'rouge':
+      return evaluateRouge(output, evaluation)
     default:
-      return { correctnessScore: 0, passed: false, error: 'Evaluation type not implemented yet' }
+      return {
+        correctnessScore: 0,
+        passed: false,
+        error: `Evaluation type '${evaluation.type}' is not implemented yet`
+      }
   }
 }
 
@@ -60,4 +67,16 @@ function evaluateContains(output: string, evaluation: EvaluationConfig): Evaluat
     passed: correctnessScore > PASS_THRESHOLD,
     details: `${matched.length}/${terms.length} terms found`
   }
+}
+
+function evaluateRouge(output: string, evaluation: EvaluationConfig): EvaluationResult {
+  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
+  if (expected.length === 0) {
+    return { correctnessScore: 0, passed: false, error: 'No expected value provided' }
+  }
+  if (output.length === 0) {
+    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+  }
+  const correctnessScore = rougeL(output, expected, { caseSensitive: false })
+  return { correctnessScore, passed: correctnessScore > PASS_THRESHOLD }
 }

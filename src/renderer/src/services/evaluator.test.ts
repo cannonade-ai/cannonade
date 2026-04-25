@@ -98,6 +98,67 @@ describe('regex', () => {
   })
 })
 
+describe('rouge', () => {
+  const base: EvaluationConfig = {
+    type: 'rouge',
+    customValidator: { language: 'javascript', code: '' },
+    codeExecution: { language: 'javascript', testCases: [] }
+  }
+
+  it('passes with identical output and expected', () => {
+    const result = evaluate('the quick brown fox', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('passes when output is a case-insensitive match', () => {
+    const result = evaluate('THE QUICK BROWN FOX', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('returns partial score for partially overlapping output', () => {
+    const result = evaluate('the quick fox', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBeGreaterThan(0)
+    expect(result.correctnessScore).toBeLessThan(1)
+  })
+
+  it('returns partial score for partially overlapping output 2', () => {
+    const result = evaluate(
+      `Two things are infinite, universe and human stupidity. I am not sure about the universe.`,
+      {
+        ...base,
+        expected: `Two things are infinite: the universe and human stupidity; and I'm not sure about the universe.`
+      }
+    )
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBeGreaterThan(0)
+    expect(result.correctnessScore).toBeLessThan(1)
+  })
+
+  it('returns zero score for completely different output', () => {
+    const result = evaluate('completely different text', {
+      ...base,
+      expected: 'the quick brown fox'
+    })
+    expect(result.correctnessScore).toBe(0)
+    expect(result.passed).toBe(false)
+  })
+
+  it('returns zero score when expected is empty', () => {
+    const result = evaluate('some output', { ...base, expected: '' })
+    expect(result.correctnessScore).toBe(0)
+    expect(result.passed).toBe(false)
+  })
+
+  it('returns zero score when output is empty', () => {
+    const result = evaluate('', { ...base, expected: 'some expected text' })
+    expect(result.correctnessScore).toBe(0)
+    expect(result.passed).toBe(false)
+  })
+})
+
 describe('unknown type', () => {
   it('returns error for unimplemented type', () => {
     const config = {
