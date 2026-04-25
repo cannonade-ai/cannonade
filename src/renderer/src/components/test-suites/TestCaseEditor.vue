@@ -25,6 +25,7 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'regex', label: 'Regex' },
   { value: 'bleu', label: 'BLEU' },
   { value: 'rouge', label: 'ROUGE' },
+  { value: 'levenshtein', label: 'Levenshtein' },
   { value: 'mrr', label: 'MRR' },
   { value: 'custom', label: 'Custom Validator' },
   { value: 'code_execution', label: 'Code Execution' }

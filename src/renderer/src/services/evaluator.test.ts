@@ -159,6 +159,141 @@ describe('rouge', () => {
   })
 })
 
+describe('levenshtein', () => {
+  const base: EvaluationConfig = {
+    type: 'levenshtein',
+    customValidator: { language: 'javascript', code: '' },
+    codeExecution: { language: 'javascript', testCases: [] }
+  }
+
+  it('passes with identical output and expected', () => {
+    const result = evaluate('hello world', { ...base, expected: 'hello world' })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('passes with output and expected case insensive', () => {
+    const result = evaluate('HeLLo WoRLD ÇŞĞİ-123*%', {
+      ...base,
+      expected: 'hEllo wOrld çşği-123*%'
+    })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('passes when output is very close to expected', () => {
+    const result = evaluate('hello world', { ...base, expected: 'hello worlt' })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBeCloseTo(0.909, 3)
+  })
+
+  it('passes when output is long and very close to expected', () => {
+    const result = evaluate(
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas blandit semper augue, et placerat.',
+      {
+        ...base,
+        expected:
+          'Dorem ipsum lolor sit amet: fonsectetur abipiscing elit. Naecenas blandic semper augue, ed klacerat'
+      }
+    )
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(0.9)
+  })
+
+  it('returns partial score for moderately different output', () => {
+    const result = evaluate('kitten', { ...base, expected: 'sitting' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBeCloseTo(0.571, 3)
+  })
+
+  it('returns low score for completely different output', () => {
+    const result = evaluate('abc', { ...base, expected: 'xyz' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0)
+  })
+
+  it('returns error when expected is empty', () => {
+    const result = evaluate('hello', { ...base, expected: '' })
+    expect(result.passed).toBe(false)
+    expect(result.error).toBeTruthy()
+  })
+
+  it('returns error when output is empty', () => {
+    const result = evaluate('', { ...base, expected: 'hello' })
+    expect(result.passed).toBe(false)
+    expect(result.error).toBeTruthy()
+  })
+})
+
+describe('f1', () => {
+  const base: EvaluationConfig = {
+    type: 'f1',
+    customValidator: { language: 'javascript', code: '' },
+    codeExecution: { language: 'javascript', testCases: [] }
+  }
+
+  it('passes with identical output and expected', () => {
+    const result = evaluate('the quick brown fox', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('passes regardless of word order', () => {
+    const result = evaluate('fox brown quick the', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('fails if half of the words are different but very similar', () => {
+    const result = evaluate(
+      'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas blandit semper augue, et placerat.',
+      {
+        ...base,
+        expected:
+          'Forem upsum color dit emet, tonsectetur üdipiscing elit. Maecenas blandit semper augue, et placerat.'
+      }
+    )
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0.5)
+  })
+
+  it('is case insensitive', () => {
+    const result = evaluate('THE QUICK BROWN FOX', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('returns partial score when some words overlap', () => {
+    const result = evaluate('the quick fox', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBeCloseTo(0.857, 3)
+  })
+
+  it('returns zero score for completely different words', () => {
+    const result = evaluate('cat sat mat', { ...base, expected: 'the quick brown fox' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0)
+  })
+
+  it('returns zero score when output is empty', () => {
+    const result = evaluate('', { ...base, expected: 'hello world' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0)
+  })
+
+  it('returns zero score when expected is empty', () => {
+    const result = evaluate('hello world', { ...base, expected: '' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0)
+  })
+
+  it('returns zero score when output is empty', () => {
+    const result = evaluate('', { ...base, expected: 'hello world' })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0)
+  })
+})
+
 describe('unknown type', () => {
   it('returns error for unimplemented type', () => {
     const config = {

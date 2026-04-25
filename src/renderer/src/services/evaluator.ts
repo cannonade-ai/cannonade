@@ -1,5 +1,6 @@
 import type { EvaluationConfig } from '@shared/app/test-suite'
 import { l as rougeL } from 'js-rouge'
+import { distance as levenshteinDistance } from 'fastest-levenshtein'
 
 export interface EvaluationResult {
   correctnessScore: number
@@ -8,7 +9,7 @@ export interface EvaluationResult {
   error?: string
 }
 
-const PASS_THRESHOLD = 0.9
+const PASS_THRESHOLD = 0.9 // todo: make this parametric
 
 export function evaluate(output: string, evaluation: EvaluationConfig): EvaluationResult {
   switch (evaluation.type) {
@@ -20,6 +21,10 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
       return evaluateRegex(output, evaluation)
     case 'rouge':
       return evaluateRouge(output, evaluation)
+    case 'levenshtein':
+      return evaluateLevenshtein(output, evaluation)
+    case 'f1':
+      return evaluateF1(output, evaluation)
     default:
       return {
         correctnessScore: 0,
@@ -29,10 +34,27 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
   }
 }
 
+function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationResult {
+  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
+
+  const predSet = new Set(output.toLowerCase().split(' '))
+  const refSet = new Set(expected.toLowerCase().split(' '))
+  const common = [...predSet].filter((t) => refSet.has(t))
+
+  const precision = common.length / predSet.size
+  const recall = common.length / refSet.size
+
+  if (precision + recall === 0) {
+    return { correctnessScore: 0, passed: false }
+  }
+  const correctnessScore = (2 * precision * recall) / (precision + recall)
+  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+}
+
 function evaluateExactMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   const correctnessScore = output.trim() === expected.trim() ? 1 : 0
-  return { correctnessScore, passed: correctnessScore > PASS_THRESHOLD }
+  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
 }
 
 function evaluateRegex(output: string, evaluation: EvaluationConfig): EvaluationResult {
@@ -64,12 +86,13 @@ function evaluateContains(output: string, evaluation: EvaluationConfig): Evaluat
   const correctnessScore = matched.length / terms.length
   return {
     correctnessScore,
-    passed: correctnessScore > PASS_THRESHOLD,
+    passed: correctnessScore >= PASS_THRESHOLD,
     details: `${matched.length}/${terms.length} terms found`
   }
 }
 
 function evaluateRouge(output: string, evaluation: EvaluationConfig): EvaluationResult {
+  // todo: add case insensivity as param
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (expected.length === 0) {
     return { correctnessScore: 0, passed: false, error: 'No expected value provided' }
@@ -78,5 +101,19 @@ function evaluateRouge(output: string, evaluation: EvaluationConfig): Evaluation
     return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
   }
   const correctnessScore = rougeL(output, expected, { caseSensitive: false })
-  return { correctnessScore, passed: correctnessScore > PASS_THRESHOLD }
+  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+}
+
+function evaluateLevenshtein(output: string, evaluation: EvaluationConfig): EvaluationResult {
+  // todo: add case insensivity as param
+  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
+  if (expected.length === 0) {
+    return { correctnessScore: 0, passed: false, error: 'No expected value provided' }
+  }
+  if (output.length === 0) {
+    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+  }
+  const distance = levenshteinDistance(output.toLocaleLowerCase(), expected.toLocaleLowerCase())
+  const correctnessScore = 1 - distance / Math.max(output.length, expected.length)
+  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
 }

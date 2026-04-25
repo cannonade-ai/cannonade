@@ -70,6 +70,8 @@ export interface EvaluationConfig {
     | 'regex'
     | 'bleu'
     | 'rouge'
+    | 'levenshtein'
+    | 'f1'
     | 'mrr'
     | 'custom'
     | 'code_execution'
