@@ -286,7 +286,7 @@ function toggle(): void {
 }
 
 .chevron {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   flex-shrink: 0;
   transition: transform 0.2s ease;
   transform: rotate(-90deg);

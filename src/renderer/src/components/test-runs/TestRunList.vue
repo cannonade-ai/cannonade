@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TestRun } from '@shared/app/test-run'
 import BaseBadge from '../BaseBadge.vue'
+import { formatDate } from '@renderer/utils/format'
 
 defineProps<{
   runs: TestRun[]
@@ -10,15 +11,6 @@ defineProps<{
 const emit = defineEmits<{
   'select-run': [id: string]
 }>()
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
 
 function modelCount(run: TestRun): string {
   const n = run.config.models.length

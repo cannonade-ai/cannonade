@@ -9,6 +9,7 @@ import BaseModal from '@renderer/components/BaseModal.vue'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
+import { formatDate } from '@renderer/utils/format'
 
 const props = defineProps<{
   run: TestRun
@@ -27,17 +28,6 @@ const isActive = computed(() => props.run.status === 'running' || props.run.stat
 function confirmCancel(): void {
   store.cancelRun(props.run.id)
   showCancelModal.value = false
-}
-
-function formatDate(iso: string | undefined): string {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit'
-  })
 }
 </script>
 

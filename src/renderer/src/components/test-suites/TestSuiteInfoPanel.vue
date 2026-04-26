@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { formatDate } from '@renderer/utils/format'
+
 const name = defineModel<string>('name', { required: true })
 const description = defineModel<string | undefined>('description')
 
@@ -25,11 +27,11 @@ const props = defineProps<{
       <div class="meta-rows">
         <div class="meta-row">
           <span class="meta-label">Created</span>
-          <span class="meta-value">{{ new Date(props.createdAt).toLocaleString() }}</span>
+          <span class="meta-value">{{ formatDate(props.createdAt, true) }}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">Updated</span>
-          <span class="meta-value">{{ new Date(props.updatedAt).toLocaleString() }}</span>
+          <span class="meta-value">{{ formatDate(props.updatedAt, true) }}</span>
         </div>
       </div>
     </div>

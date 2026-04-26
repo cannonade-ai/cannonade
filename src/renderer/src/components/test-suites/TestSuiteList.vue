@@ -3,6 +3,7 @@ import { IconTestPipe, IconDotsVertical, IconTrash, IconCopy } from '@tabler/ico
 import type { TestSuite } from '@shared/app/test-suite'
 import ContextMenu from '../ContextMenu.vue'
 import type { ContextMenuItem } from '../ContextMenu.vue'
+import { formatDate } from '@renderer/utils/format'
 
 defineProps<{
   suites: TestSuite[]
@@ -29,14 +30,6 @@ function suiteMenuItems(id: string): ContextMenuItem[] {
       action: () => emit('clone-suite', id)
     }
   ]
-}
-
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  })
 }
 </script>
 
