@@ -7,9 +7,11 @@ import { APP } from '@shared/app/ipc-channels'
 import type { ChatRequest } from '@shared/lm-studio/chat'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
+import { registerSettingsHandlers } from './settings-handlers'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
+  registerSettingsHandlers()
   ipcMain.handle(LMSTUDIO.FETCH_MODELS, async () => {
     return await lmStudioProvider.fetchModels()
   })

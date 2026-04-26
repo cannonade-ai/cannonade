@@ -11,3 +11,8 @@ export const SUITES = {
   SAVE: 'suites:save',
   DELETE: 'suites:delete'
 } as const
+
+export const SETTINGS = {
+  LOAD: 'settings:load',
+  SAVE: 'settings:save'
+} as const

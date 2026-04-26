@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { api } from '../api'
+import { DEFAULT_LM_STUDIO_PORT } from '@shared/app/app-settings'
 
 export type FontSize = 'sm' | 'md' | 'lg'
 
@@ -40,6 +41,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const fontSize = ref<FontSize>(saved.fontSize)
   const language = ref(saved.language)
   const lastSuiteId = ref<string | null>(saved.lastSuiteId)
+  const lmStudioPort = ref<number>(DEFAULT_LM_STUDIO_PORT)
   const appVersion = ref('')
   const suitesDir = ref('')
 
@@ -59,16 +61,34 @@ export const useSettingsStore = defineStore('settings', () => {
     )
   })
 
+  watch(lmStudioPort, (port) => {
+    api.saveAppSettings({ lmStudioPort: port })
+  })
+
   async function init(): Promise<void> {
-    ;[appVersion.value, suitesDir.value] = await Promise.all([
+    const [version, dir, appSettings] = await Promise.all([
       api.getAppVersion(),
-      api.getSuitesDir()
+      api.getSuitesDir(),
+      api.loadAppSettings()
     ])
+    appVersion.value = version
+    suitesDir.value = dir
+    lmStudioPort.value = appSettings.lmStudioPort
   }
 
   function toggleTheme(): void {
     isDark.value = !isDark.value
   }
 
-  return { isDark, fontSize, language, lastSuiteId, appVersion, suitesDir, init, toggleTheme }
+  return {
+    isDark,
+    fontSize,
+    language,
+    lastSuiteId,
+    lmStudioPort,
+    appVersion,
+    suitesDir,
+    init,
+    toggleTheme
+  }
 })

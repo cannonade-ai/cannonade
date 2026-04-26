@@ -5,7 +5,8 @@ import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
-import { APP, SUITES } from '@shared/app/ipc-channels'
+import { APP, SUITES, SETTINGS } from '@shared/app/ipc-channels'
+import type { AppSettings } from '@shared/app/app-settings'
 
 const CHANNEL: Record<Provider, string> = {
   lmstudio: LMSTUDIO.FETCH_MODELS,
@@ -24,7 +25,10 @@ const api = {
   close: (): void => ipcRenderer.send(APP.CLOSE),
   listSuites: (): Promise<TestSuite[]> => ipcRenderer.invoke(SUITES.LIST),
   saveSuite: (suite: TestSuite): Promise<void> => ipcRenderer.invoke(SUITES.SAVE, suite),
-  deleteSuite: (id: string): Promise<void> => ipcRenderer.invoke(SUITES.DELETE, id)
+  deleteSuite: (id: string): Promise<void> => ipcRenderer.invoke(SUITES.DELETE, id),
+  loadAppSettings: (): Promise<AppSettings> => ipcRenderer.invoke(SETTINGS.LOAD),
+  saveAppSettings: (settings: AppSettings): Promise<void> =>
+    ipcRenderer.invoke(SETTINGS.SAVE, settings)
 }
 
 if (process.contextIsolated) {

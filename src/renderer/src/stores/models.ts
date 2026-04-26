@@ -25,7 +25,7 @@ export const useModelsStore = defineStore('models', () => {
       if (e instanceof Error) {
         if (provider.value === 'lmstudio' && e.message.includes('fetch failed')) {
           error.value =
-            'Cannot connect to LM Studio. Make sure LM Studio is running and the local server is started on port 1234.'
+            'Cannot connect to LM Studio. Make sure LM Studio is running and the local server is started.'
         } else {
           error.value = e.message
         }

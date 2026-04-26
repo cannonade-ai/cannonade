@@ -45,7 +45,20 @@ const settings = useSettingsStore()
     <section class="settings-group">
       <h3 class="group-title">Integrations</h3>
       <div class="group-body">
-        <p class="empty-group">No settings yet.</p>
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-label">LM Studio port</span>
+            <span class="setting-desc">Local server port for LM Studio API</span>
+          </div>
+          <input
+            class="port-input"
+            type="number"
+            :value="settings.lmStudioPort"
+            min="1"
+            max="65535"
+            @change="settings.lmStudioPort = Number(($event.target as HTMLInputElement).value)"
+          />
+        </div>
       </div>
     </section>
   </div>
@@ -163,5 +176,22 @@ const settings = useSettingsStore()
 .toggle.on .toggle-thumb {
   transform: translateX(18px);
   background: #fff;
+}
+
+.port-input {
+  width: 80px;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+  font-family: var(--font-mono, monospace);
+  text-align: right;
+}
+
+.port-input:focus {
+  outline: none;
+  border-color: var(--accent);
 }
 </style>
