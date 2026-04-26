@@ -40,6 +40,21 @@ function toggle(e: MouseEvent): void {
   store.open(id)
 }
 
+function openAt(e: MouseEvent): void {
+  e.stopPropagation()
+  if (open.value) {
+    store.close()
+    return
+  }
+  const spaceBelow = window.innerHeight - e.clientY
+  const top = spaceBelow >= DROPDOWN_HEIGHT ? e.clientY + 4 : e.clientY - DROPDOWN_HEIGHT - 4
+  dropdownStyle.value = {
+    top: `${top}px`,
+    left: `${e.clientX}px`
+  }
+  store.open(id)
+}
+
 function onItem(item: ContextMenuItem): void {
   store.close()
   item.action()
@@ -59,11 +74,13 @@ onUnmounted(() => {
   document.removeEventListener('click', onDocumentClick)
   document.removeEventListener('scroll', store.close, true)
 })
+
+defineExpose({ openAt })
 </script>
 
 <template>
   <div ref="menuRef" class="ctx-menu">
-    <slot :toggle="toggle" />
+    <slot :toggle="toggle" :open-at="openAt" />
     <Teleport to="body">
       <div v-if="open" class="dropdown" :style="dropdownStyle">
         <button

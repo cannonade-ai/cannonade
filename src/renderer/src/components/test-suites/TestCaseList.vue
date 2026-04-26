@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { IconPlus, IconChevronDown, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
 import type { TestCase } from '@shared/app/test-suite'
 import ContextMenu from '@renderer/components/ContextMenu.vue'
@@ -15,6 +16,12 @@ const emit = defineEmits<{
   'delete-case': [id: string]
   'clone-case': [id: string]
 }>()
+
+const menuRefs = ref<Record<string, InstanceType<typeof ContextMenu>>>({})
+
+function setMenuRef(id: string, el: unknown): void {
+  if (el) menuRefs.value[id] = el as InstanceType<typeof ContextMenu>
+}
 
 function menuItems(id: string): ContextMenuItem[] {
   return [
@@ -51,6 +58,7 @@ function menuItems(id: string): ContextMenuItem[] {
           class="case-item"
           :class="{ active: selectedId === tc.id }"
           @click="emit('select-case', tc.id)"
+          @contextmenu.prevent="(e) => menuRefs[tc.id]?.openAt(e)"
         >
           <div class="case-info">
             <span class="case-name">{{ tc.name }}</span>
@@ -58,7 +66,7 @@ function menuItems(id: string): ContextMenuItem[] {
           </div>
           <div class="case-meta">
             <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
-            <ContextMenu :items="menuItems(tc.id)">
+            <ContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
               <template #default="{ toggle }">
                 <button class="btn-menu" @click.stop="toggle">
                   <IconDotsVertical :size="14" :stroke-width="2" />
