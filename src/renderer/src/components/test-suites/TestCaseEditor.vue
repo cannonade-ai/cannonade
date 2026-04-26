@@ -63,6 +63,10 @@ watch(
 )
 
 function onSave(): void {
+  errors.value.name = !name.value.trim()
+  errors.value.userInput = !userInput.value.trim()
+  if (errors.value.name || errors.value.userInput) return
+
   const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = []
   if (systemPrompt.value) messages.push({ role: 'system' as const, content: systemPrompt.value })
   messages.push({ role: 'user' as const, content: userInput.value })
@@ -88,6 +92,8 @@ function onSave(): void {
 
   emit('save', testCase)
 }
+
+const errors = ref({ name: false, userInput: false })
 
 const showDeleteModal = ref(false)
 
@@ -115,8 +121,14 @@ function onConfirmDelete(): void {
             </div>
             <div class="section-body">
               <div class="field">
-                <label class="field-label">Name</label>
-                <input v-model="name" class="field-input" placeholder="Test case name" />
+                <label class="field-label">Name *</label>
+                <input
+                  v-model="name"
+                  class="field-input"
+                  :class="{ 'field-error': errors.name }"
+                  placeholder="Test case name"
+                  @input="errors.name = false"
+                />
               </div>
               <div class="field">
                 <label class="field-label">Description</label>
@@ -144,12 +156,14 @@ function onConfirmDelete(): void {
                 />
               </div>
               <div class="field">
-                <label class="field-label">User Input</label>
+                <label class="field-label">User Input *</label>
                 <textarea
                   v-model="userInput"
                   class="field-textarea"
+                  :class="{ 'field-error': errors.userInput }"
                   rows="4"
                   placeholder="User message to send..."
+                  @input="errors.userInput = false"
                 />
               </div>
             </div>
@@ -360,6 +374,14 @@ function onConfirmDelete(): void {
 .field-input:focus,
 .field-textarea:focus {
   border-color: var(--accent);
+}
+
+.field-error {
+  border-color: var(--error);
+}
+
+.field-error:focus {
+  border-color: var(--error);
 }
 
 .field-textarea {

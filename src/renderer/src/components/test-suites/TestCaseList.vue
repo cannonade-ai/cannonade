@@ -24,7 +24,11 @@ const emit = defineEmits<{
 
 function menuItems(id: string): ContextMenuItem[] {
   return [
-    { label: 'Clone', icon: IconCopy, action: () => emit('clone-case', id) },
+    {
+      label: 'Clone',
+      icon: IconCopy,
+      action: () => emit('clone-case', id)
+    },
     { label: 'Delete', icon: IconTrash, danger: true, action: () => emit('delete-case', id) }
   ]
 }
@@ -130,7 +134,7 @@ function menuItems(id: string): ContextMenuItem[] {
   background: var(--accent-dim);
   color: var(--accent);
   border: 1px solid var(--accent-border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   cursor: pointer;
   transition: background 0.15s;
 }

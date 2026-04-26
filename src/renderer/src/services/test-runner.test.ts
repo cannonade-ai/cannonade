@@ -202,8 +202,6 @@ describe('executeTestRun – request building', () => {
   it('passes runConfig params to the request', async () => {
     const testCase = makeTestCase({
       runConfig: {
-        provider: 'lmstudio',
-        model: 'llama-3',
         temperature: 0.7,
         topP: 0.9,
         maxTokens: 256

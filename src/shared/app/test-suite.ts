@@ -48,10 +48,6 @@ export interface ChatMessage {
 }
 
 export interface RunConfig {
-  provider: 'lmstudio' | 'openrouter'
-
-  model: string
-
   temperature?: number
   maxTokens?: number
   topP?: number

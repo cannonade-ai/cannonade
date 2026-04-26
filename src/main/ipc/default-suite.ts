@@ -8,8 +8,6 @@ export const DEFAULT_SUITE: TestSuite = {
   createdAt: '2026-03-15T10:00:00Z',
   updatedAt: '2026-04-10T14:32:00Z',
   defaultRunConfig: {
-    provider: 'openrouter',
-    model: 'anthropic/claude-3-5-sonnet',
     temperature: 0.7,
     maxTokens: 2048,
     topP: 1.0

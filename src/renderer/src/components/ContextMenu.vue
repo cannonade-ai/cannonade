@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import type { Component } from 'vue'
+import { useContextMenuStore } from '@renderer/stores/context-menu'
 
 export interface ContextMenuItem {
   label: string
@@ -13,44 +14,70 @@ defineProps<{
   items: ContextMenuItem[]
 }>()
 
-const open = ref(false)
+const store = useContextMenuStore()
+const id = Symbol()
 const menuRef = ref<HTMLElement | null>(null)
+const dropdownStyle = ref<Record<string, string>>({})
+
+const open = computed(() => store.isOpen(id))
+
+const DROPDOWN_HEIGHT = 80
 
 function toggle(e: MouseEvent): void {
   e.stopPropagation()
-  open.value = !open.value
-}
-
-function onDocumentClick(e: MouseEvent): void {
-  if (menuRef.value && !menuRef.value.contains(e.target as Node)) {
-    open.value = false
+  if (open.value) {
+    store.close()
+    return
   }
+  if (!menuRef.value) return
+  const rect = menuRef.value.getBoundingClientRect()
+  const spaceBelow = window.innerHeight - rect.bottom
+  const top = spaceBelow >= DROPDOWN_HEIGHT ? rect.bottom + 4 : rect.top - DROPDOWN_HEIGHT - 4
+  dropdownStyle.value = {
+    top: `${top}px`,
+    right: `${window.innerWidth - rect.right}px`
+  }
+  store.open(id)
 }
 
 function onItem(item: ContextMenuItem): void {
-  open.value = false
+  store.close()
   item.action()
 }
 
-onMounted(() => document.addEventListener('click', onDocumentClick))
-onUnmounted(() => document.removeEventListener('click', onDocumentClick))
+function onDocumentClick(e: MouseEvent): void {
+  if (open.value && menuRef.value && !menuRef.value.contains(e.target as Node)) {
+    store.close()
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick)
+  document.addEventListener('scroll', store.close, true)
+})
+onUnmounted(() => {
+  document.removeEventListener('click', onDocumentClick)
+  document.removeEventListener('scroll', store.close, true)
+})
 </script>
 
 <template>
   <div ref="menuRef" class="ctx-menu">
     <slot :toggle="toggle" />
-    <div v-if="open" class="dropdown">
-      <button
-        v-for="item in items"
-        :key="item.label"
-        class="dropdown-item"
-        :class="{ danger: item.danger }"
-        @click.stop="onItem(item)"
-      >
-        <component :is="item.icon" v-if="item.icon" :size="13" :stroke-width="2" />
-        {{ item.label }}
-      </button>
-    </div>
+    <Teleport to="body">
+      <div v-if="open" class="dropdown" :style="dropdownStyle">
+        <button
+          v-for="item in items"
+          :key="item.label"
+          class="dropdown-item"
+          :class="{ danger: item.danger }"
+          @click.stop="onItem(item)"
+        >
+          <component :is="item.icon" v-if="item.icon" :size="13" :stroke-width="2" />
+          {{ item.label }}
+        </button>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -61,11 +88,9 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
 }
 
 .dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  z-index: 100;
-  min-width: 130px;
+  position: fixed;
+  z-index: 1000;
+  min-width: 6rem;
   background: var(--surface-elevated);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);

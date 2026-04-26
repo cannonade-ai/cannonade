@@ -40,6 +40,7 @@ export const useTestSuitesStore = defineStore('test-suites', () => {
       version: '1.0.0',
       createdAt: now,
       updatedAt: now,
+      defaultRunConfig: {},
       testCases: []
     }
   }

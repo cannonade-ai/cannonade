@@ -25,11 +25,11 @@ const props = defineProps<{
       <div class="meta-rows">
         <div class="meta-row">
           <span class="meta-label">Created</span>
-          <span class="meta-value">{{ new Date(props.createdAt).toLocaleDateString() }}</span>
+          <span class="meta-value">{{ new Date(props.createdAt).toLocaleString() }}</span>
         </div>
         <div class="meta-row">
           <span class="meta-label">Updated</span>
-          <span class="meta-value">{{ new Date(props.updatedAt).toLocaleDateString() }}</span>
+          <span class="meta-value">{{ new Date(props.updatedAt).toLocaleString() }}</span>
         </div>
       </div>
     </div>
