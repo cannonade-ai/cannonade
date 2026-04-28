@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { RunConfig } from '@shared/app/test-suite'
+import BaseField from '@renderer/components/base/BaseField.vue'
 
 const config = defineModel<RunConfig | undefined>('config')
 
@@ -17,8 +18,7 @@ function setNumber(key: keyof RunConfig, raw: string): void {
     </div>
     <div class="panel-body">
       <div class="field-row">
-        <div class="field">
-          <label class="field-label">Temperature</label>
+        <base-field label="Temperature" grow>
           <input
             class="field-input"
             type="number"
@@ -28,9 +28,8 @@ function setNumber(key: keyof RunConfig, raw: string): void {
             :value="config?.temperature ?? ''"
             @change="setNumber('temperature', ($event.target as HTMLInputElement).value)"
           />
-        </div>
-        <div class="field">
-          <label class="field-label">Top P</label>
+        </base-field>
+        <base-field label="Top P" grow>
           <input
             class="field-input"
             type="number"
@@ -40,10 +39,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
             :value="config?.topP ?? ''"
             @change="setNumber('topP', ($event.target as HTMLInputElement).value)"
           />
-        </div>
+        </base-field>
       </div>
-      <div class="field">
-        <label class="field-label">Max Tokens</label>
+      <base-field label="Max Tokens">
         <input
           class="field-input"
           type="number"
@@ -51,10 +49,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
           :value="config?.maxTokens ?? ''"
           @change="setNumber('maxTokens', ($event.target as HTMLInputElement).value)"
         />
-      </div>
+      </base-field>
       <div class="field-row">
-        <div class="field">
-          <label class="field-label">Freq. Penalty</label>
+        <base-field label="Freq. Penalty" grow>
           <input
             class="field-input"
             type="number"
@@ -64,9 +61,8 @@ function setNumber(key: keyof RunConfig, raw: string): void {
             :value="config?.frequencyPenalty ?? ''"
             @change="setNumber('frequencyPenalty', ($event.target as HTMLInputElement).value)"
           />
-        </div>
-        <div class="field">
-          <label class="field-label">Pres. Penalty</label>
+        </base-field>
+        <base-field label="Pres. Penalty" grow>
           <input
             class="field-input"
             type="number"
@@ -76,7 +72,7 @@ function setNumber(key: keyof RunConfig, raw: string): void {
             :value="config?.presencePenalty ?? ''"
             @change="setNumber('presencePenalty', ($event.target as HTMLInputElement).value)"
           />
-        </div>
+        </base-field>
       </div>
     </div>
   </div>
@@ -117,24 +113,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
   overflow-y: auto;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  flex: 1;
-}
-
 .field-row {
   display: flex;
   gap: 8px;
-}
-
-.field-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
 }
 
 .field-input {

@@ -11,6 +11,7 @@ import BaseSelect from '@renderer/components/base/BaseSelect.vue'
 import BaseButton from '@renderer/components/base/BaseButton.vue'
 import BaseRadioGroup from '@renderer/components/base/BaseRadioGroup.vue'
 import type { SelectOption } from '@renderer/components/base/BaseSelect.vue'
+import BaseField from '@renderer/components/base/BaseField.vue'
 
 const props = defineProps<{
   suites: TestSuite[]
@@ -120,13 +121,11 @@ function onSubmit(): void {
     </div>
 
     <div class="panel-body">
-      <div class="field">
-        <label class="field-label">Test Suite</label>
+      <base-field label="Test Suite">
         <base-select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
-      </div>
+      </base-field>
 
-      <div class="field">
-        <label class="field-label">Provider</label>
+      <base-field label="Provider">
         <base-radio-group
           v-model="form.provider"
           :options="[
@@ -134,21 +133,19 @@ function onSubmit(): void {
             { value: 'openrouter', label: 'OpenRouter' }
           ]"
         />
-      </div>
+      </base-field>
 
-      <div class="field">
-        <label class="field-label">Models</label>
+      <base-field label="Models">
         <NewRunModelSelector
           v-model="form.models"
           :installed-models="installedModels"
           :loading-models="modelsStore.loading"
         />
-      </div>
+      </base-field>
 
       <div class="divider" />
 
-      <div class="field">
-        <label class="field-label">Options</label>
+      <base-field label="Options">
         <div class="options-list">
           <label v-if="form.provider === 'lmstudio'" class="toggle-row">
             <span class="toggle-label">Delete auto-downloaded models after run</span>
@@ -169,7 +166,7 @@ function onSubmit(): void {
             </span>
           </label>
         </div>
-      </div>
+      </base-field>
     </div>
 
     <div class="panel-footer">
@@ -237,20 +234,6 @@ function onSubmit(): void {
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 0.375rem;
-}
-
-.field-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
 }
 
 .divider {

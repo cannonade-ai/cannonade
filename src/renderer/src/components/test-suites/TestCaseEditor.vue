@@ -6,6 +6,7 @@ import BaseSelect from '@renderer/components/base/BaseSelect.vue'
 import type { SelectOption } from '@renderer/components/base/BaseSelect.vue'
 import BaseButton from '@renderer/components/base/BaseButton.vue'
 import BaseModal from '@renderer/components/base/BaseModal.vue'
+import BaseField from '@renderer/components/base/BaseField.vue'
 
 const props = defineProps<{
   testCase: TestCase | null
@@ -120,8 +121,7 @@ function onConfirmDelete(): void {
               <span class="section-title">General</span>
             </div>
             <div class="section-body">
-              <div class="field">
-                <label class="field-label">Name *</label>
+              <base-field label="Name">
                 <input
                   v-model="name"
                   class="field-input"
@@ -129,15 +129,14 @@ function onConfirmDelete(): void {
                   placeholder="Test case name"
                   @input="errors.name = false"
                 />
-              </div>
-              <div class="field">
-                <label class="field-label">Description</label>
+              </base-field>
+              <base-field label="Description">
                 <input
                   v-model="description"
                   class="field-input"
                   placeholder="Optional description"
                 />
-              </div>
+              </base-field>
             </div>
           </div>
 
@@ -146,17 +145,15 @@ function onConfirmDelete(): void {
               <span class="section-title">Input</span>
             </div>
             <div class="section-body">
-              <div class="field">
-                <label class="field-label">System Prompt</label>
+              <base-field label="System Prompt">
                 <textarea
                   v-model="systemPrompt"
                   class="field-textarea"
                   rows="4"
                   placeholder="System instructions for the model..."
                 />
-              </div>
-              <div class="field">
-                <label class="field-label">User Input *</label>
+              </base-field>
+              <base-field label="User Input">
                 <textarea
                   v-model="userInput"
                   class="field-textarea"
@@ -165,7 +162,7 @@ function onConfirmDelete(): void {
                   placeholder="User message to send..."
                   @input="errors.userInput = false"
                 />
-              </div>
+              </base-field>
             </div>
           </div>
         </div>
@@ -176,12 +173,10 @@ function onConfirmDelete(): void {
               <span class="section-title">Evaluation</span>
             </div>
             <div class="section-body section-body-fill">
-              <div class="field">
-                <label class="field-label">Method</label>
+              <base-field label="Method">
                 <base-select v-model="selectedEvalType" :options="evaluationTypes" />
-              </div>
-              <div class="field field-fill">
-                <label class="field-label">Expected / Config</label>
+              </base-field>
+              <base-field label="Expected / Config" fill>
                 <textarea
                   v-model="evalExpected"
                   class="field-textarea field-textarea-fill"
@@ -191,7 +186,7 @@ function onConfirmDelete(): void {
                       : 'Enter expected output or configuration...'
                   "
                 />
-              </div>
+              </base-field>
             </div>
           </div>
         </div>
@@ -332,28 +327,6 @@ function onConfirmDelete(): void {
 .section-body-fill {
   flex: 1;
   overflow: hidden;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.field-fill {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.field-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  flex-shrink: 0;
 }
 
 .field-input,

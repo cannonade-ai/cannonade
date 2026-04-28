@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { formatDate } from '@renderer/utils/format'
+import BaseField from '@renderer/components/base/BaseField.vue'
 
 const name = defineModel<string>('name', { required: true })
 const description = defineModel<string | undefined>('description')
@@ -16,14 +17,12 @@ const props = defineProps<{
       <span class="panel-title">Suite Info</span>
     </div>
     <div class="panel-body">
-      <div class="field">
-        <label class="field-label">Name</label>
+      <base-field label="Name">
         <input v-model="name" class="field-input" />
-      </div>
-      <div class="field">
-        <label class="field-label">Description</label>
+      </base-field>
+      <base-field label="Description">
         <textarea v-model="description" class="field-textarea" rows="3" />
-      </div>
+      </base-field>
       <div class="meta-rows">
         <div class="meta-row">
           <span class="meta-label">Created</span>
@@ -71,20 +70,6 @@ const props = defineProps<{
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.field-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
 }
 
 .field-input,
