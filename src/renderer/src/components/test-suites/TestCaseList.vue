@@ -4,6 +4,8 @@ import { IconPlus, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-v
 import type { TestCase } from '@shared/app/test-suite'
 import BaseContextMenu from '@renderer/components/base/BaseContextMenu.vue'
 import BaseChevron from '@renderer/components/base/BaseChevron.vue'
+import BasePanel from '@renderer/components/base/BasePanel.vue'
+import BaseBadge from '@renderer/components/base/BaseBadge.vue'
 import type { ContextMenuItem } from '@renderer/components/base/BaseContextMenu.vue'
 
 defineProps<{
@@ -37,93 +39,57 @@ function menuItems(id: string): ContextMenuItem[] {
 </script>
 
 <template>
-  <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title">
-        Test Cases
-        <span class="count-pill">{{ cases.length }}</span>
-      </span>
+  <base-panel class="cases-panel" title="Test Cases">
+    <template #title-addon>
+      <base-badge>{{ cases.length }}</base-badge>
+    </template>
+
+    <template #header-right>
       <button class="btn-add" @click="emit('add-case')">
         <IconPlus :size="13" :stroke-width="2.5" />
         Add New Case
       </button>
+    </template>
+
+    <div v-if="cases.length === 0" class="empty">
+      <span>No test cases yet.</span>
     </div>
-    <div class="panel-body">
-      <div v-if="cases.length === 0" class="empty">
-        <span>No test cases yet.</span>
-      </div>
-      <ul v-else class="case-list">
-        <li
-          v-for="tc in cases"
-          :key="tc.id"
-          class="case-item"
-          :class="{ active: selectedId === tc.id }"
-          @click="emit('select-case', tc.id)"
-          @contextmenu.prevent="(e) => menuRefs[tc.id]?.openAt(e)"
-        >
-          <div class="case-info">
-            <span class="case-name">{{ tc.name }}</span>
-            <span v-if="tc.description" class="case-desc">{{ tc.description }}</span>
-          </div>
-          <div class="case-meta">
-            <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
-            <BaseContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
-              <template #default="{ toggle }">
-                <button class="btn-menu" @click.stop="toggle">
-                  <IconDotsVertical :size="14" :stroke-width="2" />
-                </button>
-              </template>
-            </BaseContextMenu>
-            <base-chevron :expanded="selectedId === tc.id" />
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
+    <ul v-else class="case-list">
+      <li
+        v-for="tc in cases"
+        :key="tc.id"
+        class="case-item"
+        :class="{ active: selectedId === tc.id }"
+        @click="emit('select-case', tc.id)"
+        @contextmenu.prevent="(e) => menuRefs[tc.id]?.openAt(e)"
+      >
+        <div class="case-info">
+          <span class="case-name">{{ tc.name }}</span>
+          <span v-if="tc.description" class="case-desc">{{ tc.description }}</span>
+        </div>
+        <div class="case-meta">
+          <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
+          <BaseContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
+            <template #default="{ toggle }">
+              <button class="btn-menu" @click.stop="toggle">
+                <IconDotsVertical :size="14" :stroke-width="2" />
+              </button>
+            </template>
+          </BaseContextMenu>
+          <base-chevron :expanded="selectedId === tc.id" />
+        </div>
+      </li>
+    </ul>
+  </base-panel>
 </template>
 
 <style scoped>
-.panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+.cases-panel {
   max-height: 19rem;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-dim);
-  background: var(--surface);
 }
 
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.panel-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--accent);
-}
-
-.count-pill {
-  font-size: var(--text-xs);
-  background: var(--surface-elevated);
-  color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
+.cases-panel :deep(.panel__body) {
+  padding: 0;
 }
 
 .btn-add {
@@ -144,11 +110,6 @@ function menuItems(id: string): ContextMenuItem[] {
 
 .btn-add:hover {
   background: rgba(255, 179, 0, 0.3);
-}
-
-.panel-body {
-  flex: 1;
-  overflow-y: auto;
 }
 
 .empty {
@@ -243,7 +204,6 @@ function menuItems(id: string): ContextMenuItem[] {
   border: none;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
-
   cursor: pointer;
   transition: background 0.12s;
 }

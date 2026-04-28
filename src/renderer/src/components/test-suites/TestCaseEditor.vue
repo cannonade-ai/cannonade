@@ -7,6 +7,7 @@ import type { SelectOption } from '@renderer/components/base/BaseSelect.vue'
 import BaseButton from '@renderer/components/base/BaseButton.vue'
 import BaseModal from '@renderer/components/base/BaseModal.vue'
 import BaseField from '@renderer/components/base/BaseField.vue'
+import BasePanel from '@renderer/components/base/BasePanel.vue'
 
 const props = defineProps<{
   testCase: TestCase | null
@@ -105,95 +106,14 @@ function onConfirmDelete(): void {
 </script>
 
 <template>
-  <div class="editor">
-    <div class="editor-header">
-      <span class="editor-title">{{ isNew ? 'New Test Case' : 'Edit Test Case' }}</span>
+  <base-panel class="editor-panel" :title="isNew ? 'New Test Case' : 'Edit Test Case'">
+    <template #header-right>
       <button class="btn-close" @click="emit('close')">
         <IconX :size="14" :stroke-width="2.5" />
       </button>
-    </div>
+    </template>
 
-    <div class="editor-body">
-      <div class="editor-cols">
-        <div class="left-col">
-          <div class="section">
-            <div class="section-header">
-              <span class="section-title">General</span>
-            </div>
-            <div class="section-body">
-              <base-field label="Name">
-                <input
-                  v-model="name"
-                  class="field-input"
-                  :class="{ 'field-error': errors.name }"
-                  placeholder="Test case name"
-                  @input="errors.name = false"
-                />
-              </base-field>
-              <base-field label="Description">
-                <input
-                  v-model="description"
-                  class="field-input"
-                  placeholder="Optional description"
-                />
-              </base-field>
-            </div>
-          </div>
-
-          <div class="section">
-            <div class="section-header">
-              <span class="section-title">Input</span>
-            </div>
-            <div class="section-body">
-              <base-field label="System Prompt">
-                <textarea
-                  v-model="systemPrompt"
-                  class="field-textarea"
-                  rows="4"
-                  placeholder="System instructions for the model..."
-                />
-              </base-field>
-              <base-field label="User Input">
-                <textarea
-                  v-model="userInput"
-                  class="field-textarea"
-                  :class="{ 'field-error': errors.userInput }"
-                  rows="4"
-                  placeholder="User message to send..."
-                  @input="errors.userInput = false"
-                />
-              </base-field>
-            </div>
-          </div>
-        </div>
-
-        <div class="right-col">
-          <div class="section section-fill">
-            <div class="section-header">
-              <span class="section-title">Evaluation</span>
-            </div>
-            <div class="section-body section-body-fill">
-              <base-field label="Method">
-                <base-select v-model="selectedEvalType" :options="evaluationTypes" />
-              </base-field>
-              <base-field label="Expected / Config" fill>
-                <textarea
-                  v-model="evalExpected"
-                  class="field-textarea field-textarea-fill"
-                  :placeholder="
-                    selectedEvalType === 'contains'
-                      ? 'Comma-separated values, e.g. hello,world'
-                      : 'Enter expected output or configuration...'
-                  "
-                />
-              </base-field>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="editor-footer">
+    <template #footer>
       <base-button
         v-if="!isNew"
         type="danger-outline"
@@ -204,10 +124,84 @@ function onConfirmDelete(): void {
       </base-button>
       <div class="footer-right">
         <base-button @click="emit('close')">Cancel</base-button>
-        <base-button type="primary" @click="onSave"> Save Test Case </base-button>
+        <base-button type="primary" @click="onSave">Save Test Case</base-button>
+      </div>
+    </template>
+
+    <div class="editor-cols">
+      <div class="left-col">
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">General</span>
+          </div>
+          <div class="section-body">
+            <base-field label="Name">
+              <input
+                v-model="name"
+                class="field-input"
+                :class="{ 'field-error': errors.name }"
+                placeholder="Test case name"
+                @input="errors.name = false"
+              />
+            </base-field>
+            <base-field label="Description">
+              <input v-model="description" class="field-input" placeholder="Optional description" />
+            </base-field>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title">Input</span>
+          </div>
+          <div class="section-body">
+            <base-field label="System Prompt">
+              <textarea
+                v-model="systemPrompt"
+                class="field-textarea"
+                rows="4"
+                placeholder="System instructions for the model..."
+              />
+            </base-field>
+            <base-field label="User Input">
+              <textarea
+                v-model="userInput"
+                class="field-textarea"
+                :class="{ 'field-error': errors.userInput }"
+                rows="4"
+                placeholder="User message to send..."
+                @input="errors.userInput = false"
+              />
+            </base-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-col">
+        <div class="section section-fill">
+          <div class="section-header">
+            <span class="section-title">Evaluation</span>
+          </div>
+          <div class="section-body section-body-fill">
+            <base-field label="Method">
+              <base-select v-model="selectedEvalType" :options="evaluationTypes" />
+            </base-field>
+            <base-field label="Expected / Config" fill>
+              <textarea
+                v-model="evalExpected"
+                class="field-textarea field-textarea-fill"
+                :placeholder="
+                  selectedEvalType === 'contains'
+                    ? 'Comma-separated values, e.g. hello,world'
+                    : 'Enter expected output or configuration...'
+                "
+              />
+            </base-field>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  </base-panel>
 
   <base-modal v-model="showDeleteModal" title="Delete Test Case">
     Are you sure you want to delete this test case? This action cannot be undone.
@@ -219,32 +213,13 @@ function onConfirmDelete(): void {
 </template>
 
 <style scoped>
-.editor {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-dim);
-  background: var(--surface);
+.editor-panel :deep(.panel__body) {
+  padding: 0;
   overflow: hidden;
 }
 
-.editor-header {
-  display: flex;
-  align-items: center;
+.editor-panel :deep(.panel__footer) {
   justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.editor-title {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--accent);
 }
 
 .btn-close {
@@ -266,9 +241,10 @@ function onConfirmDelete(): void {
   background: var(--surface-elevated);
 }
 
-.editor-body {
-  flex: 1;
-  overflow: hidden;
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .editor-cols {
@@ -366,22 +342,5 @@ function onConfirmDelete(): void {
   flex: 1;
   resize: none;
   height: 100%;
-}
-
-.editor-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.footer-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
 }
 </style>

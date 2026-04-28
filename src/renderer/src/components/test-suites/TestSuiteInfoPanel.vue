@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { formatDate } from '@renderer/utils/format'
 import BaseField from '@renderer/components/base/BaseField.vue'
+import BasePanel from '@renderer/components/base/BasePanel.vue'
 
 const name = defineModel<string>('name', { required: true })
 const description = defineModel<string | undefined>('description')
@@ -12,66 +13,27 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title">Suite Info</span>
-    </div>
-    <div class="panel-body">
-      <base-field label="Name">
-        <input v-model="name" class="field-input" />
-      </base-field>
-      <base-field label="Description">
-        <textarea v-model="description" class="field-textarea" rows="3" />
-      </base-field>
-      <div class="meta-rows">
-        <div class="meta-row">
-          <span class="meta-label">Created</span>
-          <span class="meta-value">{{ formatDate(props.createdAt, true) }}</span>
-        </div>
-        <div class="meta-row">
-          <span class="meta-label">Updated</span>
-          <span class="meta-value">{{ formatDate(props.updatedAt, true) }}</span>
-        </div>
+  <base-panel title="Suite Info">
+    <base-field label="Name">
+      <input v-model="name" class="field-input" />
+    </base-field>
+    <base-field label="Description">
+      <textarea v-model="description" class="field-textarea" rows="3" />
+    </base-field>
+    <div class="meta-rows">
+      <div class="meta-row">
+        <span class="meta-label">Created</span>
+        <span class="meta-value">{{ formatDate(props.createdAt, true) }}</span>
+      </div>
+      <div class="meta-row">
+        <span class="meta-label">Updated</span>
+        <span class="meta-value">{{ formatDate(props.updatedAt, true) }}</span>
       </div>
     </div>
-  </div>
+  </base-panel>
 </template>
 
 <style scoped>
-.panel {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-dim);
-  background: var(--surface);
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  height: 3rem;
-}
-
-.panel-title {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--accent);
-}
-
-.panel-body {
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow-y: auto;
-}
-
 .field-input,
 .field-textarea {
   width: 100%;

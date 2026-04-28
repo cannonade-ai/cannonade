@@ -12,6 +12,7 @@ import BaseButton from '@renderer/components/base/BaseButton.vue'
 import BaseRadioGroup from '@renderer/components/base/BaseRadioGroup.vue'
 import type { SelectOption } from '@renderer/components/base/BaseSelect.vue'
 import BaseField from '@renderer/components/base/BaseField.vue'
+import BasePanel from '@renderer/components/base/BasePanel.vue'
 
 const props = defineProps<{
   suites: TestSuite[]
@@ -112,102 +113,66 @@ function onSubmit(): void {
 </script>
 
 <template>
-  <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title">New Run</span>
+  <base-panel title="New Run">
+    <template #header-right>
       <button class="btn-close" @click="emit('cancel')">
         <IconX :size="14" :stroke-width="2.5" />
       </button>
-    </div>
+    </template>
 
-    <div class="panel-body">
-      <base-field label="Test Suite">
-        <base-select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
-      </base-field>
+    <base-field label="Test Suite">
+      <base-select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
+    </base-field>
 
-      <base-field label="Provider">
-        <base-radio-group
-          v-model="form.provider"
-          :options="[
-            { value: 'lmstudio', label: 'LM Studio' },
-            { value: 'openrouter', label: 'OpenRouter' }
-          ]"
-        />
-      </base-field>
+    <base-field label="Provider">
+      <base-radio-group
+        v-model="form.provider"
+        :options="[
+          { value: 'lmstudio', label: 'LM Studio' },
+          { value: 'openrouter', label: 'OpenRouter' }
+        ]"
+      />
+    </base-field>
 
-      <base-field label="Models">
-        <NewRunModelSelector
-          v-model="form.models"
-          :installed-models="installedModels"
-          :loading-models="modelsStore.loading"
-        />
-      </base-field>
+    <base-field label="Models">
+      <NewRunModelSelector
+        v-model="form.models"
+        :installed-models="installedModels"
+        :loading-models="modelsStore.loading"
+      />
+    </base-field>
 
-      <div class="divider" />
+    <div class="divider" />
 
-      <base-field label="Options">
-        <div class="options-list">
-          <label v-if="form.provider === 'lmstudio'" class="toggle-row">
-            <span class="toggle-label">Delete auto-downloaded models after run</span>
-            <span class="toggle-wrap">
-              <input
-                v-model="form.deleteAutoDownloadedModels"
-                type="checkbox"
-                class="toggle-input"
-              />
-              <span class="toggle-track" />
-            </span>
-          </label>
-          <label v-if="form.provider === 'openrouter'" class="toggle-row">
-            <span class="toggle-label">Parallel run</span>
-            <span class="toggle-wrap">
-              <input v-model="form.parallelRun" type="checkbox" class="toggle-input" />
-              <span class="toggle-track" />
-            </span>
-          </label>
-        </div>
-      </base-field>
-    </div>
+    <base-field label="Options">
+      <div class="options-list">
+        <label v-if="form.provider === 'lmstudio'" class="toggle-row">
+          <span class="toggle-label">Delete auto-downloaded models after run</span>
+          <span class="toggle-wrap">
+            <input v-model="form.deleteAutoDownloadedModels" type="checkbox" class="toggle-input" />
+            <span class="toggle-track" />
+          </span>
+        </label>
+        <label v-if="form.provider === 'openrouter'" class="toggle-row">
+          <span class="toggle-label">Parallel run</span>
+          <span class="toggle-wrap">
+            <input v-model="form.parallelRun" type="checkbox" class="toggle-input" />
+            <span class="toggle-track" />
+          </span>
+        </label>
+      </div>
+    </base-field>
 
-    <div class="panel-footer">
+    <template #footer>
       <base-button @click="emit('cancel')">Cancel</base-button>
       <base-button type="primary" :disabled="!canSubmit" :icon="IconPlayerPlay" @click="onSubmit">
         Run
       </base-button>
-    </div>
-  </div>
+    </template>
+  </base-panel>
 </template>
 
 <style scoped>
-.panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-dim);
-  background: var(--surface);
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  height: 3rem;
-}
-
-.panel-title {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--accent);
-}
-
 .btn-close {
   display: flex;
   align-items: center;
@@ -225,15 +190,6 @@ function onSubmit(): void {
 .btn-close:hover {
   color: var(--text-primary);
   background: var(--surface-hover);
-}
-
-.panel-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
 }
 
 .divider {
@@ -307,56 +263,5 @@ function onSubmit(): void {
 .toggle-input:checked + .toggle-track::after {
   transform: translateX(14px);
   background: var(--accent);
-}
-
-.panel-footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 10px 14px;
-  border-top: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.btn-cancel,
-.btn-run {
-  padding: 6px 14px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  font-family: var(--font-body);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    border-color 0.15s,
-    color 0.15s;
-}
-
-.btn-cancel {
-  background: var(--surface);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-}
-
-.btn-cancel:hover {
-  background: var(--surface-hover);
-  border-color: var(--border-hover);
-  color: var(--text-primary);
-}
-
-.btn-run {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid var(--accent-border);
-}
-
-.btn-run:hover:not(:disabled) {
-  background: rgba(255, 179, 0, 0.3);
-}
-
-.btn-run:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 </style>

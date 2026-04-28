@@ -6,6 +6,7 @@ import type { TestCase } from '@shared/app/test-suite'
 import BaseBadge from '@renderer/components/base/BaseBadge.vue'
 import BaseButton from '@renderer/components/base/BaseButton.vue'
 import BaseModal from '@renderer/components/base/BaseModal.vue'
+import BasePanel from '@renderer/components/base/BasePanel.vue'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
@@ -32,26 +33,20 @@ function confirmCancel(): void {
 </script>
 
 <template>
-  <div class="panel">
-    <div class="panel-header">
-      <div class="header-left">
-        <span class="panel-title">{{ run.suiteName }}</span>
-        <base-badge :status="run.status">{{ run.status }}</base-badge>
-      </div>
-      <div class="header-meta">
-        <span class="meta-tag">{{
-          run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'
-        }}</span>
-        <span v-if="run.config.parallelRun" class="meta-tag">Parallel</span>
-        <span class="meta-date">{{ formatDate(run.createdAt) }}</span>
-      </div>
-    </div>
+  <base-panel title="Test Run Details">
+    <template #header-right>
+      <span class="meta-tag">{{
+        run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'
+      }}</span>
+      <span v-if="run.config.parallelRun" class="meta-tag">Parallel</span>
+      <span class="meta-date">{{ formatDate(run.createdAt) }}</span>
+    </template>
 
-    <div v-if="isActive" class="panel-toolbar">
+    <template v-if="isActive" #toolbar>
       <base-button type="danger-outline" :icon="IconPlayerStop" @click="showCancelModal = true">
         Stop Run
       </base-button>
-    </div>
+    </template>
 
     <base-modal v-model="showCancelModal" title="Stop Run">
       Are you sure you want to stop this run? Any in-progress model evaluations will be cancelled.
@@ -61,63 +56,20 @@ function confirmCancel(): void {
       </template>
     </base-modal>
 
-    <div class="panel-body">
-      <div class="section-label">Model Results</div>
-      <div class="model-list">
-        <model-run-row
-          v-for="(mr, i) in run.modelRuns"
-          :key="mr.id"
-          :model-run="mr"
-          :test-cases="testCases"
-          :expanded="i === 0"
-        />
-      </div>
+    <div class="section-label">Model Results</div>
+    <div class="model-list">
+      <model-run-row
+        v-for="(mr, i) in run.modelRuns"
+        :key="mr.id"
+        :model-run="mr"
+        :test-cases="testCases"
+        :expanded="i === 0"
+      />
     </div>
-  </div>
+  </base-panel>
 </template>
 
 <style scoped>
-.panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-dim);
-  background: var(--surface);
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  height: 3rem;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.panel-title {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  font-family: var(--font-headline);
-  color: var(--text-primary);
-}
-
-.header-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .meta-tag {
   font-size: var(--text-xs);
   font-weight: 600;
@@ -131,23 +83,6 @@ function confirmCancel(): void {
 .meta-date {
   font-size: var(--text-xs);
   color: var(--text-muted);
-}
-
-.panel-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-
-.panel-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
 }
 
 .section-label {

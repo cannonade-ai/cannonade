@@ -6,6 +6,8 @@ import SectionHeader from '../components/SectionHeader.vue'
 import TestSuiteList from '../components/test-suites/TestSuiteList.vue'
 import TestSuiteDetail from '../components/test-suites/TestSuiteDetail.vue'
 import BaseButton from '../components/base/BaseButton.vue'
+import BasePanel from '../components/base/BasePanel.vue'
+import BaseBadge from '../components/base/BaseBadge.vue'
 import { storeToRefs } from 'pinia'
 import { useTestSuitesStore } from '../stores/test-suites'
 
@@ -60,13 +62,11 @@ async function onCloneSuite(id: string): Promise<void> {
         <base-button type="secondary" :icon="IconPlus" @click="onNewSuite">New Suite</base-button>
       </section-header>
 
-      <div class="list-panel">
-        <div class="list-header">
-          <span class="list-title">
-            Test Suites
-            <span class="count-pill">{{ suites.length }}</span>
-          </span>
-        </div>
+      <base-panel class="suites-panel" title="Test Suites">
+        <template #title-addon>
+          <base-badge>{{ suites.length }}</base-badge>
+        </template>
+
         <TestSuiteList
           :suites="suites"
           :selected-id="selectedId"
@@ -74,7 +74,7 @@ async function onCloneSuite(id: string): Promise<void> {
           @delete-suite="onDeleteSuite"
           @clone-suite="onCloneSuite"
         />
-      </div>
+      </base-panel>
     </template>
   </div>
 </template>
@@ -87,64 +87,11 @@ async function onCloneSuite(id: string): Promise<void> {
   background: var(--bg);
 }
 
-.list-panel {
-  display: flex;
-  flex-direction: column;
+.suites-panel {
   flex: 1;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-dim);
-  background: var(--surface);
 }
 
-.list-header {
-  display: flex;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  height: 3rem;
-}
-
-.list-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--accent);
-}
-
-.count-pill {
-  font-size: var(--text-xs);
-  background: var(--surface-elevated);
-  color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.btn-new {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--accent);
-  background: var(--accent-dim);
-  border: 1px solid var(--accent-border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-new:hover {
-  background: rgba(255, 179, 0, 0.3);
+.suites-panel :deep(.panel__body) {
+  padding: 0;
 }
 </style>

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { TestRun } from '@shared/app/test-run'
 import BaseBadge from '@renderer/components/base/BaseBadge.vue'
+import BasePanel from '@renderer/components/base/BasePanel.vue'
 import { formatDate } from '@renderer/utils/format'
 
 defineProps<{
@@ -19,87 +20,39 @@ function modelCount(run: TestRun): string {
 </script>
 
 <template>
-  <div class="panel">
-    <div class="panel-header">
-      <span class="panel-title">
-        Test Runs
-        <span class="count-pill">{{ runs.length }}</span>
-      </span>
-    </div>
-    <div class="panel-body">
-      <div v-if="runs.length === 0" class="empty">No runs yet.</div>
-      <ul v-else class="run-list">
-        <li
-          v-for="run in runs"
-          :key="run.id"
-          class="run-item"
-          :class="{ active: selectedId === run.id }"
-          @click="emit('select-run', run.id)"
-        >
-          <div class="run-info">
-            <span class="run-suite">{{ run.suiteName }}</span>
-            <span class="run-meta">
-              {{ run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter' }}
-              &middot; {{ modelCount(run) }}
-            </span>
-          </div>
-          <div class="run-aside">
-            <base-badge :status="run.status">{{ run.status }}</base-badge>
-            <span class="run-date">{{ formatDate(run.createdAt) }}</span>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </div>
+  <base-panel class="runs-panel" title="Test Runs">
+    <template #title-addon>
+      <base-badge>{{ runs.length }}</base-badge>
+    </template>
+
+    <div v-if="runs.length === 0" class="empty">No runs yet.</div>
+    <ul v-else class="run-list">
+      <li
+        v-for="run in runs"
+        :key="run.id"
+        class="run-item"
+        :class="{ active: selectedId === run.id }"
+        @click="emit('select-run', run.id)"
+      >
+        <div class="run-info">
+          <span class="run-suite">{{ run.suiteName }}</span>
+          <span class="run-meta">
+            {{ run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter' }}
+            &middot; {{ modelCount(run) }}
+          </span>
+        </div>
+        <div class="run-aside">
+          <base-badge :status="run.status">{{ run.status }}</base-badge>
+          <span class="run-date">{{ formatDate(run.createdAt) }}</span>
+        </div>
+      </li>
+    </ul>
+  </base-panel>
 </template>
 
 <style scoped>
-.panel {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent-dim);
-  background: var(--surface);
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  height: 3rem;
-}
-
-.panel-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--accent);
-}
-
-.count-pill {
-  font-size: var(--text-xs);
-  background: var(--surface-elevated);
-  color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.panel-body {
-  flex: 1;
-  overflow-y: auto;
+.runs-panel :deep(.panel__body) {
+  padding: 0;
 }
 
 .empty {
@@ -164,39 +117,6 @@ function modelCount(run: TestRun): string {
   align-items: flex-end;
   gap: 4px;
   flex-shrink: 0;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 7px;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  border-radius: var(--radius-full);
-  text-transform: capitalize;
-  letter-spacing: 0.02em;
-}
-
-.status-badge.completed {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
-
-.status-badge.failed {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-}
-
-.status-badge.running {
-  background: var(--accent-dim);
-  color: var(--accent);
-}
-
-.status-badge.pending,
-.status-badge.cancelled {
-  background: var(--surface-elevated);
-  color: var(--text-muted);
 }
 
 .run-date {
