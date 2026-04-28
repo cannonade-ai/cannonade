@@ -225,16 +225,6 @@ function toggle(): void {
   color: var(--text-muted);
 }
 
-.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .model-name {
   font-size: var(--text-sm);
   font-weight: 600;

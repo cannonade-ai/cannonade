@@ -147,15 +147,6 @@ onMounted(() => store.load())
   cursor: not-allowed;
 }
 
-.spinning {
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .model-section {
   margin-bottom: 32px;

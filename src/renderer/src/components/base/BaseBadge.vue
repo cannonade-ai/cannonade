@@ -114,42 +114,4 @@ const computedIconAnimation = computed(() => {
     color: #ef4444;
   }
 }
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-
-@keyframes bounce {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
-.spin {
-  animation: spin 1s linear infinite;
-}
-
-.pulse {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.bounce {
-  animation: bounce 0.8s ease-in-out infinite;
-}
 </style>

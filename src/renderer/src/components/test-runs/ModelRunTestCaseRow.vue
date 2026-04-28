@@ -261,15 +261,6 @@ const hasMetrics = computed<boolean>(() => {
   color: var(--text-muted);
 }
 
-.spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 
 .case-info {
   display: flex;
