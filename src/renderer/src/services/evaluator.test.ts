@@ -381,13 +381,60 @@ describe('json_match', () => {
   })
 })
 
+describe('bleu', () => {
+  const base: EvaluationConfig = {
+    type: 'bleu',
+    customValidator: { language: 'javascript', code: '' },
+    codeExecution: { language: 'javascript', testCases: [] }
+  }
+
+  it('passes with identical output and expected', () => {
+    const result = evaluate('the quick brown fox jumps', {
+      ...base,
+      expected: 'the quick brown fox jumps'
+    })
+    expect(result.passed).toBe(true)
+    expect(result.correctnessScore).toBe(1)
+  })
+
+  it('returns partial score for mostly overlapping output', () => {
+    const result = evaluate('the quick brown dog jumps', {
+      ...base,
+      expected: 'the quick brown fox jumps'
+    })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBeCloseTo(0.632, 3)
+  })
+
+  it('returns low score for completely different output', () => {
+    const result = evaluate('completely unrelated text here', {
+      ...base,
+      expected: 'the quick brown fox jumps'
+    })
+    expect(result.passed).toBe(false)
+    expect(result.correctnessScore).toBe(0)
+  })
+
+  it('returns zero score when expected is empty', () => {
+    const result = evaluate('some output text', { ...base, expected: '' })
+    expect(result.correctnessScore).toBe(0)
+    expect(result.passed).toBe(false)
+  })
+
+  it('returns zero score when output is empty', () => {
+    const result = evaluate('', { ...base, expected: 'the quick brown fox jumps' })
+    expect(result.correctnessScore).toBe(0)
+    expect(result.passed).toBe(false)
+  })
+})
+
 describe('unknown type', () => {
   it('returns error for unimplemented type', () => {
     const config = {
-      type: 'bleu',
+      type: 'unknown_type',
       customValidator: { language: 'javascript' as const, code: '' },
       codeExecution: { language: 'javascript' as const, testCases: [] }
-    } as EvaluationConfig
+    } as unknown as EvaluationConfig
     const result = evaluate('output', config)
     expect(result.passed).toBe(false)
     expect(result.error).toBeTruthy()

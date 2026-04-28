@@ -1,6 +1,7 @@
 import type { EvaluationConfig } from '@shared/app/test-suite'
 import { l as rougeL } from 'js-rouge'
 import { distance as levenshteinDistance } from 'fastest-levenshtein'
+import { bleu } from 'bleu-score'
 
 export interface EvaluationResult {
   correctnessScore: number
@@ -27,6 +28,8 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
       return evaluateF1(output, evaluation)
     case 'json_match':
       return evaluateJsonMatch(output, evaluation)
+    case 'bleu':
+      return evaluateBleu(output, evaluation)
     default:
       return {
         correctnessScore: 0,
@@ -34,6 +37,18 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
         error: `Evaluation type '${evaluation.type}' is not implemented yet`
       }
   }
+}
+
+function evaluateBleu(output: string, evaluation: EvaluationConfig): EvaluationResult {
+  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
+  if (!expected) {
+    return { correctnessScore: 0, passed: false, error: 'No expected value provided' }
+  }
+  if (output.length === 0) {
+    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+  }
+  const correctnessScore = bleu(expected, output, 2)
+  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
 }
 
 function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationResult {
