@@ -54,7 +54,7 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   </Teleport>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -76,22 +76,26 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
 
-.modal-panel--sm {
-  width: 360px;
-  max-width: calc(100vw - 2rem);
-}
+  &--sm {
+    width: 360px;
+    max-width: calc(100vw - 2rem);
+  }
 
-.modal-panel--md {
-  width: 560px;
-  max-width: calc(100vw - 2rem);
-}
+  &--md {
+    width: 560px;
+    max-width: calc(100vw - 2rem);
+  }
 
-.modal-panel--lg {
-  width: 800px;
-  max-width: calc(100vw - 2rem);
-  max-height: calc(100vh - 4rem);
+  &--lg {
+    width: 800px;
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 4rem);
+
+    .modal-body {
+      flex: 1;
+    }
+  }
 }
 
 .modal-header {
@@ -113,10 +117,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   overflow-y: auto;
 }
 
-.modal-panel--lg .modal-body {
-  flex: 1;
-}
-
 .modal-actions {
   display: flex;
   justify-content: flex-end;
@@ -124,26 +124,26 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   padding: 0 24px 20px;
 }
 
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.18s var(--ease-out);
-}
+.modal {
+  &-enter-active,
+  &-leave-active {
+    transition: opacity 0.18s var(--ease-out);
 
-.modal-enter-active .modal-panel,
-.modal-leave-active .modal-panel {
-  transition:
-    opacity 0.18s var(--ease-out),
-    transform 0.18s var(--ease-out);
-}
+    .modal-panel {
+      transition:
+        opacity 0.18s var(--ease-out),
+        transform 0.18s var(--ease-out);
+    }
+  }
 
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
+  &-enter-from,
+  &-leave-to {
+    opacity: 0;
 
-.modal-enter-from .modal-panel,
-.modal-leave-to .modal-panel {
-  opacity: 0;
-  transform: scale(0.95) translateY(-8px);
+    .modal-panel {
+      opacity: 0;
+      transform: scale(0.95) translateY(-8px);
+    }
+  }
 }
 </style>

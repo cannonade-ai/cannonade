@@ -12,7 +12,7 @@ const model = defineModel<T>({ required: true })
     <label
       v-for="(option, index) in options"
       :key="option.value"
-      class="radio-option"
+      class="option"
       :class="{
         active: model === option.value,
         'rounded-first': type === 'rounded' && index === 0,
@@ -25,43 +25,43 @@ const model = defineModel<T>({ required: true })
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .radio-group {
   display: flex;
-}
 
-.radio-option {
-  display: flex;
-  align-items: center;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition:
-    background 0.12s,
-    border-color 0.12s,
-    color 0.12s;
-}
+  .option {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition:
+      background 0.12s,
+      border-color 0.12s,
+      color 0.12s;
 
-.radio-option input {
-  display: none;
-}
+    input {
+      display: none;
+    }
 
-.radio-option.rounded-first {
-  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
-}
+    &.rounded-first {
+      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+    }
 
-.radio-option.rounded-last {
-  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
-}
+    &.rounded-last {
+      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    }
 
-.radio-option.active {
-  background: var(--accent-dim);
-  border-color: var(--accent-border);
-  color: var(--accent);
+    &.active {
+      background: var(--accent-dim);
+      border-color: var(--accent-border);
+      color: var(--accent);
+    }
+  }
 }
 </style>

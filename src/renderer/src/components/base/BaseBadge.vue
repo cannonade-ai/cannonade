@@ -77,7 +77,7 @@ const computedIconAnimation = computed(() => {
   </span>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .badge {
   display: inline-flex;
   align-items: center;
@@ -88,31 +88,31 @@ const computedIconAnimation = computed(() => {
   font-weight: 600;
   border-radius: var(--radius-full);
   text-transform: capitalize;
-}
 
-.badge.default {
-  background: var(--surface-elevated);
-  color: var(--text-muted);
-}
+  &.default {
+    background: var(--surface-elevated);
+    color: var(--text-muted);
+  }
 
-.badge.primary {
-  background: var(--accent);
-  color: var(--surface);
-}
+  &.primary {
+    background: var(--accent);
+    color: var(--surface);
+  }
 
-.badge.secondary {
-  background: var(--accent-dim);
-  color: var(--accent);
-}
+  &.secondary {
+    background: var(--accent-dim);
+    color: var(--accent);
+  }
 
-.badge.success {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
+  &.success {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+  }
 
-.badge.danger {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
+  &.danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+  }
 }
 
 @keyframes spin {

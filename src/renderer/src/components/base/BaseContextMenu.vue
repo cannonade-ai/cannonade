@@ -98,7 +98,7 @@ defineExpose({ openAt })
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .ctx-menu {
   position: relative;
   display: inline-flex;
@@ -132,19 +132,19 @@ defineExpose({ openAt })
     background 0.12s,
     color 0.12s;
   text-align: left;
-}
 
-.dropdown-item:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 
-.dropdown-item.danger {
-  color: #ef4444;
-}
+  &.danger {
+    color: #ef4444;
 
-.dropdown-item.danger:hover {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+  }
 }
 </style>

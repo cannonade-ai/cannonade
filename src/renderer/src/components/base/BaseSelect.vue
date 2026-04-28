@@ -121,7 +121,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .base-select {
   position: relative;
   display: flex;
@@ -140,75 +140,78 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   outline: none;
   transition: border-color 0.15s;
   user-select: none;
-}
 
-.base-select:focus,
-.base-select.open {
-  border-color: var(--accent);
-}
+  &:focus,
+  &.open {
+    border-color: var(--accent);
+  }
 
-.trigger-label {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+  &.open {
+    .trigger-icon {
+      transform: rotate(180deg);
+    }
+  }
 
-.trigger-label.placeholder {
-  color: var(--text-muted);
-}
+  .trigger-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
-.trigger-icon {
-  position: absolute;
-  right: 8px;
-  color: var(--text-muted);
-  transition: transform 0.15s;
-  pointer-events: none;
-  flex-shrink: 0;
-}
+    &.placeholder {
+      color: var(--text-muted);
+    }
+  }
 
-.base-select.open .trigger-icon {
-  transform: rotate(180deg);
-}
+  .trigger-icon {
+    position: absolute;
+    right: 8px;
+    color: var(--text-muted);
+    transition: transform 0.15s;
+    pointer-events: none;
+    flex-shrink: 0;
+  }
 
-.dropdown {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
-  z-index: 200;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-}
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 200;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
 
-ul {
-  list-style: none;
-  margin: 0;
-  max-height: 14rem;
-  overflow-y: auto;
-}
+    ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      max-height: 14rem;
+      overflow-y: auto;
+    }
 
-.option {
-  padding: 6px 8px;
-  font-size: var(--text-xs);
-  font-family: var(--font-body);
-  color: var(--text-secondary);
-  border-radius: calc(var(--radius) - 2px);
-  cursor: pointer;
-  transition:
-    background 0.1s,
-    color 0.1s;
-}
+    .option {
+      padding: 6px 8px;
+      font-size: var(--text-xs);
+      font-family: var(--font-body);
+      color: var(--text-secondary);
+      border-radius: calc(var(--radius) - 2px);
+      cursor: pointer;
+      transition:
+        background 0.1s,
+        color 0.1s;
 
-.option.focused {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
+      &.focused {
+        background: var(--surface-hover);
+        color: var(--text-primary);
+      }
 
-.option.selected {
-  color: var(--accent);
+      &.selected {
+        color: var(--accent);
+      }
+    }
+  }
 }
 </style>

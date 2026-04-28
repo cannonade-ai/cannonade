@@ -28,7 +28,7 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
   </button>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .base-btn {
   display: inline-flex;
   align-items: center;
@@ -49,65 +49,65 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
     border-color 0.15s,
     color 0.15s,
     opacity 0.15s;
-}
 
-.base-btn:disabled {
-  opacity: 0.5;
-  cursor: unset;
-}
+  &:disabled {
+    opacity: 0.5;
+    cursor: unset;
+  }
 
-.base-btn--default {
-  background: none;
-  border-color: var(--border);
-  color: var(--text-secondary);
-}
+  &--default {
+    background: none;
+    border-color: var(--border);
+    color: var(--text-secondary);
 
-.base-btn--default:not(:disabled):hover {
-  background: var(--surface-hover);
-  border-color: var(--border-hover);
-}
+    &:not(:disabled):hover {
+      background: var(--surface-hover);
+      border-color: var(--border-hover);
+    }
+  }
 
-.base-btn--primary {
-  font-weight: 600;
-  padding: 6px 16px;
-  background: var(--accent);
-  border-color: transparent;
-  color: #000;
-}
+  &--primary {
+    font-weight: 600;
+    padding: 6px 16px;
+    background: var(--accent);
+    border-color: transparent;
+    color: #000;
 
-.base-btn--primary:not(:disabled):hover {
-  opacity: 0.7;
-}
+    &:not(:disabled):hover {
+      opacity: 0.7;
+    }
+  }
 
-.base-btn--secondary {
-  background: var(--accent-dim);
-  border: 1px solid var(--accent-border);
-  color: var(--accent);
-}
+  &--secondary {
+    background: var(--accent-dim);
+    border: 1px solid var(--accent-border);
+    color: var(--accent);
 
-.base-btn--secondary:not(:disabled):hover {
-  background: rgba(255, 179, 0, 0.3);
-}
+    &:not(:disabled):hover {
+      background: rgba(255, 179, 0, 0.3);
+    }
+  }
 
-.base-btn--danger-outline {
-  background: none;
-  border-color: var(--border);
-  color: var(--text-secondary);
-}
+  &--danger-outline {
+    background: none;
+    border-color: var(--border);
+    color: var(--text-secondary);
 
-.base-btn--danger-outline:not(:disabled):hover {
-  background: color-mix(in srgb, var(--error) 10%, transparent);
-  border-color: var(--error);
-  color: var(--error);
-}
+    &:not(:disabled):hover {
+      background: color-mix(in srgb, var(--error) 10%, transparent);
+      border-color: var(--error);
+      color: var(--error);
+    }
+  }
 
-.base-btn--danger {
-  background: var(--error);
-  border-color: transparent;
-  color: var(--text-primary);
-}
+  &--danger {
+    background: var(--error);
+    border-color: transparent;
+    color: var(--text-primary);
 
-.base-btn--danger:not(:disabled):hover {
-  background: var(--error-dim);
+    &:not(:disabled):hover {
+      background: var(--error-dim);
+    }
+  }
 }
 </style>
