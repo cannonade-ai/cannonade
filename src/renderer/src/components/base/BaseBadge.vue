@@ -9,7 +9,7 @@ import {
 } from '@tabler/icons-vue'
 import { computed } from 'vue'
 
-export type BadgeType = 'default' | 'primary' | 'secondary' | 'danger' | 'success'
+export type BadgeType = 'default' | 'primary' | 'secondary' | 'danger' | 'success' | 'info'
 export type Status = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
 export type IconAnimation = 'spin' | 'pulse' | 'bounce'
 
@@ -18,6 +18,7 @@ const props = defineProps<{
   status?: Status
   icon?: Icon
   iconAnimation?: IconAnimation
+  square?: boolean
 }>()
 
 const statusBadgeTypeMap: Record<Status, BadgeType> = {
@@ -65,7 +66,7 @@ const computedIconAnimation = computed(() => {
 </script>
 
 <template>
-  <span class="badge" :class="computedType">
+  <span class="badge" :class="[computedType, { square }]">
     <component
       :is="computedIcon"
       v-if="computedIcon"
@@ -87,6 +88,10 @@ const computedIconAnimation = computed(() => {
   font-size: var(--text-xs);
   font-weight: 600;
   border-radius: var(--radius-full);
+
+  &.square {
+    border-radius: var(--radius);
+  }
   text-transform: capitalize;
 
   &.default {
@@ -112,6 +117,11 @@ const computedIconAnimation = computed(() => {
   &.danger {
     background: rgba(239, 68, 68, 0.15);
     color: #ef4444;
+  }
+
+  &.info {
+    background: var(--blue-dim);
+    color: var(--blue);
   }
 }
 </style>

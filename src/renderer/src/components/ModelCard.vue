@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Model } from '@shared/lm-studio/ipc-contracts'
 import { formatBytes, formatContext } from '../utils/format'
+import BaseBadge from './base/BaseBadge.vue'
 
 const props = defineProps<{ model: Model }>()
 
@@ -12,15 +13,13 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   <div class="model-card" :class="{ loaded: isLoaded }">
     <div class="card-header">
       <h3 class="model-name">{{ model.display_name }}</h3>
-      <span v-if="isLoaded" class="status-badge status-loaded">Loaded</span>
+      <base-badge v-if="isLoaded" type="success">Loaded</base-badge>
     </div>
 
     <div class="card-meta">
       <span class="publisher">{{ model.publisher }}</span>
-      <span class="badge">
-        {{ model.type === 'llm' ? 'LLM' : 'Embedding' }}
-      </span>
-      <span v-if="model.format" class="badge">{{ model.format.toUpperCase() }}</span>
+      <base-badge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</base-badge>
+      <base-badge v-if="model.format" type="secondary">{{ model.format.toUpperCase() }}</base-badge>
     </div>
 
     <div class="card-stats">
@@ -47,10 +46,12 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
     </div>
 
     <div v-if="model.capabilities" class="card-capabilities">
-      <span class="cap-badge" :class="{ active: model.capabilities.vision }">Vision</span>
-      <span class="cap-badge" :class="{ active: model.capabilities.trained_for_tool_use }">
+      <base-badge :type="model.capabilities.vision ? 'success' : 'default'" square>
+        Vision
+      </base-badge>
+      <base-badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
         Tool use
-      </span>
+      </base-badge>
 
       <div v-if="isLoaded" class="loaded-instances">
         <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">
@@ -103,25 +104,6 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   line-height: 1.3;
 }
 
-.status-badge {
-  flex-shrink: 0;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 3px 9px;
-  border-radius: var(--radius-full);
-  letter-spacing: 0.03em;
-}
-
-.status-loaded {
-  background: var(--green-dim);
-  color: var(--green);
-}
-
-.status-idle {
-  background: var(--surface-elevated);
-  color: var(--text-muted);
-}
-
 .card-meta {
   display: flex;
   align-items: center;
@@ -132,20 +114,6 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
 .publisher {
   font-size: var(--text-xs);
   color: var(--text-secondary);
-}
-
-.badge {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 1px 6px;
-  letter-spacing: 0.04em;
-  background: var(--accent-dim);
-  color: var(--accent);
-}
-
-.format-badge {
-  background: var(--surface-elevated);
-  color: var(--text-muted);
 }
 
 .card-stats {
@@ -183,20 +151,6 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   margin-top: 0.5rem;
   display: flex;
   gap: 6px;
-}
-
-.cap-badge {
-  font-size: var(--text-xs);
-  padding: 2px 8px;
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  background: transparent;
-}
-
-.cap-badge.active {
-  border-color: var(--green-dim);
-  background: var(--green-dim);
-  color: var(--green);
 }
 
 .loaded-instances {

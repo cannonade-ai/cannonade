@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { Model } from '@shared/open-router/ipc-contracts'
 import { formatContext, formatPrice } from '../utils/format'
+import BaseBadge from './base/BaseBadge.vue'
 
 const props = defineProps<{ model: Model }>()
 
@@ -12,14 +13,14 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
   <div class="or-card">
     <div class="card-header">
       <h3 class="model-name">{{ model.name }}</h3>
-      <span class="modality-badge">{{ model.architecture.modality }}</span>
+      <base-badge type="info">{{ model.architecture.modality }}</base-badge>
     </div>
 
     <div class="card-meta">
       <span class="publisher">{{ publisher }}</span>
-      <span v-if="model.architecture.tokenizer" class="badge">{{
+      <base-badge v-if="model.architecture.tokenizer" type="secondary">{{
         model.architecture.tokenizer
-      }}</span>
+      }}</base-badge>
     </div>
 
     <div class="card-stats">
@@ -82,17 +83,6 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
   line-height: 1.3;
 }
 
-.modality-badge {
-  flex-shrink: 0;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  background: var(--blue-dim);
-  color: var(--blue);
-  letter-spacing: 0.03em;
-}
-
 .card-meta {
   display: flex;
   align-items: center;
@@ -103,15 +93,6 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
 .publisher {
   font-size: var(--text-xs);
   color: var(--text-secondary);
-}
-
-.badge {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  padding: 1px 6px;
-  letter-spacing: 0.04em;
-  background: var(--accent-dim);
-  color: var(--accent);
 }
 
 .card-stats {
