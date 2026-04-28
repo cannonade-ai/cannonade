@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { IconCheck, IconX, IconClock, IconLoader2, IconChevronDown } from '@tabler/icons-vue'
+import { IconCheck, IconX, IconClock, IconLoader2 } from '@tabler/icons-vue'
 import type { TestCase, ChatMessage, TestCaseResult } from '@shared/app/test-suite'
 import type { TestCaseRun } from '@shared/app/test-run'
+import BaseChevron from '@renderer/components/base/BaseChevron.vue'
 
 const props = defineProps<{
   testCase: TestCase
@@ -102,12 +103,7 @@ const hasMetrics = computed<boolean>(() => {
       <div v-if="caseRun?.result" class="summary-right">
         <span class="eval-type">{{ testCase.evaluation.type }}</span>
         <span class="score">{{ scoreLabel(caseRun.result) }}</span>
-        <IconChevronDown
-          :size="13"
-          :stroke-width="2"
-          class="chevron"
-          :class="{ rotated: expanded }"
-        />
+        <base-chevron :expanded="expanded" />
       </div>
     </button>
 
@@ -328,17 +324,6 @@ const hasMetrics = computed<boolean>(() => {
   color: var(--text-primary);
   min-width: 36px;
   text-align: right;
-}
-
-.chevron {
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-  transform: rotate(-90deg);
-}
-
-.chevron.rotated {
-  transform: rotate(0deg);
 }
 
 .case-details {

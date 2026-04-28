@@ -6,13 +6,13 @@ import {
   IconClock,
   IconLoader2,
   IconMinus,
-  IconChevronDown,
   IconAlertCircle
 } from '@tabler/icons-vue'
 
 import type { PerModelRun, ModelRef, TestCaseRun } from '@shared/app/test-run'
 import type { TestCase } from '@shared/app/test-suite'
 import ModelRunTestCaseRow from './ModelRunTestCaseRow.vue'
+import BaseChevron from '@renderer/components/base/BaseChevron.vue'
 
 const props = defineProps<{
   modelRun: PerModelRun
@@ -93,12 +93,7 @@ function toggle(): void {
 
       <div class="summary-right">
         <span class="stat-duration">{{ duration(modelRun) }}</span>
-        <IconChevronDown
-          :size="14"
-          :stroke-width="2"
-          class="chevron"
-          :class="{ rotated: expanded }"
-        />
+        <base-chevron :expanded="expanded" />
       </div>
     </button>
 
@@ -283,17 +278,6 @@ function toggle(): void {
   color: var(--text-secondary);
   min-width: 36px;
   text-align: right;
-}
-
-.chevron {
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-  transform: rotate(-90deg);
-}
-
-.chevron.rotated {
-  transform: rotate(0deg);
 }
 
 .row-details {

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IconPlus, IconChevronDown, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
+import { IconPlus, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
 import type { TestCase } from '@shared/app/test-suite'
 import BaseContextMenu from '@renderer/components/base/BaseContextMenu.vue'
+import BaseChevron from '@renderer/components/base/BaseChevron.vue'
 import type { ContextMenuItem } from '@renderer/components/base/BaseContextMenu.vue'
 
 defineProps<{
@@ -73,12 +74,7 @@ function menuItems(id: string): ContextMenuItem[] {
                 </button>
               </template>
             </BaseContextMenu>
-            <IconChevronDown
-              :size="13"
-              :stroke-width="2"
-              class="chevron"
-              :class="{ rotated: selectedId === tc.id }"
-            />
+            <base-chevron :expanded="selectedId === tc.id" />
           </div>
         </li>
       </ul>
@@ -234,17 +230,6 @@ function menuItems(id: string): ContextMenuItem[] {
 .case-item.active .eval-badge {
   background: rgba(255, 179, 0, 0.15);
   color: var(--accent);
-}
-
-.chevron {
-  color: var(--text-secondary);
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-  transform: rotate(-90deg);
-}
-
-.chevron.rotated {
-  transform: rotate(0deg);
 }
 
 .btn-menu {
