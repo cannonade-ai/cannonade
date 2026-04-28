@@ -3,8 +3,8 @@ import { ref, computed } from 'vue'
 import { IconTank } from '@tabler/icons-vue'
 import { api } from '../api'
 import { useTestRunsStore } from '../stores/test-runs'
-import BaseModal from './BaseModal.vue'
-import BaseButton from './BaseButton.vue'
+import BaseModal from '@renderer/components/base/BaseModal.vue'
+import BaseButton from '@renderer/components/base/BaseButton.vue'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__

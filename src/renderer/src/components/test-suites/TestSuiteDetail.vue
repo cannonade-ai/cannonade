@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { IconArrowLeft } from '@tabler/icons-vue'
-import BaseButton from '../BaseButton.vue'
+import BaseButton from '@renderer/components/base/BaseButton.vue'
 import type { TestSuite, TestCase } from '@shared/app/test-suite'
 import TestSuiteInfoPanel from './TestSuiteInfoPanel.vue'
 import TestSuiteRunConfigPanel from './TestSuiteRunConfigPanel.vue'

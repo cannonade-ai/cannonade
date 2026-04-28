@@ -2,8 +2,8 @@
 import { ref } from 'vue'
 import { IconPlus, IconChevronDown, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
 import type { TestCase } from '@shared/app/test-suite'
-import ContextMenu from '@renderer/components/ContextMenu.vue'
-import type { ContextMenuItem } from '@renderer/components/ContextMenu.vue'
+import BaseContextMenu from '@renderer/components/base/BaseContextMenu.vue'
+import type { ContextMenuItem } from '@renderer/components/base/BaseContextMenu.vue'
 
 defineProps<{
   cases: TestCase[]
@@ -17,10 +17,10 @@ const emit = defineEmits<{
   'clone-case': [id: string]
 }>()
 
-const menuRefs = ref<Record<string, InstanceType<typeof ContextMenu>>>({})
+const menuRefs = ref<Record<string, InstanceType<typeof BaseContextMenu>>>({})
 
 function setMenuRef(id: string, el: unknown): void {
-  if (el) menuRefs.value[id] = el as InstanceType<typeof ContextMenu>
+  if (el) menuRefs.value[id] = el as InstanceType<typeof BaseContextMenu>
 }
 
 function menuItems(id: string): ContextMenuItem[] {
@@ -66,13 +66,13 @@ function menuItems(id: string): ContextMenuItem[] {
           </div>
           <div class="case-meta">
             <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
-            <ContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
+            <BaseContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
               <template #default="{ toggle }">
                 <button class="btn-menu" @click.stop="toggle">
                   <IconDotsVertical :size="14" :stroke-width="2" />
                 </button>
               </template>
-            </ContextMenu>
+            </BaseContextMenu>
             <IconChevronDown
               :size="13"
               :stroke-width="2"

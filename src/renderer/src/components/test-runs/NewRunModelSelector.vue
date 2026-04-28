@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { IconPlus, IconX } from '@tabler/icons-vue'
 import type { ModelRef } from '@shared/app/test-run'
-import BaseBadge from '@renderer/components/BaseBadge.vue'
+import BaseBadge from '@renderer/components/base/BaseBadge.vue'
 
 const props = defineProps<{
   modelValue: ModelRef[]

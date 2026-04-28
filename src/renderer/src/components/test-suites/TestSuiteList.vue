@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { IconTestPipe, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
 import type { TestSuite } from '@shared/app/test-suite'
-import ContextMenu from '../ContextMenu.vue'
-import type { ContextMenuItem } from '../ContextMenu.vue'
+import ContextMenu from '@renderer/components/base/BaseContextMenu.vue'
+import type { ContextMenuItem } from '@renderer/components/base/BaseContextMenu.vue'
 import { formatDate } from '@renderer/utils/format'
 
 defineProps<{

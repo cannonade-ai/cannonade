@@ -3,12 +3,12 @@ import { computed, onMounted } from 'vue'
 import { IconRefresh } from '@tabler/icons-vue'
 import { useModelsStore } from '../stores/models'
 import type { Provider } from '../stores/models'
-import BaseButton from '../components/BaseButton.vue'
+import BaseButton from '../components/base/BaseButton.vue'
 import ModelCard from '../components/ModelCard.vue'
 import OpenRouterModelCard from '../components/OpenRouterModelCard.vue'
 import SectionHeader from '../components/SectionHeader.vue'
-import BaseSelect from '../components/BaseSelect.vue'
-import type { SelectOption } from '../components/BaseSelect.vue'
+import BaseSelect from '../components/base/BaseSelect.vue'
+import type { SelectOption } from '../components/base/BaseSelect.vue'
 
 const store = useModelsStore()
 

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TestRun } from '@shared/app/test-run'
-import BaseBadge from '../BaseBadge.vue'
+import BaseBadge from '@renderer/components/base/BaseBadge.vue'
 import { formatDate } from '@renderer/utils/format'
 
 defineProps<{

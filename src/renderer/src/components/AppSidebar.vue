@@ -13,10 +13,10 @@ const collapsed = ref(false)
     <nav class="sidebar-nav">
       <SidebarNavItem
         :icon="IconBrain"
-        label="Models"
-        :active="nav.current === 'models'"
+        label="Local Models"
+        :active="nav.current === 'local-models'"
         :collapsed="collapsed"
-        @click="nav.navigate('models')"
+        @click="nav.navigate('local-models')"
       />
       <SidebarNavItem
         :icon="IconFlask"

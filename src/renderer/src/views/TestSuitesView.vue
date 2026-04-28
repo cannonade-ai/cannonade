@@ -5,7 +5,7 @@ import type { TestSuite } from '@shared/app/test-suite'
 import SectionHeader from '../components/SectionHeader.vue'
 import TestSuiteList from '../components/test-suites/TestSuiteList.vue'
 import TestSuiteDetail from '../components/test-suites/TestSuiteDetail.vue'
-import BaseButton from '../components/BaseButton.vue'
+import BaseButton from '../components/base/BaseButton.vue'
 import { storeToRefs } from 'pinia'
 import { useTestSuitesStore } from '../stores/test-suites'
 

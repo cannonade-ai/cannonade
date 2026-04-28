@@ -2,10 +2,10 @@
 import { ref, watch } from 'vue'
 import { IconX, IconTrash } from '@tabler/icons-vue'
 import type { TestCase, EvaluationConfig } from '@shared/app/test-suite'
-import BaseSelect from '../BaseSelect.vue'
-import type { SelectOption } from '../BaseSelect.vue'
-import BaseButton from '../BaseButton.vue'
-import BaseModal from '../BaseModal.vue'
+import BaseSelect from '@renderer/components/base/BaseSelect.vue'
+import type { SelectOption } from '@renderer/components/base/BaseSelect.vue'
+import BaseButton from '@renderer/components/base/BaseButton.vue'
+import BaseModal from '@renderer/components/base/BaseModal.vue'
 
 const props = defineProps<{
   testCase: TestCase | null
