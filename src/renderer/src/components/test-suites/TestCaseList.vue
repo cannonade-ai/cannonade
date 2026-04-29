@@ -39,9 +39,9 @@ function menuItems(id: string): ContextMenuItem[] {
 </script>
 
 <template>
-  <base-panel class="cases-panel" title="Test Cases">
+  <BasePanel class="cases-panel" title="Test Cases">
     <template #title-addon>
-      <base-badge>{{ cases.length }}</base-badge>
+      <BaseBadge>{{ cases.length }}</BaseBadge>
     </template>
 
     <template #header-right>
@@ -76,11 +76,11 @@ function menuItems(id: string): ContextMenuItem[] {
               </button>
             </template>
           </BaseContextMenu>
-          <base-chevron :expanded="selectedId === tc.id" />
+          <BaseChevron :expanded="selectedId === tc.id" />
         </div>
       </li>
     </ul>
-  </base-panel>
+  </BasePanel>
 </template>
 
 <style scoped>

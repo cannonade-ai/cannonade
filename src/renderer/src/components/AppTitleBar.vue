@@ -51,8 +51,8 @@ function confirmClose(): void {
   <BaseModal v-model="showCloseConfirm" title="Quit Cannonade?">
     <p>A test run is currently in progress. Quitting now will stop it.</p>
     <template #actions="{ close }">
-      <base-button @click="close">Cancel</base-button>
-      <base-button type="danger" @click="confirmClose">Quit anyway</base-button>
+      <BaseButton @click="close">Cancel</BaseButton>
+      <BaseButton type="danger" @click="confirmClose">Quit anyway</BaseButton>
     </template>
   </BaseModal>
 </template>

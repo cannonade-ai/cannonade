@@ -103,7 +103,7 @@ const hasMetrics = computed<boolean>(() => {
       <div v-if="caseRun?.result" class="summary-right">
         <span class="eval-type">{{ testCase.evaluation.type }}</span>
         <span class="score">{{ scoreLabel(caseRun.result) }}</span>
-        <base-chevron :expanded="expanded" />
+        <BaseChevron :expanded="expanded" />
       </div>
     </button>
 

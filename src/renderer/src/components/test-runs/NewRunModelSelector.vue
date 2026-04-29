@@ -96,7 +96,7 @@ function onHfKeydown(e: KeyboardEvent): void {
             </svg>
           </span>
           <span class="installed-label">{{ m.label }}</span>
-          <base-badge v-if="m.loaded" class="loaded-badge" type="success"> Loaded </base-badge>
+          <BaseBadge v-if="m.loaded" class="loaded-badge" type="success"> Loaded </BaseBadge>
         </li>
       </ul>
     </div>

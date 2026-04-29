@@ -3,7 +3,6 @@ import { ref, computed } from 'vue'
 import { IconPlayerStop } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
 import type { TestCase } from '@shared/app/test-suite'
-import BaseBadge from '@renderer/components/base/BaseBadge.vue'
 import BaseButton from '@renderer/components/base/BaseButton.vue'
 import BaseModal from '@renderer/components/base/BaseModal.vue'
 import BasePanel from '@renderer/components/base/BasePanel.vue'
@@ -33,7 +32,7 @@ function confirmCancel(): void {
 </script>
 
 <template>
-  <base-panel title="Test Run Details">
+  <BasePanel title="Test Run Details">
     <template #header-right>
       <span class="meta-tag">{{
         run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'
@@ -43,22 +42,22 @@ function confirmCancel(): void {
     </template>
 
     <template v-if="isActive" #toolbar>
-      <base-button type="danger-outline" :icon="IconPlayerStop" @click="showCancelModal = true">
+      <BaseButton type="danger-outline" :icon="IconPlayerStop" @click="showCancelModal = true">
         Stop Run
-      </base-button>
+      </BaseButton>
     </template>
 
-    <base-modal v-model="showCancelModal" title="Stop Run">
+    <BaseModal v-model="showCancelModal" title="Stop Run">
       Are you sure you want to stop this run? Any in-progress model evaluations will be cancelled.
       <template #actions="{ close }">
-        <base-button @click="close">Cancel</base-button>
-        <base-button type="danger-outline" @click="confirmCancel">Stop Run</base-button>
+        <BaseButton @click="close">Cancel</BaseButton>
+        <BaseButton type="danger-outline" @click="confirmCancel">Stop Run</BaseButton>
       </template>
-    </base-modal>
+    </BaseModal>
 
     <div class="section-label">Model Results</div>
     <div class="model-list">
-      <model-run-row
+      <ModelRunRow
         v-for="(mr, i) in run.modelRuns"
         :key="mr.id"
         :model-run="mr"
@@ -66,7 +65,7 @@ function confirmCancel(): void {
         :expanded="i === 0"
       />
     </div>
-  </base-panel>
+  </BasePanel>
 </template>
 
 <style scoped>

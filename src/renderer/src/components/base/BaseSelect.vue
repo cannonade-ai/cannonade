@@ -81,7 +81,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
 <template>
   <div
     ref="rootRef"
-    class="base-select"
+    class="select"
     :class="{ open }"
     tabindex="0"
     role="combobox"
@@ -122,7 +122,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
 </template>
 
 <style scoped lang="scss">
-.base-select {
+.select {
   position: relative;
   display: flex;
   align-items: center;

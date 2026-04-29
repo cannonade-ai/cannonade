@@ -13,13 +13,13 @@ const props = defineProps<{
 </script>
 
 <template>
-  <base-panel title="Suite Info">
-    <base-field label="Name">
+  <BasePanel title="Suite Info">
+    <BaseField label="Name">
       <input v-model="name" class="field-input" />
-    </base-field>
-    <base-field label="Description">
+    </BaseField>
+    <BaseField label="Description">
       <textarea v-model="description" class="field-textarea" rows="3" />
-    </base-field>
+    </BaseField>
     <div class="meta-rows">
       <div class="meta-row">
         <span class="meta-label">Created</span>
@@ -30,7 +30,7 @@ const props = defineProps<{
         <span class="meta-value">{{ formatDate(props.updatedAt, true) }}</span>
       </div>
     </div>
-  </base-panel>
+  </BasePanel>
 </template>
 
 <style scoped>

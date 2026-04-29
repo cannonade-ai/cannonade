@@ -113,38 +113,38 @@ function onSubmit(): void {
 </script>
 
 <template>
-  <base-panel title="New Run">
+  <BasePanel title="New Run">
     <template #header-right>
       <button class="btn-close" @click="emit('cancel')">
         <IconX :size="14" :stroke-width="2.5" />
       </button>
     </template>
 
-    <base-field label="Test Suite">
-      <base-select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
-    </base-field>
+    <BaseField label="Test Suite">
+      <BaseSelect v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
+    </BaseField>
 
-    <base-field label="Provider">
-      <base-radio-group
+    <BaseField label="Provider">
+      <BaseRadioGroup
         v-model="form.provider"
         :options="[
           { value: 'lmstudio', label: 'LM Studio' },
           { value: 'openrouter', label: 'OpenRouter' }
         ]"
       />
-    </base-field>
+    </BaseField>
 
-    <base-field label="Models">
+    <BaseField label="Models">
       <NewRunModelSelector
         v-model="form.models"
         :installed-models="installedModels"
         :loading-models="modelsStore.loading"
       />
-    </base-field>
+    </BaseField>
 
     <div class="divider" />
 
-    <base-field label="Options">
+    <BaseField label="Options">
       <div class="options-list">
         <label v-if="form.provider === 'lmstudio'" class="toggle-row">
           <span class="toggle-label">Delete auto-downloaded models after run</span>
@@ -161,15 +161,15 @@ function onSubmit(): void {
           </span>
         </label>
       </div>
-    </base-field>
+    </BaseField>
 
     <template #footer>
-      <base-button @click="emit('cancel')">Cancel</base-button>
-      <base-button type="primary" :disabled="!canSubmit" :icon="IconPlayerPlay" @click="onSubmit">
+      <BaseButton @click="emit('cancel')">Cancel</BaseButton>
+      <BaseButton type="primary" :disabled="!canSubmit" :icon="IconPlayerPlay" @click="onSubmit">
         Run
-      </base-button>
+      </BaseButton>
     </template>
-  </base-panel>
+  </BasePanel>
 </template>
 
 <style scoped>

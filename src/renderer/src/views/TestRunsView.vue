@@ -25,11 +25,11 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
 
 <template>
   <div class="view">
-    <section-header>
-      <base-button type="secondary" :icon="IconPlayerPlay" @click="store.startNewRun">
+    <SectionHeader>
+      <BaseButton type="secondary" :icon="IconPlayerPlay" @click="store.startNewRun">
         New Run
-      </base-button>
-    </section-header>
+      </BaseButton>
+    </SectionHeader>
 
     <div class="panels">
       <TestRunList

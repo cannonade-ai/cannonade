@@ -13,13 +13,13 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   <div class="model-card" :class="{ loaded: isLoaded }">
     <div class="card-header">
       <h3 class="model-name">{{ model.display_name }}</h3>
-      <base-badge v-if="isLoaded" type="success">Loaded</base-badge>
+      <BaseBadge v-if="isLoaded" type="success">Loaded</BaseBadge>
     </div>
 
     <div class="card-meta">
       <span class="publisher">{{ model.publisher }}</span>
-      <base-badge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</base-badge>
-      <base-badge v-if="model.format" type="secondary">{{ model.format.toUpperCase() }}</base-badge>
+      <BaseBadge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</BaseBadge>
+      <BaseBadge v-if="model.format" type="secondary">{{ model.format.toUpperCase() }}</BaseBadge>
     </div>
 
     <div class="card-stats">
@@ -46,12 +46,12 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
     </div>
 
     <div v-if="model.capabilities" class="card-capabilities">
-      <base-badge :type="model.capabilities.vision ? 'success' : 'default'" square>
+      <BaseBadge :type="model.capabilities.vision ? 'success' : 'default'" square>
         Vision
-      </base-badge>
-      <base-badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
+      </BaseBadge>
+      <BaseBadge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
         Tool use
-      </base-badge>
+      </BaseBadge>
 
       <div v-if="isLoaded" class="loaded-instances">
         <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">

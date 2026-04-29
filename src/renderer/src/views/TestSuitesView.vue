@@ -58,13 +58,13 @@ async function onCloneSuite(id: string): Promise<void> {
     </template>
 
     <template v-else>
-      <section-header>
-        <base-button type="secondary" :icon="IconPlus" @click="onNewSuite">New Suite</base-button>
-      </section-header>
+      <SectionHeader>
+        <BaseButton type="secondary" :icon="IconPlus" @click="onNewSuite">New Suite</BaseButton>
+      </SectionHeader>
 
-      <base-panel class="suites-panel" title="Test Suites">
+      <BasePanel class="suites-panel" title="Test Suites">
         <template #title-addon>
-          <base-badge>{{ suites.length }}</base-badge>
+          <BaseBadge>{{ suites.length }}</BaseBadge>
         </template>
 
         <TestSuiteList
@@ -74,7 +74,7 @@ async function onCloneSuite(id: string): Promise<void> {
           @delete-suite="onDeleteSuite"
           @clone-suite="onCloneSuite"
         />
-      </base-panel>
+      </BasePanel>
     </template>
   </div>
 </template>

@@ -13,14 +13,14 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
   <div class="or-card">
     <div class="card-header">
       <h3 class="model-name">{{ model.name }}</h3>
-      <base-badge type="info">{{ model.architecture.modality }}</base-badge>
+      <BaseBadge type="info">{{ model.architecture.modality }}</BaseBadge>
     </div>
 
     <div class="card-meta">
       <span class="publisher">{{ publisher }}</span>
-      <base-badge v-if="model.architecture.tokenizer" type="secondary">{{
+      <BaseBadge v-if="model.architecture.tokenizer" type="secondary">{{
         model.architecture.tokenizer
-      }}</base-badge>
+      }}</BaseBadge>
     </div>
 
     <div class="card-stats">

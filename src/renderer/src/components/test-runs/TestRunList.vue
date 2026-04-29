@@ -20,9 +20,9 @@ function modelCount(run: TestRun): string {
 </script>
 
 <template>
-  <base-panel class="runs-panel" title="Test Runs">
+  <BasePanel class="runs-panel" title="Test Runs">
     <template #title-addon>
-      <base-badge>{{ runs.length }}</base-badge>
+      <BaseBadge>{{ runs.length }}</BaseBadge>
     </template>
 
     <div v-if="runs.length === 0" class="empty">No runs yet.</div>
@@ -42,12 +42,12 @@ function modelCount(run: TestRun): string {
           </span>
         </div>
         <div class="run-aside">
-          <base-badge :status="run.status">{{ run.status }}</base-badge>
+          <BaseBadge :status="run.status">{{ run.status }}</BaseBadge>
           <span class="run-date">{{ formatDate(run.createdAt) }}</span>
         </div>
       </li>
     </ul>
-  </base-panel>
+  </BasePanel>
 </template>
 
 <style scoped>

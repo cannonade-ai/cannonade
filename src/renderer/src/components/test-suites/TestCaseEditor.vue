@@ -106,7 +106,7 @@ function onConfirmDelete(): void {
 </script>
 
 <template>
-  <base-panel class="editor-panel" :title="isNew ? 'New Test Case' : 'Edit Test Case'">
+  <BasePanel class="editor-panel" :title="isNew ? 'New Test Case' : 'Edit Test Case'">
     <template #header-right>
       <button class="btn-close" @click="emit('close')">
         <IconX :size="14" :stroke-width="2.5" />
@@ -114,17 +114,17 @@ function onConfirmDelete(): void {
     </template>
 
     <template #footer>
-      <base-button
+      <BaseButton
         v-if="!isNew"
         type="danger-outline"
         :icon="IconTrash"
         @click="showDeleteModal = true"
       >
         Delete
-      </base-button>
+      </BaseButton>
       <div class="footer-right">
-        <base-button @click="emit('close')">Cancel</base-button>
-        <base-button type="primary" @click="onSave">Save Test Case</base-button>
+        <BaseButton @click="emit('close')">Cancel</BaseButton>
+        <BaseButton type="primary" @click="onSave">Save Test Case</BaseButton>
       </div>
     </template>
 
@@ -135,7 +135,7 @@ function onConfirmDelete(): void {
             <span class="section-title">General</span>
           </div>
           <div class="section-body">
-            <base-field label="Name">
+            <BaseField label="Name">
               <input
                 v-model="name"
                 class="field-input"
@@ -143,10 +143,10 @@ function onConfirmDelete(): void {
                 placeholder="Test case name"
                 @input="errors.name = false"
               />
-            </base-field>
-            <base-field label="Description">
+            </BaseField>
+            <BaseField label="Description">
               <input v-model="description" class="field-input" placeholder="Optional description" />
-            </base-field>
+            </BaseField>
           </div>
         </div>
 
@@ -155,15 +155,15 @@ function onConfirmDelete(): void {
             <span class="section-title">Input</span>
           </div>
           <div class="section-body">
-            <base-field label="System Prompt">
+            <BaseField label="System Prompt">
               <textarea
                 v-model="systemPrompt"
                 class="field-textarea"
                 rows="4"
                 placeholder="System instructions for the model..."
               />
-            </base-field>
-            <base-field label="User Input">
+            </BaseField>
+            <BaseField label="User Input">
               <textarea
                 v-model="userInput"
                 class="field-textarea"
@@ -172,7 +172,7 @@ function onConfirmDelete(): void {
                 placeholder="User message to send..."
                 @input="errors.userInput = false"
               />
-            </base-field>
+            </BaseField>
           </div>
         </div>
       </div>
@@ -183,10 +183,10 @@ function onConfirmDelete(): void {
             <span class="section-title">Evaluation</span>
           </div>
           <div class="section-body section-body-fill">
-            <base-field label="Method">
-              <base-select v-model="selectedEvalType" :options="evaluationTypes" />
-            </base-field>
-            <base-field label="Expected / Config" fill>
+            <BaseField label="Method">
+              <BaseSelect v-model="selectedEvalType" :options="evaluationTypes" />
+            </BaseField>
+            <BaseField label="Expected / Config" fill>
               <textarea
                 v-model="evalExpected"
                 class="field-textarea field-textarea-fill"
@@ -196,20 +196,20 @@ function onConfirmDelete(): void {
                     : 'Enter expected output or configuration...'
                 "
               />
-            </base-field>
+            </BaseField>
           </div>
         </div>
       </div>
     </div>
-  </base-panel>
+  </BasePanel>
 
-  <base-modal v-model="showDeleteModal" title="Delete Test Case">
+  <BaseModal v-model="showDeleteModal" title="Delete Test Case">
     Are you sure you want to delete this test case? This action cannot be undone.
     <template #actions="{ close }">
-      <base-button @click="close">Cancel</base-button>
-      <base-button type="danger" @click="onConfirmDelete">Delete</base-button>
+      <BaseButton @click="close">Cancel</BaseButton>
+      <BaseButton type="danger" @click="onConfirmDelete">Delete</BaseButton>
     </template>
-  </base-modal>
+  </BaseModal>
 </template>
 
 <style scoped>

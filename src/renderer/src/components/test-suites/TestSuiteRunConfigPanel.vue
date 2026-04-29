@@ -13,9 +13,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
 </script>
 
 <template>
-  <base-panel title="Default Run Config">
+  <BasePanel title="Default Run Config">
     <div class="field-row">
-      <base-field label="Temperature" grow>
+      <BaseField label="Temperature" grow>
         <input
           class="field-input"
           type="number"
@@ -25,8 +25,8 @@ function setNumber(key: keyof RunConfig, raw: string): void {
           :value="config?.temperature ?? ''"
           @change="setNumber('temperature', ($event.target as HTMLInputElement).value)"
         />
-      </base-field>
-      <base-field label="Top P" grow>
+      </BaseField>
+      <BaseField label="Top P" grow>
         <input
           class="field-input"
           type="number"
@@ -36,9 +36,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
           :value="config?.topP ?? ''"
           @change="setNumber('topP', ($event.target as HTMLInputElement).value)"
         />
-      </base-field>
+      </BaseField>
     </div>
-    <base-field label="Max Tokens">
+    <BaseField label="Max Tokens">
       <input
         class="field-input"
         type="number"
@@ -46,9 +46,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
         :value="config?.maxTokens ?? ''"
         @change="setNumber('maxTokens', ($event.target as HTMLInputElement).value)"
       />
-    </base-field>
+    </BaseField>
     <div class="field-row">
-      <base-field label="Freq. Penalty" grow>
+      <BaseField label="Freq. Penalty" grow>
         <input
           class="field-input"
           type="number"
@@ -58,8 +58,8 @@ function setNumber(key: keyof RunConfig, raw: string): void {
           :value="config?.frequencyPenalty ?? ''"
           @change="setNumber('frequencyPenalty', ($event.target as HTMLInputElement).value)"
         />
-      </base-field>
-      <base-field label="Pres. Penalty" grow>
+      </BaseField>
+      <BaseField label="Pres. Penalty" grow>
         <input
           class="field-input"
           type="number"
@@ -69,9 +69,9 @@ function setNumber(key: keyof RunConfig, raw: string): void {
           :value="config?.presencePenalty ?? ''"
           @change="setNumber('presencePenalty', ($event.target as HTMLInputElement).value)"
         />
-      </base-field>
+      </BaseField>
     </div>
-  </base-panel>
+  </BasePanel>
 </template>
 
 <style scoped>

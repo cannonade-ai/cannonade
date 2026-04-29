@@ -54,11 +54,11 @@ function suiteMenuItems(id: string): ContextMenuItem[] {
               <icon-test-pipe :size="11" :stroke-width="2" />
               {{ suite.testCases.length }} cases
             </span>
-            <context-menu v-slot="{ toggle }" :items="suiteMenuItems(suite.id)">
+            <ContextMenu v-slot="{ toggle }" :items="suiteMenuItems(suite.id)">
               <button class="btn-menu" @click.stop="toggle">
                 <icon-dots-vertical :size="14" :stroke-width="2" />
               </button>
-            </context-menu>
+            </ContextMenu>
           </div>
           <span class="suite-date">Updated {{ formatDate(suite.updatedAt) }}</span>
         </div>

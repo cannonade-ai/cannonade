@@ -40,10 +40,10 @@ onMounted(() => store.load())
 
 <template>
   <div class="dashboard">
-    <section-header>
-      <base-select v-model="provider" :options="providerOptions" class="provider-select" />
-      <base-button :icon="IconRefresh" @click="store.load()">Refresh</base-button>
-    </section-header>
+    <SectionHeader>
+      <BaseSelect v-model="provider" :options="providerOptions" class="provider-select" />
+      <BaseButton :icon="IconRefresh" @click="store.load()">Refresh</BaseButton>
+    </SectionHeader>
 
     <div v-if="store.loading" class="state-message">
       <span class="spinner" />
@@ -146,7 +146,6 @@ onMounted(() => store.load())
   opacity: 0.5;
   cursor: not-allowed;
 }
-
 
 .model-section {
   margin-bottom: 32px;

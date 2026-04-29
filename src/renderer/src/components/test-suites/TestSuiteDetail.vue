@@ -100,9 +100,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 <template>
   <div class="detail">
     <div class="detail-header">
-      <base-button :icon="IconArrowLeft" :icon-stroke-width="2.5" @click="emit('back')">
+      <BaseButton :icon="IconArrowLeft" :icon-stroke-width="2.5" @click="emit('back')">
         Test Suites
-      </base-button>
+      </BaseButton>
     </div>
 
     <div class="panels" :class="{ 'editor-visible': editorOpen }">

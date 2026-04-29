@@ -93,7 +93,7 @@ function toggle(): void {
 
       <div class="summary-right">
         <span class="stat-duration">{{ duration(modelRun) }}</span>
-        <base-chevron :expanded="expanded" />
+        <BaseChevron :expanded="expanded" />
       </div>
     </button>
 
@@ -160,7 +160,7 @@ function toggle(): void {
 
       <div v-if="showTestCases" class="test-cases">
         <div class="test-case-list">
-          <model-run-test-case-row
+          <ModelRunTestCaseRow
             v-for="tc in testCases"
             :key="tc.id"
             :test-case="tc"
