@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { formatDate } from '@renderer/utils/format'
-import BaseField from '@renderer/components/base/BaseField.vue'
-import BasePanel from '@renderer/components/base/BasePanel.vue'
+import { Field, Panel } from '@renderer/components/ui'
 
 const name = defineModel<string>('name', { required: true })
 const description = defineModel<string | undefined>('description')
@@ -13,13 +12,13 @@ const props = defineProps<{
 </script>
 
 <template>
-  <BasePanel title="Suite Info">
-    <BaseField label="Name">
+  <Panel title="Suite Info">
+    <Field label="Name">
       <input v-model="name" class="field-input" />
-    </BaseField>
-    <BaseField label="Description">
+    </Field>
+    <Field label="Description">
       <textarea v-model="description" class="field-textarea" rows="3" />
-    </BaseField>
+    </Field>
     <div class="meta-rows">
       <div class="meta-row">
         <span class="meta-label">Created</span>
@@ -30,7 +29,7 @@ const props = defineProps<{
         <span class="meta-value">{{ formatDate(props.updatedAt, true) }}</span>
       </div>
     </div>
-  </BasePanel>
+  </Panel>
 </template>
 
 <style scoped>

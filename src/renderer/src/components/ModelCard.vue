@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Model } from '@shared/lm-studio/ipc-contracts'
 import { formatBytes, formatContext } from '../utils/format'
-import BaseBadge from './base/BaseBadge.vue'
+import Badge from './ui/Badge.vue'
+import type { Model } from '@shared/lm-studio/ipc-contracts'
 
 const props = defineProps<{ model: Model }>()
 
@@ -13,13 +13,13 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   <div class="model-card" :class="{ loaded: isLoaded }">
     <div class="card-header">
       <h3 class="model-name">{{ model.display_name }}</h3>
-      <BaseBadge v-if="isLoaded" type="success">Loaded</BaseBadge>
+      <Badge v-if="isLoaded" type="success">Loaded</Badge>
     </div>
 
     <div class="card-meta">
       <span class="publisher">{{ model.publisher }}</span>
-      <BaseBadge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</BaseBadge>
-      <BaseBadge v-if="model.format" type="secondary">{{ model.format.toUpperCase() }}</BaseBadge>
+      <Badge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</Badge>
+      <Badge v-if="model.format" type="secondary">{{ model.format.toUpperCase() }}</Badge>
     </div>
 
     <div class="card-stats">
@@ -46,12 +46,10 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
     </div>
 
     <div v-if="model.capabilities" class="card-capabilities">
-      <BaseBadge :type="model.capabilities.vision ? 'success' : 'default'" square>
-        Vision
-      </BaseBadge>
-      <BaseBadge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
+      <Badge :type="model.capabilities.vision ? 'success' : 'default'" square> Vision </Badge>
+      <Badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
         Tool use
-      </BaseBadge>
+      </Badge>
 
       <div v-if="isLoaded" class="loaded-instances">
         <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">

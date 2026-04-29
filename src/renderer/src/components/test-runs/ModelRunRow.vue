@@ -1,18 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { Chevron } from '@renderer/components/ui'
+import { ModelRunTestCaseRow } from '@renderer/components/test-runs'
+
+import type { ModelRef, PerModelRun, TestCaseRun } from '@shared/app/test-run'
+import type { TestCase } from '@shared/app/test-suite'
 import {
+  IconAlertCircle,
   IconCheck,
-  IconX,
   IconClock,
   IconLoader2,
   IconMinus,
-  IconAlertCircle
+  IconX
 } from '@tabler/icons-vue'
-
-import type { PerModelRun, ModelRef, TestCaseRun } from '@shared/app/test-run'
-import type { TestCase } from '@shared/app/test-suite'
-import ModelRunTestCaseRow from './ModelRunTestCaseRow.vue'
-import BaseChevron from '@renderer/components/base/BaseChevron.vue'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   modelRun: PerModelRun
@@ -93,7 +93,7 @@ function toggle(): void {
 
       <div class="summary-right">
         <span class="stat-duration">{{ duration(modelRun) }}</span>
-        <BaseChevron :expanded="expanded" />
+        <Chevron :expanded="expanded" />
       </div>
     </button>
 

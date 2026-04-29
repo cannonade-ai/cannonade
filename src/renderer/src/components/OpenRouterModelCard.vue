@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Model } from '@shared/open-router/ipc-contracts'
 import { formatContext, formatPrice } from '../utils/format'
-import BaseBadge from './base/BaseBadge.vue'
+import Badge from './ui/Badge.vue'
+import type { Model } from '@shared/open-router/ipc-contracts'
 
 const props = defineProps<{ model: Model }>()
 
@@ -13,14 +13,14 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
   <div class="or-card">
     <div class="card-header">
       <h3 class="model-name">{{ model.name }}</h3>
-      <BaseBadge type="info">{{ model.architecture.modality }}</BaseBadge>
+      <Badge type="info">{{ model.architecture.modality }}</Badge>
     </div>
 
     <div class="card-meta">
       <span class="publisher">{{ publisher }}</span>
-      <BaseBadge v-if="model.architecture.tokenizer" type="secondary">{{
+      <Badge v-if="model.architecture.tokenizer" type="secondary">{{
         model.architecture.tokenizer
-      }}</BaseBadge>
+      }}</Badge>
     </div>
 
     <div class="card-stats">

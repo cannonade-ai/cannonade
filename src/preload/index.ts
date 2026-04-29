@@ -1,11 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import type { ProviderModelMap, Provider } from '@shared/provider-model-map'
-import type { TestSuite } from '@shared/app/test-suite'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
 import { APP, SUITES, SETTINGS } from '@shared/app/ipc-channels'
+import type { ProviderModelMap, Provider } from '@shared/provider-model-map'
+import type { TestSuite } from '@shared/app/test-suite'
+import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type { AppSettings } from '@shared/app/app-settings'
 
 const CHANNEL: Record<Provider, string> = {

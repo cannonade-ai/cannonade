@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { IconPlus, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
+import { ContextMenu, Chevron, Panel, Badge } from '@renderer/components/ui'
 import type { TestCase } from '@shared/app/test-suite'
-import BaseContextMenu from '@renderer/components/base/BaseContextMenu.vue'
-import BaseChevron from '@renderer/components/base/BaseChevron.vue'
-import BasePanel from '@renderer/components/base/BasePanel.vue'
-import BaseBadge from '@renderer/components/base/BaseBadge.vue'
-import type { ContextMenuItem } from '@renderer/components/base/BaseContextMenu.vue'
+import type { ContextMenuItem } from '@renderer/components/ui/ContextMenu.vue'
 
 defineProps<{
   cases: TestCase[]
@@ -20,10 +17,10 @@ const emit = defineEmits<{
   'clone-case': [id: string]
 }>()
 
-const menuRefs = ref<Record<string, InstanceType<typeof BaseContextMenu>>>({})
+const menuRefs = ref<Record<string, InstanceType<typeof ContextMenu>>>({})
 
 function setMenuRef(id: string, el: unknown): void {
-  if (el) menuRefs.value[id] = el as InstanceType<typeof BaseContextMenu>
+  if (el) menuRefs.value[id] = el as InstanceType<typeof ContextMenu>
 }
 
 function menuItems(id: string): ContextMenuItem[] {
@@ -39,9 +36,9 @@ function menuItems(id: string): ContextMenuItem[] {
 </script>
 
 <template>
-  <BasePanel class="cases-panel" title="Test Cases">
+  <Panel class="cases-panel" title="Test Cases">
     <template #title-addon>
-      <BaseBadge>{{ cases.length }}</BaseBadge>
+      <Badge>{{ cases.length }}</Badge>
     </template>
 
     <template #header-right>
@@ -69,18 +66,18 @@ function menuItems(id: string): ContextMenuItem[] {
         </div>
         <div class="case-meta">
           <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
-          <BaseContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
+          <ContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
             <template #default="{ toggle }">
               <button class="btn-menu" @click.stop="toggle">
                 <IconDotsVertical :size="14" :stroke-width="2" />
               </button>
             </template>
-          </BaseContextMenu>
-          <BaseChevron :expanded="selectedId === tc.id" />
+          </ContextMenu>
+          <Chevron :expanded="selectedId === tc.id" />
         </div>
       </li>
     </ul>
-  </BasePanel>
+  </Panel>
 </template>
 
 <style scoped>

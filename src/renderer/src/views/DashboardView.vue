@@ -1,14 +1,13 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { Button, Select } from '@renderer/components/ui'
 import { IconRefresh } from '@tabler/icons-vue'
-import { useModelsStore } from '../stores/models'
-import type { Provider } from '../stores/models'
-import BaseButton from '../components/base/BaseButton.vue'
-import ModelCard from '../components/ModelCard.vue'
-import OpenRouterModelCard from '../components/OpenRouterModelCard.vue'
-import SectionHeader from '../components/SectionHeader.vue'
-import BaseSelect from '../components/base/BaseSelect.vue'
-import type { SelectOption } from '../components/base/BaseSelect.vue'
+import { computed, onMounted } from 'vue'
+import type { SelectOption } from '@renderer/components/ui/Select.vue'
+import ModelCard from '@renderer/components/ModelCard.vue'
+import OpenRouterModelCard from '@renderer/components/OpenRouterModelCard.vue'
+import SectionHeader from '@renderer/components/SectionHeader.vue'
+import type { Provider } from '@renderer/stores/models'
+import { useModelsStore } from '@renderer/stores/models'
 
 const store = useModelsStore()
 
@@ -41,8 +40,8 @@ onMounted(() => store.load())
 <template>
   <div class="dashboard">
     <SectionHeader>
-      <BaseSelect v-model="provider" :options="providerOptions" class="provider-select" />
-      <BaseButton :icon="IconRefresh" @click="store.load()">Refresh</BaseButton>
+      <Select v-model="provider" :options="providerOptions" class="provider-select" />
+      <Button :icon="IconRefresh" @click="store.load()">Refresh</Button>
     </SectionHeader>
 
     <div v-if="store.loading" class="state-message">

@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import { reactive, computed, watch, onMounted } from 'vue'
-import { IconPlayerPlay } from '@tabler/icons-vue'
-import type { Provider } from '@shared/provider-model-map'
-import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
-import type { TestSuite } from '@shared/app/test-suite'
+import { Button, Field, Panel, RadioGroup, Select } from '@renderer/components/ui'
+import type { SelectOption } from '@renderer/components/ui/Select.vue'
+import NewRunModelSelector from '@renderer/components/test-runs/NewRunModelSelector.vue'
 import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
-import NewRunModelSelector from '@renderer/components/test-runs/NewRunModelSelector.vue'
-import BaseSelect from '@renderer/components/base/BaseSelect.vue'
-import BaseButton from '@renderer/components/base/BaseButton.vue'
-import BaseRadioGroup from '@renderer/components/base/BaseRadioGroup.vue'
-import type { SelectOption } from '@renderer/components/base/BaseSelect.vue'
-import BaseField from '@renderer/components/base/BaseField.vue'
-import BasePanel from '@renderer/components/base/BasePanel.vue'
+import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
+import type { TestSuite } from '@shared/app/test-suite'
+import type { Provider } from '@shared/provider-model-map'
+import { IconPlayerPlay } from '@tabler/icons-vue'
+import { computed, onMounted, reactive, watch } from 'vue'
 
 const props = defineProps<{
   suites: TestSuite[]
@@ -113,38 +109,38 @@ function onSubmit(): void {
 </script>
 
 <template>
-  <BasePanel title="New Run">
+  <Panel title="New Run">
     <template #header-right>
       <button class="btn-close" @click="emit('cancel')">
         <IconX :size="14" :stroke-width="2.5" />
       </button>
     </template>
 
-    <BaseField label="Test Suite">
-      <BaseSelect v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
-    </BaseField>
+    <Field label="Test Suite">
+      <Select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
+    </Field>
 
-    <BaseField label="Provider">
-      <BaseRadioGroup
+    <Field label="Provider">
+      <RadioGroup
         v-model="form.provider"
         :options="[
           { value: 'lmstudio', label: 'LM Studio' },
           { value: 'openrouter', label: 'OpenRouter' }
         ]"
       />
-    </BaseField>
+    </Field>
 
-    <BaseField label="Models">
+    <Field label="Models">
       <NewRunModelSelector
         v-model="form.models"
         :installed-models="installedModels"
         :loading-models="modelsStore.loading"
       />
-    </BaseField>
+    </Field>
 
     <div class="divider" />
 
-    <BaseField label="Options">
+    <Field label="Options">
       <div class="options-list">
         <label v-if="form.provider === 'lmstudio'" class="toggle-row">
           <span class="toggle-label">Delete auto-downloaded models after run</span>
@@ -161,15 +157,15 @@ function onSubmit(): void {
           </span>
         </label>
       </div>
-    </BaseField>
+    </Field>
 
     <template #footer>
-      <BaseButton @click="emit('cancel')">Cancel</BaseButton>
-      <BaseButton type="primary" :disabled="!canSubmit" :icon="IconPlayerPlay" @click="onSubmit">
+      <Button @click="emit('cancel')">Cancel</Button>
+      <Button type="primary" :disabled="!canSubmit" :icon="IconPlayerPlay" @click="onSubmit">
         Run
-      </BaseButton>
+      </Button>
     </template>
-  </BasePanel>
+  </Panel>
 </template>
 
 <style scoped>

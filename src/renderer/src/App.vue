@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useNavigationStore } from './stores/navigation'
-import { useSettingsStore } from './stores/settings'
-import AppSidebar from './components/AppSidebar.vue'
-import AppTitleBar from './components/AppTitleBar.vue'
-import DashboardView from './views/DashboardView.vue'
-import TestSuitesView from './views/TestSuitesView.vue'
-import TestRunsView from './views/TestRunsView.vue'
-import SettingsView from './views/SettingsView.vue'
+import { useNavigationStore } from '@renderer/stores/navigation'
+import { useSettingsStore } from '@renderer/stores/settings'
+import AppSidebar from '@renderer/components/AppSidebar.vue'
+import AppTitleBar from '@renderer/components/AppTitleBar.vue'
+import { DashboardView, TestSuitesView, TestRunsView, SettingsView } from '@renderer/views'
 
 const nav = useNavigationStore()
 const settings = useSettingsStore()

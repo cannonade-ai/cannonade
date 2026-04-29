@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { IconArrowLeft } from '@tabler/icons-vue'
-import BaseButton from '@renderer/components/base/BaseButton.vue'
+import { Button } from '@renderer/components/ui'
 import type { TestSuite, TestCase } from '@shared/app/test-suite'
 import TestSuiteInfoPanel from './TestSuiteInfoPanel.vue'
 import TestSuiteRunConfigPanel from './TestSuiteRunConfigPanel.vue'
@@ -100,9 +100,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
 <template>
   <div class="detail">
     <div class="detail-header">
-      <BaseButton :icon="IconArrowLeft" :icon-stroke-width="2.5" @click="emit('back')">
+      <Button :icon="IconArrowLeft" :icon-stroke-width="2.5" @click="emit('back')">
         Test Suites
-      </BaseButton>
+      </Button>
     </div>
 
     <div class="panels" :class="{ 'editor-visible': editorOpen }">

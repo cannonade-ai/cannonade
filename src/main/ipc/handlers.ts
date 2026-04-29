@@ -4,10 +4,10 @@ import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
 import { APP } from '@shared/app/ipc-channels'
-import type { ChatRequest } from '@shared/lm-studio/chat'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
+import type { ChatRequest } from '@shared/lm-studio/chat'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()

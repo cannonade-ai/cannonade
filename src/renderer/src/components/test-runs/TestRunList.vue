@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { TestRun } from '@shared/app/test-run'
-import BaseBadge from '@renderer/components/base/BaseBadge.vue'
-import BasePanel from '@renderer/components/base/BasePanel.vue'
+import { Badge, Panel } from '@renderer/components/ui'
 import { formatDate } from '@renderer/utils/format'
 
 defineProps<{
@@ -20,9 +19,9 @@ function modelCount(run: TestRun): string {
 </script>
 
 <template>
-  <BasePanel class="runs-panel" title="Test Runs">
+  <Panel class="runs-panel" title="Test Runs">
     <template #title-addon>
-      <BaseBadge>{{ runs.length }}</BaseBadge>
+      <Badge>{{ runs.length }}</Badge>
     </template>
 
     <div v-if="runs.length === 0" class="empty">No runs yet.</div>
@@ -42,12 +41,12 @@ function modelCount(run: TestRun): string {
           </span>
         </div>
         <div class="run-aside">
-          <BaseBadge :status="run.status">{{ run.status }}</BaseBadge>
+          <Badge :status="run.status">{{ run.status }}</Badge>
           <span class="run-date">{{ formatDate(run.createdAt) }}</span>
         </div>
       </li>
     </ul>
-  </BasePanel>
+  </Panel>
 </template>
 
 <style scoped>

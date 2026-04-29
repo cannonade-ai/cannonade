@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { Component } from 'vue'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
+import type { Component } from 'vue'
 
 export interface ContextMenuItem {
   label: string

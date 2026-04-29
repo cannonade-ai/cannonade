@@ -1,7 +1,7 @@
+import { loadAppSettings } from '../../main/ipc/settings-handlers'
 import type { LLMProvider } from './base'
 import type { Model } from '@shared/lm-studio/ipc-contracts'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import { loadAppSettings } from '../../main/ipc/settings-handlers'
 
 async function apiBase(): Promise<string> {
   const settings = await loadAppSettings()

@@ -2,14 +2,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { IconPlus } from '@tabler/icons-vue'
 import type { TestSuite } from '@shared/app/test-suite'
-import SectionHeader from '../components/SectionHeader.vue'
-import TestSuiteList from '../components/test-suites/TestSuiteList.vue'
-import TestSuiteDetail from '../components/test-suites/TestSuiteDetail.vue'
-import BaseButton from '../components/base/BaseButton.vue'
-import BasePanel from '../components/base/BasePanel.vue'
-import BaseBadge from '../components/base/BaseBadge.vue'
+import SectionHeader from '@renderer/components/SectionHeader.vue'
+import { Button, Panel, Badge } from '@renderer/components/ui'
 import { storeToRefs } from 'pinia'
-import { useTestSuitesStore } from '../stores/test-suites'
+import { useTestSuitesStore } from '@renderer/stores/test-suites'
+import { TestSuiteList, TestSuiteDetail } from '@renderer/components/test-suites'
 
 const store = useTestSuitesStore()
 const { suites } = storeToRefs(store)
@@ -59,12 +56,12 @@ async function onCloneSuite(id: string): Promise<void> {
 
     <template v-else>
       <SectionHeader>
-        <BaseButton type="secondary" :icon="IconPlus" @click="onNewSuite">New Suite</BaseButton>
+        <Button type="secondary" :icon="IconPlus" @click="onNewSuite">New Suite</Button>
       </SectionHeader>
 
-      <BasePanel class="suites-panel" title="Test Suites">
+      <Panel class="suites-panel" title="Test Suites">
         <template #title-addon>
-          <BaseBadge>{{ suites.length }}</BaseBadge>
+          <Badge>{{ suites.length }}</Badge>
         </template>
 
         <TestSuiteList
@@ -74,7 +71,7 @@ async function onCloneSuite(id: string): Promise<void> {
           @delete-suite="onDeleteSuite"
           @clone-suite="onCloneSuite"
         />
-      </BasePanel>
+      </Panel>
     </template>
   </div>
 </template>

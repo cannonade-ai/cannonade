@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { IconBrain, IconFlask, IconPlayerPlay, IconSettings } from '@tabler/icons-vue'
-import { useNavigationStore } from '../stores/navigation'
+import { useNavigationStore } from '@renderer/stores/navigation'
 import SidebarNavItem from './SidebarNavItem.vue'
 
 const nav = useNavigationStore()

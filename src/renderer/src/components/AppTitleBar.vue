@@ -2,9 +2,8 @@
 import { ref, computed } from 'vue'
 import { IconTank } from '@tabler/icons-vue'
 import { api } from '../api'
-import { useTestRunsStore } from '../stores/test-runs'
-import BaseModal from '@renderer/components/base/BaseModal.vue'
-import BaseButton from '@renderer/components/base/BaseButton.vue'
+import { useTestRunsStore } from '@renderer/stores/test-runs'
+import { Button, Modal } from '@renderer/components/ui'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
@@ -48,13 +47,13 @@ function confirmClose(): void {
     </div>
   </header>
 
-  <BaseModal v-model="showCloseConfirm" title="Quit Cannonade?">
+  <Modal v-model="showCloseConfirm" title="Quit Cannonade?">
     <p>A test run is currently in progress. Quitting now will stop it.</p>
     <template #actions="{ close }">
-      <BaseButton @click="close">Cancel</BaseButton>
-      <BaseButton type="danger" @click="confirmClose">Quit anyway</BaseButton>
+      <Button @click="close">Cancel</Button>
+      <Button type="danger" @click="confirmClose">Quit anyway</Button>
     </template>
-  </BaseModal>
+  </Modal>
 </template>
 
 <style scoped>

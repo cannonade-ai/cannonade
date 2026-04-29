@@ -3,9 +3,7 @@ import { ref, computed } from 'vue'
 import { IconPlayerStop } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
 import type { TestCase } from '@shared/app/test-suite'
-import BaseButton from '@renderer/components/base/BaseButton.vue'
-import BaseModal from '@renderer/components/base/BaseModal.vue'
-import BasePanel from '@renderer/components/base/BasePanel.vue'
+import { Button, Modal, Panel } from '@renderer/components/ui'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
@@ -32,7 +30,7 @@ function confirmCancel(): void {
 </script>
 
 <template>
-  <BasePanel title="Test Run Details">
+  <Panel title="Test Run Details">
     <template #header-right>
       <span class="meta-tag">{{
         run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'
@@ -42,18 +40,18 @@ function confirmCancel(): void {
     </template>
 
     <template v-if="isActive" #toolbar>
-      <BaseButton type="danger-outline" :icon="IconPlayerStop" @click="showCancelModal = true">
+      <Button type="danger-outline" :icon="IconPlayerStop" @click="showCancelModal = true">
         Stop Run
-      </BaseButton>
+      </Button>
     </template>
 
-    <BaseModal v-model="showCancelModal" title="Stop Run">
+    <Modal v-model="showCancelModal" title="Stop Run">
       Are you sure you want to stop this run? Any in-progress model evaluations will be cancelled.
       <template #actions="{ close }">
-        <BaseButton @click="close">Cancel</BaseButton>
-        <BaseButton type="danger-outline" @click="confirmCancel">Stop Run</BaseButton>
+        <Button @click="close">Cancel</Button>
+        <Button type="danger-outline" @click="confirmCancel">Stop Run</Button>
       </template>
-    </BaseModal>
+    </Modal>
 
     <div class="section-label">Model Results</div>
     <div class="model-list">
@@ -65,7 +63,7 @@ function confirmCancel(): void {
         :expanded="i === 0"
       />
     </div>
-  </BasePanel>
+  </Panel>
 </template>
 
 <style scoped>

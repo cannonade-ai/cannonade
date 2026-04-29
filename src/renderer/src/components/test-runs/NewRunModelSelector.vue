@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { IconPlus, IconX } from '@tabler/icons-vue'
+import { Badge } from '@renderer/components/ui'
 import type { ModelRef } from '@shared/app/test-run'
-import BaseBadge from '@renderer/components/base/BaseBadge.vue'
+import { IconPlus, IconX } from '@tabler/icons-vue'
+import { ref } from 'vue'
 
 const props = defineProps<{
   modelValue: ModelRef[]
@@ -96,7 +96,7 @@ function onHfKeydown(e: KeyboardEvent): void {
             </svg>
           </span>
           <span class="installed-label">{{ m.label }}</span>
-          <BaseBadge v-if="m.loaded" class="loaded-badge" type="success"> Loaded </BaseBadge>
+          <Badge v-if="m.loaded" class="loaded-badge" type="success"> Loaded </Badge>
         </li>
       </ul>
     </div>

@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { IconPlayerPlay } from '@tabler/icons-vue'
-import { useTestRunsStore } from '../stores/test-runs'
-import { useTestSuitesStore } from '../stores/test-suites'
+import { useTestRunsStore } from '@renderer/stores/test-runs'
+import { useTestSuitesStore } from '@renderer/stores/test-suites'
 import type { TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
-import BaseButton from '../components/base/BaseButton.vue'
-import SectionHeader from '../components/SectionHeader.vue'
-import TestRunList from '../components/test-runs/TestRunList.vue'
-import TestRunDetail from '../components/test-runs/TestRunDetail.vue'
-import NewRunPanel from '../components/test-runs/NewRunPanel.vue'
+import { Button } from '@renderer/components/ui'
+import SectionHeader from '@renderer/components/SectionHeader.vue'
+import { TestRunList, TestRunDetail, NewRunPanel } from '@renderer/components/test-runs'
 
 const store = useTestRunsStore()
 const suitesStore = useTestSuitesStore()
@@ -26,9 +24,7 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
 <template>
   <div class="view">
     <SectionHeader>
-      <BaseButton type="secondary" :icon="IconPlayerPlay" @click="store.startNewRun">
-        New Run
-      </BaseButton>
+      <Button type="secondary" :icon="IconPlayerPlay" @click="store.startNewRun"> New Run </Button>
     </SectionHeader>
 
     <div class="panels">
