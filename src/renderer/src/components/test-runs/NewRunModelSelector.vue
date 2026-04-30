@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Badge } from '@renderer/components/ui'
+import { Badge, Input } from '@renderer/components/ui'
 import type { ModelRef } from '@shared/app/test-run'
 import { IconPlus, IconX } from '@tabler/icons-vue'
 import { ref } from 'vue'
@@ -104,12 +104,7 @@ function onHfKeydown(e: KeyboardEvent): void {
     <div class="sub-section">
       <span class="sub-label">HuggingFace Model</span>
       <div class="hf-input-row">
-        <input
-          v-model="hfInput"
-          class="field-input"
-          placeholder="publisher/model-name"
-          @keydown="onHfKeydown"
-        />
+        <Input v-model="hfInput" placeholder="publisher/model-name" @keydown="onHfKeydown" />
         <button class="btn-add-hf" :disabled="!hfInput.trim()" @click="addHuggingFace">
           <IconPlus :size="13" :stroke-width="2.5" />
         </button>
@@ -118,7 +113,7 @@ function onHfKeydown(e: KeyboardEvent): void {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .model-selector {
   display: flex;
   flex-direction: column;
@@ -263,23 +258,10 @@ function onHfKeydown(e: KeyboardEvent): void {
 .hf-input-row {
   display: flex;
   gap: 6px;
-}
 
-.field-input {
-  flex: 1;
-  padding: 6px 8px;
-  font-size: var(--text-sm);
-  font-family: var(--font-body);
-  color: var(--text-primary);
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  outline: none;
-  transition: border-color 0.15s;
-}
-
-.field-input:focus {
-  border-color: var(--accent);
+  :deep(.input) {
+    flex: 1;
+  }
 }
 
 .btn-add-hf {

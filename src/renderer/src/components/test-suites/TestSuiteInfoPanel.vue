@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { formatDate } from '@renderer/utils/format'
-import { Field, Panel } from '@renderer/components/ui'
+import { Field, Input, Panel, Textarea } from '@renderer/components/ui'
 
 const name = defineModel<string>('name', { required: true })
 const description = defineModel<string | undefined>('description')
@@ -14,10 +14,10 @@ const props = defineProps<{
 <template>
   <Panel title="Suite Info">
     <Field label="Name">
-      <input v-model="name" class="field-input" />
+      <Input v-model="name" />
     </Field>
     <Field label="Description">
-      <textarea v-model="description" class="field-textarea" rows="3" />
+      <Textarea v-model="description as string" :rows="3" />
     </Field>
     <div class="meta-rows">
       <div class="meta-row">
@@ -33,27 +33,6 @@ const props = defineProps<{
 </template>
 
 <style scoped>
-.field-input,
-.field-textarea {
-  width: 100%;
-  padding: 6px 8px;
-  font-size: var(--text-sm);
-  font-family: var(--font-body);
-  color: var(--text-primary);
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  outline: none;
-  resize: none;
-  transition: border-color 0.15s;
-  line-height: 1.5;
-}
-
-.field-input:focus,
-.field-textarea:focus {
-  border-color: var(--accent-border);
-}
-
 .meta-rows {
   display: flex;
   flex-direction: column;

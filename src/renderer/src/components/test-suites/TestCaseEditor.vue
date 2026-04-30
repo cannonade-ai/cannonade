@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Field, Modal, Panel, Select } from '@renderer/components/ui'
+import { Button, Field, Input, Modal, Panel, Select, Textarea } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
 import { IconTrash, IconX } from '@tabler/icons-vue'
@@ -127,16 +127,15 @@ function onConfirmDelete(): void {
           </div>
           <div class="section-body">
             <Field label="Name">
-              <input
+              <Input
                 v-model="name"
-                class="field-input"
-                :class="{ 'field-error': errors.name }"
+                :error="errors.name"
                 placeholder="Test case name"
                 @input="errors.name = false"
               />
             </Field>
             <Field label="Description">
-              <input v-model="description" class="field-input" placeholder="Optional description" />
+              <Input v-model="description" placeholder="Optional description" />
             </Field>
           </div>
         </div>
@@ -147,19 +146,17 @@ function onConfirmDelete(): void {
           </div>
           <div class="section-body">
             <Field label="System Prompt">
-              <textarea
+              <Textarea
                 v-model="systemPrompt"
-                class="field-textarea"
-                rows="4"
+                :rows="4"
                 placeholder="System instructions for the model..."
               />
             </Field>
             <Field label="User Input">
-              <textarea
+              <Textarea
                 v-model="userInput"
-                class="field-textarea"
-                :class="{ 'field-error': errors.userInput }"
-                rows="4"
+                :error="errors.userInput"
+                :rows="4"
                 placeholder="User message to send..."
                 @input="errors.userInput = false"
               />
@@ -178,9 +175,9 @@ function onConfirmDelete(): void {
               <Select v-model="selectedEvalType" :options="evaluationTypes" />
             </Field>
             <Field label="Expected / Config" fill>
-              <textarea
+              <Textarea
                 v-model="evalExpected"
-                class="field-textarea field-textarea-fill"
+                fill
                 :placeholder="
                   selectedEvalType === 'contains'
                     ? 'Comma-separated values, e.g. hello,world'
@@ -294,44 +291,5 @@ function onConfirmDelete(): void {
 .section-body-fill {
   flex: 1;
   overflow: hidden;
-}
-
-.field-input,
-.field-textarea {
-  width: 100%;
-  padding: 6px 8px;
-  font-size: var(--text-sm);
-  font-family: var(--font-body);
-  color: var(--text-primary);
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  outline: none;
-  transition: border-color 0.15s;
-  appearance: none;
-}
-
-.field-input:focus,
-.field-textarea:focus {
-  border-color: var(--accent);
-}
-
-.field-error {
-  border-color: var(--error);
-}
-
-.field-error:focus {
-  border-color: var(--error);
-}
-
-.field-textarea {
-  resize: vertical;
-  line-height: 1.5;
-}
-
-.field-textarea-fill {
-  flex: 1;
-  resize: none;
-  height: 100%;
 }
 </style>

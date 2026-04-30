@@ -17,8 +17,8 @@ npm run build
 - Always use :key with v-for.
 - Never use v-if on the same element as v-for.
 - Each component should be in its own file.
-- Names and filenames of components should be always PascalCase but but kebab-case in DOM templates.
-- Base components that apply app-specific styling and conventions should all begin with prefix "Base".
+- Names and filenames of components should be always PascalCase.
+- Base components that could be used anywhere should be inside /src/renderer/src/components/ui.
 - Child components that are tightly coupled with their parent should include the parent component name as a prefix.
 - Component names should start with the highest-level (often most general) words and end with descriptive modifying words.
 - Components with no content should be self-closing in single-file components, string templates, and JSX - but never in DOM templates.
