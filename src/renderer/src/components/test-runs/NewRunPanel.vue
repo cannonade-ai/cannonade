@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Field, Panel, RadioGroup, Select } from '@renderer/components/ui'
+import { Button, Field, Panel, RadioGroup, Select, Toggle } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import NewRunModelSelector from '@renderer/components/test-runs/NewRunModelSelector.vue'
 import { useModelsStore } from '@renderer/stores/models'
@@ -144,17 +144,11 @@ function onSubmit(): void {
       <div class="options-list">
         <label v-if="form.provider === 'lmstudio'" class="toggle-row">
           <span class="toggle-label">Delete auto-downloaded models after run</span>
-          <span class="toggle-wrap">
-            <input v-model="form.deleteAutoDownloadedModels" type="checkbox" class="toggle-input" />
-            <span class="toggle-track" />
-          </span>
+          <Toggle v-model="form.deleteAutoDownloadedModels" />
         </label>
         <label v-if="form.provider === 'openrouter'" class="toggle-row">
           <span class="toggle-label">Parallel run</span>
-          <span class="toggle-wrap">
-            <input v-model="form.parallelRun" type="checkbox" class="toggle-input" />
-            <span class="toggle-track" />
-          </span>
+          <Toggle v-model="form.parallelRun" />
         </label>
       </div>
     </Field>
@@ -210,54 +204,5 @@ function onSubmit(): void {
 .toggle-label {
   font-size: var(--text-sm);
   color: var(--text-secondary);
-}
-
-.toggle-wrap {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.toggle-input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.toggle-track {
-  display: block;
-  width: 32px;
-  height: 18px;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  transition:
-    background 0.15s,
-    border-color 0.15s;
-  position: relative;
-}
-
-.toggle-track::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  transition:
-    transform 0.15s,
-    background 0.15s;
-}
-
-.toggle-input:checked + .toggle-track {
-  background: var(--accent-dim);
-  border-color: var(--accent-border);
-}
-
-.toggle-input:checked + .toggle-track::after {
-  transform: translateX(14px);
-  background: var(--accent);
 }
 </style>
