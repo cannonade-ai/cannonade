@@ -75,7 +75,7 @@ function computeAggregate(results: TestCaseResult[], testCases?: TestCase[]): Ag
     avgTimeToFirstTokenMs: avg(ttftValues),
     minTimeToFirstTokenMs: min(ttftValues),
     maxTimeToFirstTokenMs: max(ttftValues),
-    avgCorrectnessScore: passed / (testCases ? testCases.length : results.length)
+    avgScore: passed / (testCases ? testCases.length : results.length)
   }
 }
 
@@ -83,7 +83,7 @@ export async function executeTestRun(
   run: TestRun,
   suite: TestSuite,
   callbacks: RunnerCallbacks,
-  signal: AbortSignal
+  signal: AbortSignal = new AbortController().signal
 ): Promise<void> {
   callbacks.onRunStart(run.id)
   console.log('[test-runner] Starting test run:', run, suite)
@@ -123,7 +123,7 @@ export async function executeTestRun(
             metrics: {
               tokensPerSecond: response.stats.tokens_per_second,
               timeToFirstTokenMs: response.stats.time_to_first_token_seconds * 1000,
-              correctnessScore: evaluation.correctnessScore
+              score: evaluation.score
             },
             passed: evaluation.passed,
             details: evaluation.details,

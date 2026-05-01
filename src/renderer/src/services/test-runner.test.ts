@@ -97,7 +97,7 @@ function makeChatResponse(content: string, tps = 50, ttft = 0.1): ChatResponse {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockEvaluate.mockReturnValue({ passed: true, correctnessScore: 1 })
+  mockEvaluate.mockReturnValue({ passed: true, score: 1 })
   mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('hello'))
 })
 
@@ -249,7 +249,7 @@ describe('executeTestRun – output extraction', () => {
 describe('executeTestRun – case result construction', () => {
   it('maps response stats to result metrics', async () => {
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('hello', 100, 0.2))
-    mockEvaluate.mockReturnValue({ passed: true, correctnessScore: 1 })
+    mockEvaluate.mockReturnValue({ passed: true, score: 1 })
     const callbacks = makeCallbacks()
     await executeTestRun(makeRun(), makeSuite(), callbacks)
     expect(callbacks.onCaseComplete).toHaveBeenCalledWith(
@@ -259,11 +259,11 @@ describe('executeTestRun – case result construction', () => {
         metrics: {
           tokensPerSecond: 100,
           timeToFirstTokenMs: 200,
-          correctnessScore: 1
+          score: 1
         }
       }),
       expect.objectContaining({
-        avgCorrectnessScore: 1,
+        avgScore: 1,
         avgTokensPerSecond: 100,
         avgTimeToFirstTokenMs: 200
       })
@@ -273,7 +273,7 @@ describe('executeTestRun – case result construction', () => {
   it('includes evaluation details and error in result', async () => {
     mockEvaluate.mockReturnValue({
       passed: false,
-      correctnessScore: 0,
+      score: 0,
       details: 'mismatch',
       error: 'no match'
     })
@@ -288,7 +288,7 @@ describe('executeTestRun – case result construction', () => {
         error: 'no match'
       }),
       expect.objectContaining({
-        avgCorrectnessScore: 0,
+        avgScore: 0,
         avgTokensPerSecond: 50,
         avgTimeToFirstTokenMs: 100
       })
@@ -317,7 +317,7 @@ describe('executeTestRun – error handling', () => {
         metrics: {}
       }),
       expect.objectContaining({
-        avgCorrectnessScore: 0,
+        avgScore: 0,
         failed: 1,
         passed: 0
       })
@@ -353,7 +353,7 @@ describe('executeTestRun – error handling', () => {
 describe('executeTestRun – aggregate metrics', () => {
   it('computes correct aggregate for all passing results', async () => {
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('ok', 60, 0.1))
-    mockEvaluate.mockReturnValue({ passed: true, correctnessScore: 1 })
+    mockEvaluate.mockReturnValue({ passed: true, score: 1 })
     const callbacks = makeCallbacks()
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
     await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
@@ -364,7 +364,7 @@ describe('executeTestRun – aggregate metrics', () => {
         total: 2,
         passed: 2,
         failed: 0,
-        avgCorrectnessScore: 1,
+        avgScore: 1,
         avgTokensPerSecond: 60,
         minTokensPerSecond: 60,
         maxTokensPerSecond: 60,
@@ -380,8 +380,8 @@ describe('executeTestRun – aggregate metrics', () => {
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('ok'))
     mockEvaluate
-      .mockReturnValueOnce({ passed: true, correctnessScore: 1 })
-      .mockReturnValueOnce({ passed: false, correctnessScore: 0 })
+      .mockReturnValueOnce({ passed: true, score: 1 })
+      .mockReturnValueOnce({ passed: false, score: 0 })
     const callbacks = makeCallbacks()
     await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
     expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
@@ -391,7 +391,7 @@ describe('executeTestRun – aggregate metrics', () => {
         total: 2,
         passed: 1,
         failed: 1,
-        avgCorrectnessScore: 0.5
+        avgScore: 0.5
       }),
       undefined
     )
@@ -415,7 +415,7 @@ describe('executeTestRun – aggregate metrics', () => {
     mockApi.lmStudioChat
       .mockResolvedValueOnce(makeChatResponse('ok', 40, 0.05))
       .mockResolvedValueOnce(makeChatResponse('ok', 80, 0.15))
-    mockEvaluate.mockReturnValue({ passed: true, correctnessScore: 1 })
+    mockEvaluate.mockReturnValue({ passed: true, score: 1 })
     const callbacks = makeCallbacks()
     await executeTestRun(makeRun(modelRuns), makeSuite(), callbacks)
     expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(

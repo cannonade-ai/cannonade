@@ -4,7 +4,7 @@ import { distance as levenshteinDistance } from 'fastest-levenshtein'
 import { bleu } from 'bleu-score'
 
 export interface EvaluationResult {
-  correctnessScore: number
+  score: number
   passed: boolean
   details?: string
   error?: string
@@ -32,7 +32,7 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
       return evaluateBleu(output, evaluation)
     default:
       return {
-        correctnessScore: 0,
+        score: 0,
         passed: false,
         error: `Evaluation type '${evaluation.type}' is not implemented yet`
       }
@@ -42,13 +42,13 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
 function evaluateBleu(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (!expected) {
-    return { correctnessScore: 0, passed: false, error: 'No expected value provided' }
+    return { score: 0, passed: false, error: 'No expected value provided' }
   }
   if (output.length === 0) {
-    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+    return { score: 0, passed: false, error: 'Model output was empty' }
   }
-  const correctnessScore = bleu(expected, output, 2)
-  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+  const score = bleu(expected, output, 2)
+  return { score, passed: score >= PASS_THRESHOLD }
 }
 
 function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationResult {
@@ -62,32 +62,32 @@ function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationRes
   const recall = common.length / refSet.size
 
   if (precision + recall === 0) {
-    return { correctnessScore: 0, passed: false }
+    return { score: 0, passed: false }
   }
-  const correctnessScore = (2 * precision * recall) / (precision + recall)
-  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+  const score = (2 * precision * recall) / (precision + recall)
+  return { score, passed: score >= PASS_THRESHOLD }
 }
 
 function evaluateExactMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  const correctnessScore = output.trim() === expected.trim() ? 1 : 0
-  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+  const score = output.trim() === expected.trim() ? 1 : 0
+  return { score, passed: score >= PASS_THRESHOLD }
 }
 
 function evaluateRegex(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const pattern = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (!pattern) {
-    return { correctnessScore: 0, passed: false, error: 'No regex pattern provided' }
+    return { score: 0, passed: false, error: 'No regex pattern provided' }
   }
   let regex: RegExp
   try {
     regex = new RegExp(pattern)
   } catch {
-    return { correctnessScore: 0, passed: false, error: `Invalid regex pattern: ${pattern}` }
+    return { score: 0, passed: false, error: `Invalid regex pattern: ${pattern}` }
   }
   const matched = regex.test(output)
-  const correctnessScore = matched ? 1 : 0
-  return { correctnessScore, passed: matched }
+  const score = matched ? 1 : 0
+  return { score, passed: matched }
 }
 
 function evaluateContains(output: string, evaluation: EvaluationConfig): EvaluationResult {
@@ -97,13 +97,13 @@ function evaluateContains(output: string, evaluation: EvaluationConfig): Evaluat
     .map((t) => t.trim())
     .filter(Boolean)
   if (!terms.length) {
-    return { correctnessScore: 0, passed: false, error: 'No search terms provided' }
+    return { score: 0, passed: false, error: 'No search terms provided' }
   }
   const matched = terms.filter((t) => output.includes(t))
-  const correctnessScore = matched.length / terms.length
+  const score = matched.length / terms.length
   return {
-    correctnessScore,
-    passed: correctnessScore >= PASS_THRESHOLD,
+    score,
+    passed: score >= PASS_THRESHOLD,
     details: `${matched.length}/${terms.length} terms found`
   }
 }
@@ -112,36 +112,36 @@ function evaluateRouge(output: string, evaluation: EvaluationConfig): Evaluation
   // todo: add case insensivity as param
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (expected.length === 0) {
-    return { correctnessScore: 0, passed: false, error: 'No expected value provided' }
+    return { score: 0, passed: false, error: 'No expected value provided' }
   }
   if (output.length === 0) {
-    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+    return { score: 0, passed: false, error: 'Model output was empty' }
   }
-  const correctnessScore = rougeL(output, expected, { caseSensitive: false })
-  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+  const score = rougeL(output, expected, { caseSensitive: false })
+  return { score, passed: score >= PASS_THRESHOLD }
 }
 
 function evaluateLevenshtein(output: string, evaluation: EvaluationConfig): EvaluationResult {
   // todo: add case insensivity as param
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (expected.length === 0) {
-    return { correctnessScore: 0, passed: false, error: 'No expected value provided' }
+    return { score: 0, passed: false, error: 'No expected value provided' }
   }
   if (output.length === 0) {
-    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+    return { score: 0, passed: false, error: 'Model output was empty' }
   }
   const distance = levenshteinDistance(output.toLocaleLowerCase(), expected.toLocaleLowerCase())
-  const correctnessScore = 1 - distance / Math.max(output.length, expected.length)
-  return { correctnessScore, passed: correctnessScore >= PASS_THRESHOLD }
+  const score = 1 - distance / Math.max(output.length, expected.length)
+  return { score, passed: score >= PASS_THRESHOLD }
 }
 
 function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expectedRaw = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (expectedRaw.length === 0) {
-    return { correctnessScore: 0, passed: false, error: 'No expected JSON provided' }
+    return { score: 0, passed: false, error: 'No expected JSON provided' }
   }
   if (output.length === 0) {
-    return { correctnessScore: 0, passed: false, error: 'Model output was empty' }
+    return { score: 0, passed: false, error: 'Model output was empty' }
   }
 
   let actualJson: object
@@ -150,13 +150,13 @@ function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): Evalua
   try {
     expectedJson = JSON.parse(expectedRaw)
   } catch {
-    return { correctnessScore: 0, passed: false, error: 'Expected value is not valid JSON' }
+    return { score: 0, passed: false, error: 'Expected value is not valid JSON' }
   }
 
   try {
     actualJson = JSON.parse(output)
   } catch {
-    return { correctnessScore: 0, passed: false, error: 'Model output is not valid JSON' }
+    return { score: 0, passed: false, error: 'Model output is not valid JSON' }
   }
 
   const expectedPaths = collectJsonPaths(expectedJson)
@@ -164,7 +164,7 @@ function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): Evalua
   const totalFields = Math.max(expectedPaths.size, actualPaths.size)
 
   if (totalFields === 0) {
-    return { correctnessScore: 1, passed: true }
+    return { score: 1, passed: true }
   }
 
   let matchedFields = 0
@@ -172,10 +172,10 @@ function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): Evalua
     if (actualPaths.has(path)) matchedFields++
   }
 
-  const correctnessScore = matchedFields / totalFields
+  const score = matchedFields / totalFields
   return {
-    correctnessScore,
-    passed: correctnessScore >= PASS_THRESHOLD,
+    score,
+    passed: score >= PASS_THRESHOLD,
     details: `Matched ${matchedFields}/${totalFields} keys`
   }
 }

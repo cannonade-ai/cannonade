@@ -24,8 +24,8 @@ const effectiveStatus = computed<string>(() => {
 })
 
 function scoreLabel(result: TestCaseResult): string {
-  if (result.metrics.correctnessScore == null) return '—'
-  return (result.metrics.correctnessScore * 100).toFixed(0) + '%'
+  if (result.metrics.score == null) return '—'
+  return (result.metrics.score * 100).toFixed(0) + '%'
 }
 
 const systemPrompt = computed<string | null>(() => {
@@ -68,7 +68,7 @@ const hasMetrics = computed<boolean>(() => {
   if (props.caseRun?.startedAt && props.caseRun?.completedAt) return true
   const m = props.caseRun?.result?.metrics
   if (!m) return false
-  return m.tokensPerSecond != null || m.timeToFirstTokenMs != null || m.correctnessScore != null
+  return m.tokensPerSecond != null || m.timeToFirstTokenMs != null || m.score != null
 })
 </script>
 
@@ -161,7 +161,7 @@ const hasMetrics = computed<boolean>(() => {
             <span class="case-metric-label">TTFT</span>
             <span class="case-metric-value">{{ ttft(caseRun.result) }}</span>
           </div>
-          <div v-if="caseRun.result.metrics.correctnessScore != null" class="case-metric">
+          <div v-if="caseRun.result.metrics.score != null" class="case-metric">
             <span class="case-metric-label">Score</span>
             <span class="case-metric-value">{{ scoreLabel(caseRun.result) }}</span>
           </div>

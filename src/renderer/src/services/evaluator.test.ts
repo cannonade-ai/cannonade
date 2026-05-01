@@ -12,7 +12,7 @@ describe('exact_match', () => {
   it('passes when output matches expected exactly', () => {
     const result = evaluate('hello world', { ...base, expected: 'hello world' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('passes when output matches after trimming whitespace', () => {
@@ -23,7 +23,7 @@ describe('exact_match', () => {
   it('fails when output does not match', () => {
     const result = evaluate('hello', { ...base, expected: 'world' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 })
 
@@ -37,21 +37,21 @@ describe('contains', () => {
   it('passes when all terms are found', () => {
     const result = evaluate('the cat sat on the mat', { ...base, expected: 'cat, mat' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
     expect(result.details).toBe('2/2 terms found')
   })
 
   it('returns partial score when only some terms are found', () => {
     const result = evaluate('the cat sat on the mat', { ...base, expected: 'cat, dog, mat' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeCloseTo(2 / 3)
+    expect(result.score).toBeCloseTo(2 / 3)
     expect(result.details).toBe('2/3 terms found')
   })
 
   it('fails when no terms are found', () => {
     const result = evaluate('hello world', { ...base, expected: 'foo, bar' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('returns error when expected is empty', () => {
@@ -71,13 +71,13 @@ describe('regex', () => {
   it('passes when output matches the pattern', () => {
     const result = evaluate('order-1234', { ...base, expected: '^order-\\d+$' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('fails when output does not match the pattern', () => {
     const result = evaluate('order-abc', { ...base, expected: '^order-\\d+$' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('matches partial content within a longer string', () => {
@@ -108,20 +108,20 @@ describe('rouge', () => {
   it('passes with identical output and expected', () => {
     const result = evaluate('the quick brown fox', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('passes when output is a case-insensitive match', () => {
     const result = evaluate('THE QUICK BROWN FOX', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('returns partial score for partially overlapping output', () => {
     const result = evaluate('the quick fox', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeGreaterThan(0)
-    expect(result.correctnessScore).toBeLessThan(1)
+    expect(result.score).toBeGreaterThan(0)
+    expect(result.score).toBeLessThan(1)
   })
 
   it('returns partial score for partially overlapping output 2', () => {
@@ -133,8 +133,8 @@ describe('rouge', () => {
       }
     )
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeGreaterThan(0)
-    expect(result.correctnessScore).toBeLessThan(1)
+    expect(result.score).toBeGreaterThan(0)
+    expect(result.score).toBeLessThan(1)
   })
 
   it('returns zero score for completely different output', () => {
@@ -142,19 +142,19 @@ describe('rouge', () => {
       ...base,
       expected: 'the quick brown fox'
     })
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
     expect(result.passed).toBe(false)
   })
 
   it('returns zero score when expected is empty', () => {
     const result = evaluate('some output', { ...base, expected: '' })
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
     expect(result.passed).toBe(false)
   })
 
   it('returns zero score when output is empty', () => {
     const result = evaluate('', { ...base, expected: 'some expected text' })
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
     expect(result.passed).toBe(false)
   })
 })
@@ -169,7 +169,7 @@ describe('levenshtein', () => {
   it('passes with identical output and expected', () => {
     const result = evaluate('hello world', { ...base, expected: 'hello world' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('passes with output and expected case insensive', () => {
@@ -178,13 +178,13 @@ describe('levenshtein', () => {
       expected: 'hEllo wOrld çşği-123*%'
     })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('passes when output is very close to expected', () => {
     const result = evaluate('hello world', { ...base, expected: 'hello worlt' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBeCloseTo(0.909, 3)
+    expect(result.score).toBeCloseTo(0.909, 3)
   })
 
   it('passes when output is long and very close to expected', () => {
@@ -197,19 +197,19 @@ describe('levenshtein', () => {
       }
     )
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(0.9)
+    expect(result.score).toBe(0.9)
   })
 
   it('returns partial score for moderately different output', () => {
     const result = evaluate('kitten', { ...base, expected: 'sitting' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeCloseTo(0.571, 3)
+    expect(result.score).toBeCloseTo(0.571, 3)
   })
 
   it('returns low score for completely different output', () => {
     const result = evaluate('abc', { ...base, expected: 'xyz' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('returns error when expected is empty', () => {
@@ -235,13 +235,13 @@ describe('f1', () => {
   it('passes with identical output and expected', () => {
     const result = evaluate('the quick brown fox', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('passes regardless of word order', () => {
     const result = evaluate('fox brown quick the', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('fails if half of the words are different but very similar', () => {
@@ -254,43 +254,43 @@ describe('f1', () => {
       }
     )
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0.5)
+    expect(result.score).toBe(0.5)
   })
 
   it('is case insensitive', () => {
     const result = evaluate('THE QUICK BROWN FOX', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('returns partial score when some words overlap', () => {
     const result = evaluate('the quick fox', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeCloseTo(0.857, 3)
+    expect(result.score).toBeCloseTo(0.857, 3)
   })
 
   it('returns zero score for completely different words', () => {
     const result = evaluate('cat sat mat', { ...base, expected: 'the quick brown fox' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('returns zero score when output is empty', () => {
     const result = evaluate('', { ...base, expected: 'hello world' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('returns zero score when expected is empty', () => {
     const result = evaluate('hello world', { ...base, expected: '' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('returns zero score when output is empty', () => {
     const result = evaluate('', { ...base, expected: 'hello world' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 })
 
@@ -305,7 +305,7 @@ describe('json_match', () => {
     const expected = JSON.stringify({ id: 'u1', name: 'Alice' })
     const result = evaluate(JSON.stringify({ id: 'u1', name: 'Alice' }), { ...base, expected })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
     expect(result.details).toContain('2/2')
   })
 
@@ -313,20 +313,20 @@ describe('json_match', () => {
     const expected = JSON.stringify({ id: 'u1' })
     const result = evaluate(JSON.stringify({ id: 'u1', name: 'Alice' }), { ...base, expected })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeCloseTo(0.5)
+    expect(result.score).toBeCloseTo(0.5)
   })
 
   it('counts nested object keys individually', () => {
     const json = JSON.stringify({ user: { id: 'u1', name: 'Alice' } })
     const result = evaluate(json, { ...base, expected: json })
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('fails when output is missing expected keys', () => {
     const expected = JSON.stringify({ id: 'u1', name: 'Alice', age: 30 })
     const result = evaluate(JSON.stringify({ id: 'u1' }), { ...base, expected })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeCloseTo(0.33)
+    expect(result.score).toBeCloseTo(0.33)
   })
 
   it('counts array items and their keys', () => {
@@ -347,13 +347,13 @@ describe('json_match', () => {
     const actual = JSON.stringify({ name: 'Bob', id: 'u999' })
     const result = evaluate(actual, { ...base, expected })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('passes for empty expected object', () => {
     const result = evaluate(JSON.stringify({ id: 'u1' }), { ...base, expected: '{}' })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('returns error when expected is empty string', () => {
@@ -394,7 +394,7 @@ describe('bleu', () => {
       expected: 'the quick brown fox jumps'
     })
     expect(result.passed).toBe(true)
-    expect(result.correctnessScore).toBe(1)
+    expect(result.score).toBe(1)
   })
 
   it('returns partial score for mostly overlapping output', () => {
@@ -403,7 +403,7 @@ describe('bleu', () => {
       expected: 'the quick brown fox jumps'
     })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBeCloseTo(0.632, 3)
+    expect(result.score).toBeCloseTo(0.632, 3)
   })
 
   it('returns low score for completely different output', () => {
@@ -412,18 +412,18 @@ describe('bleu', () => {
       expected: 'the quick brown fox jumps'
     })
     expect(result.passed).toBe(false)
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
   })
 
   it('returns zero score when expected is empty', () => {
     const result = evaluate('some output text', { ...base, expected: '' })
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
     expect(result.passed).toBe(false)
   })
 
   it('returns zero score when output is empty', () => {
     const result = evaluate('', { ...base, expected: 'the quick brown fox jumps' })
-    expect(result.correctnessScore).toBe(0)
+    expect(result.score).toBe(0)
     expect(result.passed).toBe(false)
   })
 })

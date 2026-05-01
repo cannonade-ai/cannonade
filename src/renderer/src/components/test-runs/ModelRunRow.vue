@@ -50,8 +50,8 @@ function passRate(mr: PerModelRun): string {
 }
 
 function score(mr: PerModelRun): string {
-  if (mr.aggregate?.avgCorrectnessScore == null) return '—'
-  return (mr.aggregate.avgCorrectnessScore * 100).toFixed(0) + '%'
+  if (mr.aggregate?.avgScore == null) return '—'
+  return (mr.aggregate.avgScore * 100).toFixed(0) + '%'
 }
 
 function toggle(): void {
