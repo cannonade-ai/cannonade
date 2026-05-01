@@ -60,21 +60,6 @@ function onDeleteCase(): void {
   onSave()
 }
 
-function onDeleteCaseById(id: string): void {
-  suite.value.testCases = suite.value.testCases.filter((tc) => tc.id !== id)
-  if (selectedCaseId.value === id) onCloseEditor()
-  onSave()
-}
-
-function onCloneCaseById(id: string): void {
-  const tc = suite.value.testCases.find((c) => c.id === id)
-  if (!tc) return
-  const clone = { ...tc, id: crypto.randomUUID(), name: `${tc.name} (copy)` }
-  const idx = suite.value.testCases.findIndex((c) => c.id === id)
-  suite.value.testCases.splice(idx + 1, 0, clone)
-  onSave()
-}
-
 function onSave(): void {
   emit('save', suite.value)
 }
@@ -85,6 +70,16 @@ function scheduleSave(): void {
   if (debounceTimer !== null) clearTimeout(debounceTimer)
   debounceTimer = setTimeout(onSave, 500)
 }
+
+watch(
+  () => suite.value.testCases,
+  (cases) => {
+    if (selectedCaseId.value && !cases.find((tc) => tc.id === selectedCaseId.value)) {
+      onCloseEditor()
+    }
+  },
+  { deep: true }
+)
 
 watch([() => suite.value.name, () => suite.value.description], scheduleSave)
 watch(() => suite.value.defaultRunConfig, scheduleSave, { deep: true })
@@ -115,10 +110,9 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
       <TestCaseList
         :cases="suite.testCases"
         :selected-id="selectedCaseId"
+        :suite="suite"
         @select-case="onSelectCase"
         @add-case="onAddCase"
-        @delete-case="onDeleteCaseById"
-        @clone-case="onCloneCaseById"
       />
       <TestSuiteRunConfigPanel v-model:config="suite.defaultRunConfig" />
       <div v-if="editorOpen" class="editor-area">

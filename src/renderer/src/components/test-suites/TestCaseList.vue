@@ -1,37 +1,28 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { IconPlus, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
-import { ContextMenu, Chevron, Panel, Badge } from '@renderer/components/ui'
-import type { TestCase } from '@shared/app/test-suite'
-import type { ContextMenuItem } from '@renderer/components/ui/ContextMenu.vue'
+import { IconPlus, IconDotsVertical } from '@tabler/icons-vue'
+import { Chevron, Panel, Badge } from '@renderer/components/ui'
+import { useContextMenuStore } from '@renderer/stores/context-menu'
+import type { TestCase, TestSuite } from '@shared/app/test-suite'
+import { useTestCaseMenus } from './useTestCaseMenus'
 
-defineProps<{
+const props = defineProps<{
   cases: TestCase[]
   selectedId: string | null
+  suite: TestSuite
 }>()
 
 const emit = defineEmits<{
   'select-case': [id: string]
   'add-case': []
-  'delete-case': [id: string]
-  'clone-case': [id: string]
 }>()
 
-const menuRefs = ref<Record<string, InstanceType<typeof ContextMenu>>>({})
+const contextMenuStore = useContextMenuStore()
+const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
+console.log(contextMenuStore)
+console.log(testCaseMenuItems)
 
-function setMenuRef(id: string, el: unknown): void {
-  if (el) menuRefs.value[id] = el as InstanceType<typeof ContextMenu>
-}
-
-function menuItems(id: string): ContextMenuItem[] {
-  return [
-    {
-      label: 'Clone',
-      icon: IconCopy,
-      action: () => emit('clone-case', id)
-    },
-    { label: 'Delete', icon: IconTrash, danger: true, action: () => emit('delete-case', id) }
-  ]
+function handleClick(tc: TestCase, e: PointerEvent): void {
+  contextMenuStore.open(testCaseMenuItems(tc.id), e)
 }
 </script>
 
@@ -58,7 +49,7 @@ function menuItems(id: string): ContextMenuItem[] {
         class="case-item"
         :class="{ active: selectedId === tc.id }"
         @click="emit('select-case', tc.id)"
-        @contextmenu.prevent="(e) => menuRefs[tc.id]?.openAt(e)"
+        @contextmenu.prevent="handleClick(tc, $event)"
       >
         <div class="case-info">
           <span class="case-name">{{ tc.name }}</span>
@@ -66,13 +57,14 @@ function menuItems(id: string): ContextMenuItem[] {
         </div>
         <div class="case-meta">
           <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
-          <ContextMenu :ref="(el) => setMenuRef(tc.id, el)" :items="menuItems(tc.id)">
-            <template #default="{ toggle }">
-              <button class="btn-menu" @click.stop="toggle">
-                <IconDotsVertical :size="14" :stroke-width="2" />
-              </button>
-            </template>
-          </ContextMenu>
+          <button
+            class="btn-menu"
+            @click.stop="
+              contextMenuStore.openAt(testCaseMenuItems(tc.id), $event.currentTarget as Element)
+            "
+          >
+            <IconDotsVertical :size="14" :stroke-width="2" />
+          </button>
           <Chevron :expanded="selectedId === tc.id" />
         </div>
       </li>

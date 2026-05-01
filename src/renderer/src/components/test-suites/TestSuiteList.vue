@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { IconTestPipe, IconDotsVertical, IconTrash, IconCopy } from '@tabler/icons-vue'
-import { ContextMenu } from '@renderer/components/ui'
+import { IconTestPipe, IconDotsVertical } from '@tabler/icons-vue'
 import { formatDate } from '@renderer/utils/format'
-
-import type { ContextMenuItem } from '@renderer/components/ui/ContextMenu.vue'
+import { useContextMenuStore } from '@renderer/stores/context-menu'
+import { useTestSuiteMenus } from './useTestSuiteMenus'
 import type { TestSuite } from '@shared/app/test-suite'
 
 defineProps<{
@@ -13,25 +12,10 @@ defineProps<{
 
 const emit = defineEmits<{
   'select-suite': [id: string]
-  'delete-suite': [id: string]
-  'clone-suite': [id: string]
 }>()
 
-function suiteMenuItems(id: string): ContextMenuItem[] {
-  return [
-    {
-      label: 'Delete',
-      icon: IconTrash,
-      danger: true,
-      action: () => emit('delete-suite', id)
-    },
-    {
-      label: 'Clone',
-      icon: IconCopy,
-      action: () => emit('clone-suite', id)
-    }
-  ]
-}
+const contextMenuStore = useContextMenuStore()
+const { suiteMenuItems } = useTestSuiteMenus()
 </script>
 
 <template>
@@ -55,11 +39,14 @@ function suiteMenuItems(id: string): ContextMenuItem[] {
               <icon-test-pipe :size="11" :stroke-width="2" />
               {{ suite.testCases.length }} cases
             </span>
-            <ContextMenu v-slot="{ toggle }" :items="suiteMenuItems(suite.id)">
-              <button class="btn-menu" @click.stop="toggle">
-                <icon-dots-vertical :size="14" :stroke-width="2" />
-              </button>
-            </ContextMenu>
+            <button
+              class="btn-menu"
+              @click.stop="
+                contextMenuStore.openAt(suiteMenuItems(suite.id), $event.currentTarget as Element)
+              "
+            >
+              <icon-dots-vertical :size="14" :stroke-width="2" />
+            </button>
           </div>
           <span class="suite-date">Updated {{ formatDate(suite.updatedAt) }}</span>
         </div>

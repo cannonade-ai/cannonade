@@ -35,17 +35,6 @@ async function onNewSuite(): Promise<void> {
   await store.save(suite)
   selectedId.value = suite.id
 }
-
-async function onDeleteSuite(id: string): Promise<void> {
-  await store.remove(id)
-  if (selectedId.value === id) selectedId.value = null
-}
-
-async function onCloneSuite(id: string): Promise<void> {
-  const clone = store.clone(id)
-  if (!clone) return
-  await store.save(clone)
-}
 </script>
 
 <template>
@@ -64,13 +53,7 @@ async function onCloneSuite(id: string): Promise<void> {
           <Badge>{{ suites.length }}</Badge>
         </template>
 
-        <TestSuiteList
-          :suites="suites"
-          :selected-id="selectedId"
-          @select-suite="onSelectSuite"
-          @delete-suite="onDeleteSuite"
-          @clone-suite="onCloneSuite"
-        />
+        <TestSuiteList :suites="suites" :selected-id="selectedId" @select-suite="onSelectSuite" />
       </Panel>
     </template>
   </div>

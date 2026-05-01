@@ -5,6 +5,7 @@ import { useSettingsStore } from '@renderer/stores/settings'
 import AppSidebar from '@renderer/components/AppSidebar.vue'
 import AppTitleBar from '@renderer/components/AppTitleBar.vue'
 import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
+import ContextMenu from '@renderer/components/ui/ContextMenu.vue'
 import { DashboardView, TestSuitesView, TestRunsView, SettingsView } from '@renderer/views'
 
 const nav = useNavigationStore()
@@ -37,6 +38,7 @@ const viewComponent = computed(() => {
         <component :is="viewComponent" />
       </main>
       <ConfirmModal />
+      <ContextMenu />
     </div>
   </div>
 </template>
