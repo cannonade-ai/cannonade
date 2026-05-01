@@ -8,142 +8,11 @@ export interface SuiteSummary {
   name: string
 }
 
-const mockRuns: TestRun[] = [
-  {
-    id: 'run-1',
-    suiteId: 'suite-1',
-    suiteName: 'Customer Support Eval',
-    config: {
-      suiteId: 'suite-1',
-      provider: 'openrouter',
-      models: [
-        { source: 'installed', modelKey: 'anthropic/claude-3-5-sonnet' },
-        { source: 'installed', modelKey: 'openai/gpt-4o' }
-      ],
-      deleteAutoDownloadedModels: false,
-      parallelRun: true
-    },
-    status: 'completed',
-    createdAt: '2026-04-15T09:00:00Z',
-    startedAt: '2026-04-15T09:01:00Z',
-    completedAt: '2026-04-15T09:04:22Z',
-    modelRuns: [
-      {
-        id: 'mr-1',
-        modelRef: { source: 'installed', modelKey: 'anthropic/claude-3-5-sonnet' },
-        status: 'completed',
-        autoDownloaded: false,
-        startedAt: '2026-04-15T09:01:00Z',
-        completedAt: '2026-04-15T09:03:10Z',
-        caseRuns: [],
-        aggregate: { total: 4, passed: 4, failed: 0, avgCorrectnessScore: 1 }
-      },
-      {
-        id: 'mr-2',
-        modelRef: { source: 'installed', modelKey: 'openai/gpt-4o' },
-        status: 'completed',
-        autoDownloaded: false,
-        startedAt: '2026-04-15T09:01:00Z',
-        completedAt: '2026-04-15T09:04:22Z',
-        caseRuns: [],
-        aggregate: { total: 4, passed: 3, failed: 1, avgCorrectnessScore: 0.81 }
-      }
-    ]
-  },
-  {
-    id: 'run-2',
-    suiteId: 'suite-1',
-    suiteName: 'Customer Support Eval',
-    config: {
-      suiteId: 'suite-1',
-      provider: 'lmstudio',
-      models: [{ source: 'huggingface', modelId: 'mistralai/Mistral-7B-Instruct-v0.3' }],
-      deleteAutoDownloadedModels: true
-    },
-    status: 'failed',
-    createdAt: '2026-04-14T16:30:00Z',
-    startedAt: '2026-04-14T16:31:00Z',
-    completedAt: '2026-04-14T16:33:45Z',
-    modelRuns: [
-      {
-        id: 'mr-3',
-        modelRef: { source: 'huggingface', modelId: 'mistralai/Mistral-7B-Instruct-v0.3' },
-        status: 'failed',
-        autoDownloaded: true,
-        startedAt: '2026-04-14T16:31:00Z',
-        completedAt: '2026-04-14T16:33:45Z',
-        caseRuns: [],
-        aggregate: { total: 4, passed: 1, failed: 3 },
-        error: 'Model output exceeded context limit on test case 3'
-      }
-    ]
-  },
-  {
-    id: 'run-3',
-    suiteId: 'suite-2',
-    suiteName: 'Code Generation Benchmark',
-    config: {
-      suiteId: 'suite-2',
-      provider: 'openrouter',
-      models: [{ source: 'installed', modelKey: 'anthropic/claude-3-opus' }],
-      deleteAutoDownloadedModels: false
-    },
-    status: 'running',
-    createdAt: '2026-04-16T08:00:00Z',
-    startedAt: '2026-04-16T08:00:30Z',
-    modelRuns: [
-      {
-        id: 'mr-4',
-        modelRef: { source: 'installed', modelKey: 'anthropic/claude-3-opus' },
-        status: 'running',
-        autoDownloaded: false,
-        startedAt: '2026-04-16T08:00:30Z',
-        caseRuns: [
-          {
-            testCaseId: 'tc-1',
-            status: 'completed',
-            startedAt: '2026-04-16T08:00:35Z',
-            completedAt: '2026-04-16T08:00:52Z',
-            result: {
-              testCaseId: 'tc-1',
-              output:
-                'function fibonacci(n) { return n <= 1 ? n : fibonacci(n-1) + fibonacci(n-2); }',
-              metrics: { tokensPerSecond: 42.3, timeToFirstTokenMs: 310, correctnessScore: 1 },
-              passed: true
-            }
-          },
-          {
-            testCaseId: 'tc-2',
-            status: 'failed',
-            startedAt: '2026-04-16T08:00:53Z',
-            completedAt: '2026-04-16T08:01:10Z',
-            result: {
-              testCaseId: 'tc-2',
-              output: 'def sort(arr): return arr.sort()',
-              metrics: { tokensPerSecond: 38.7, timeToFirstTokenMs: 290, correctnessScore: 0 },
-              passed: false,
-              error: 'Output mutates input array instead of returning a new sorted array'
-            }
-          },
-          {
-            testCaseId: 'tc-3',
-            status: 'running',
-            startedAt: '2026-04-16T08:01:11Z'
-          },
-          {
-            testCaseId: 'tc-4',
-            status: 'pending'
-          }
-        ]
-      }
-    ]
-  }
-]
-
 export const useTestRunsStore = defineStore('test-runs', () => {
-  const testRuns = ref<TestRun[]>(mockRuns)
+  const testRuns = ref<TestRun[]>([])
   const selectedRunId = ref<string | null>(null)
   const isCreatingNew = ref(false)
+  const abortControllers = new Map<string, AbortController>()
 
   const selectedRun = computed<TestRun | null>(
     () => testRuns.value.find((r) => r.id === selectedRunId.value) ?? null
@@ -164,19 +33,8 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   }
 
   function cancelRun(id: string): void {
-    const run = testRuns.value.find((r) => r.id === id)
-    if (!run) return
-    run.status = 'cancelled'
-    run.modelRuns.forEach((mr) => {
-      if (mr.status === 'pending' || mr.status === 'running') {
-        mr.status = 'cancelled'
-        mr.caseRuns.forEach((cr) => {
-          if (cr.status === 'pending' || cr.status === 'running') {
-            cr.status = 'cancelled'
-          }
-        })
-      }
-    })
+    abortControllers.get(id)?.abort()
+    abortControllers.delete(id)
   }
 
   function findModelRun(modelRunId: string): PerModelRun | undefined {
@@ -211,62 +69,80 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     selectedRunId.value = run.id
     isCreatingNew.value = false
 
-    await executeTestRun(run, suite, {
-      onRunStart(runId: string): void {
-        const testRun = testRuns.value.find((r) => r.id === runId)
-        if (!testRun) return
-        testRun.status = 'running'
-        testRun.startedAt = new Date().toISOString()
-      },
-      onModelRunStart(modelRunId: string): void {
-        const modelRun = findModelRun(modelRunId)
-        if (!modelRun) return
-        modelRun.status = 'running'
-        modelRun.startedAt = new Date().toISOString()
-      },
-      onCaseStart(modelRunId: string, testCaseId: string): void {
-        const modelRun = findModelRun(modelRunId)
-        const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
-        if (!caseRun) return
-        caseRun.status = 'running'
-        caseRun.startedAt = new Date().toISOString()
-      },
-      onCaseComplete(
-        modelRunId: string,
-        testCaseId: string,
-        result: TestCaseResult,
-        aggregate: AggregateMetrics
-      ): void {
-        const modelRun = findModelRun(modelRunId)
-        const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
-        if (modelRun) {
+    const controller = new AbortController()
+    abortControllers.set(run.id, controller)
+
+    await executeTestRun(
+      run,
+      suite,
+      {
+        onRunStart(runId: string): void {
+          const testRun = testRuns.value.find((r) => r.id === runId)
+          if (!testRun) return
+          testRun.status = 'running'
+          testRun.startedAt = new Date().toISOString()
+        },
+        onModelRunStart(modelRunId: string): void {
+          const modelRun = findModelRun(modelRunId)
+          if (!modelRun) return
+          modelRun.status = 'running'
+          modelRun.startedAt = new Date().toISOString()
+        },
+        onCaseStart(modelRunId: string, testCaseId: string): void {
+          const modelRun = findModelRun(modelRunId)
+          const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
+          if (!caseRun) return
+          caseRun.status = 'running'
+          caseRun.startedAt = new Date().toISOString()
+        },
+        onCaseComplete(
+          modelRunId: string,
+          testCaseId: string,
+          result: TestCaseResult,
+          aggregate: AggregateMetrics
+        ): void {
+          const modelRun = findModelRun(modelRunId)
+          const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
+          if (modelRun) {
+            modelRun.aggregate = aggregate
+          }
+          if (!caseRun) return
+          caseRun.status = 'completed'
+          caseRun.completedAt = new Date().toISOString()
+          caseRun.result = result
+        },
+        onModelRunComplete(
+          modelRunId: string,
+          status: RunStatus,
+          aggregate: AggregateMetrics,
+          error?: string
+        ): void {
+          const modelRun = findModelRun(modelRunId)
+          if (!modelRun) return
+          modelRun.status = status
+          modelRun.completedAt = new Date().toISOString()
           modelRun.aggregate = aggregate
+          if (error) modelRun.error = error
+        },
+        onRunComplete(runId: string, status: RunStatus): void {
+          const testRun = testRuns.value.find((r) => r.id === runId)
+          if (!testRun) return
+          testRun.status = status
+          testRun.completedAt = new Date().toISOString()
+          abortControllers.delete(runId)
         }
-        if (!caseRun) return
-        caseRun.status = 'completed'
-        caseRun.completedAt = new Date().toISOString()
-        caseRun.result = result
       },
-      onModelRunComplete(
-        modelRunId: string,
-        status: RunStatus,
-        aggregate: AggregateMetrics,
-        error?: string
-      ): void {
-        const modelRun = findModelRun(modelRunId)
-        if (!modelRun) return
-        modelRun.status = status
-        modelRun.completedAt = new Date().toISOString()
-        modelRun.aggregate = aggregate
-        if (error) modelRun.error = error
-      },
-      onRunComplete(runId: string, status: RunStatus): void {
-        const testRun = testRuns.value.find((r) => r.id === runId)
-        if (!testRun) return
-        testRun.status = status
-        testRun.completedAt = new Date().toISOString()
-      }
-    })
+      controller.signal
+    )
+  }
+
+  function deleteRun(id: string): void {
+    const index = testRuns.value.findIndex((r) => r.id === id)
+    if (index === -1) return
+    testRuns.value.splice(index, 1)
+    if (selectedRunId.value === id) {
+      selectedRunId.value = testRuns.value[0]?.id ?? null
+    }
   }
 
   return {
@@ -278,6 +154,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     startNewRun,
     cancelNewRun,
     cancelRun,
+    deleteRun,
     submitRun
   }
 })

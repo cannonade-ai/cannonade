@@ -4,6 +4,7 @@ import { useNavigationStore } from '@renderer/stores/navigation'
 import { useSettingsStore } from '@renderer/stores/settings'
 import AppSidebar from '@renderer/components/AppSidebar.vue'
 import AppTitleBar from '@renderer/components/AppTitleBar.vue'
+import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
 import { DashboardView, TestSuitesView, TestRunsView, SettingsView } from '@renderer/views'
 
 const nav = useNavigationStore()
@@ -35,6 +36,7 @@ const viewComponent = computed(() => {
       <main class="app-content">
         <component :is="viewComponent" />
       </main>
+      <ConfirmModal />
     </div>
   </div>
 </template>
@@ -112,6 +114,7 @@ body {
   flex: 1;
   padding: 2rem;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   background: var(--bg);
 }
 </style>

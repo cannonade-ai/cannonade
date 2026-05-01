@@ -42,7 +42,7 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
       <TestRunDetail v-else-if="store.selectedRun" :run="store.selectedRun" />
       <div v-else class="empty-detail">
         <IconPlayerPlay :size="24" :stroke-width="1.5" class="empty-icon" />
-        <span>Select a run or click New Run</span>
+        <span>Select a run or start a new one</span>
       </div>
     </div>
   </div>

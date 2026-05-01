@@ -38,7 +38,7 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
   font-size: var(--text-xs);
   font-weight: 500;
   min-height: 2rem;
-  min-width: 6rem;
+  min-width: 4rem;
   font-family: var(--font-body);
   border-radius: var(--radius);
   border: 1px solid transparent;

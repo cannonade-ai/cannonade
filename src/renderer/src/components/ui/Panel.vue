@@ -70,7 +70,7 @@ defineProps<{
     font-family: var(--font-headline);
     text-transform: uppercase;
     letter-spacing: 0.07em;
-    color: var(--color-green-500, --accent);
+    color: var(--accent);
   }
 
   &__toolbar {
@@ -79,6 +79,7 @@ defineProps<{
     padding: 8px 14px;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    gap: 0.5rem;
   }
 
   &__body {

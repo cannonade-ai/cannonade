@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { IconPlayerStop } from '@tabler/icons-vue'
+import { computed } from 'vue'
+import { IconPlayerStop, IconTrash } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
 import type { TestCase } from '@shared/app/test-suite'
-import { Button, Modal, Panel } from '@renderer/components/ui'
+import { Button, Panel } from '@renderer/components/ui'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
+import { useConfirmStore } from '@renderer/stores/confirm'
 import { formatDate } from '@renderer/utils/format'
 
 const props = defineProps<{
@@ -15,17 +16,33 @@ const props = defineProps<{
 
 const store = useTestRunsStore()
 const suitesStore = useTestSuitesStore()
+const confirm = useConfirmStore()
 
 const testCases = computed<TestCase[]>(
   () => suitesStore.suites.find((s) => s.id === props.run.suiteId)?.testCases ?? []
 )
-const showCancelModal = ref(false)
 
 const isActive = computed(() => props.run.status === 'running' || props.run.status === 'pending')
 
-function confirmCancel(): void {
-  store.cancelRun(props.run.id)
-  showCancelModal.value = false
+async function showStopConfirm(): Promise<void> {
+  const ok = await confirm.confirm({
+    title: 'Stop Run',
+    message:
+      'Are you sure you want to stop this run? Any in-progress model evaluations will be cancelled.',
+    confirmText: 'Stop Run',
+    danger: true
+  })
+  if (ok) store.cancelRun(props.run.id)
+}
+
+async function showDeleteConfirm(): Promise<void> {
+  const ok = await confirm.confirm({
+    title: 'Delete Run',
+    message: 'Are you sure you want to delete this run? This action cannot be undone.',
+    confirmText: 'Delete Run',
+    danger: true
+  })
+  if (ok) store.deleteRun(props.run.id)
 }
 </script>
 
@@ -39,19 +56,12 @@ function confirmCancel(): void {
       <span class="meta-date">{{ formatDate(run.createdAt) }}</span>
     </template>
 
-    <template v-if="isActive" #toolbar>
-      <Button type="danger-outline" :icon="IconPlayerStop" @click="showCancelModal = true">
-        Stop Run
+    <template #toolbar>
+      <Button v-if="isActive" type="danger-outline" :icon="IconPlayerStop" @click="showStopConfirm">
+        Stop
       </Button>
+      <Button type="danger-outline" :icon="IconTrash" @click="showDeleteConfirm">Delete</Button>
     </template>
-
-    <Modal v-model="showCancelModal" title="Stop Run">
-      Are you sure you want to stop this run? Any in-progress model evaluations will be cancelled.
-      <template #actions="{ close }">
-        <Button @click="close">Cancel</Button>
-        <Button type="danger-outline" @click="confirmCancel">Stop Run</Button>
-      </template>
-    </Modal>
 
     <div class="section-label">Model Results</div>
     <div class="model-list">

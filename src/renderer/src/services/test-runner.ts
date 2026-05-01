@@ -52,7 +52,7 @@ function extractTextOutput(output: ChatResponse['output']): string {
     .join('\n')
 }
 
-function computeAggregate(results: TestCaseResult[]): AggregateMetrics {
+function computeAggregate(results: TestCaseResult[], testCases?: TestCase[]): AggregateMetrics {
   const passed = results.filter((r) => r.passed).length
   const tpsValues = results.flatMap((r) =>
     r.metrics.tokensPerSecond != null ? [r.metrics.tokensPerSecond] : []
@@ -75,14 +75,15 @@ function computeAggregate(results: TestCaseResult[]): AggregateMetrics {
     avgTimeToFirstTokenMs: avg(ttftValues),
     minTimeToFirstTokenMs: min(ttftValues),
     maxTimeToFirstTokenMs: max(ttftValues),
-    avgCorrectnessScore: passed / results.length
+    avgCorrectnessScore: passed / (testCases ? testCases.length : results.length)
   }
 }
 
 export async function executeTestRun(
   run: TestRun,
   suite: TestSuite,
-  callbacks: RunnerCallbacks
+  callbacks: RunnerCallbacks,
+  signal: AbortSignal
 ): Promise<void> {
   callbacks.onRunStart(run.id)
   console.log('[test-runner] Starting test run:', run, suite)
@@ -90,6 +91,7 @@ export async function executeTestRun(
   let overallFailed = false
 
   for (const modelRun of run.modelRuns) {
+    if (signal.aborted) break
     callbacks.onModelRunStart(modelRun.id)
 
     const modelKey =
@@ -104,6 +106,7 @@ export async function executeTestRun(
 
     try {
       for (const testCase of suite.testCases) {
+        if (signal.aborted) break
         callbacks.onCaseStart(modelRun.id, testCase.id)
         console.log('[test-runner] Starting test case:', testCase)
         const request = buildRequest(testCase, modelKey)
@@ -150,15 +153,19 @@ export async function executeTestRun(
       console.log('[test-runner] Test case completed with fatal error:', fatalError)
     }
 
+    const wasCancelled = signal.aborted
     callbacks.onModelRunComplete(
       modelRun.id,
-      fatalError ? 'failed' : 'completed',
-      computeAggregate(results),
+      wasCancelled ? 'cancelled' : fatalError ? 'failed' : 'completed',
+      computeAggregate(results, suite.testCases),
       fatalError
     )
     console.log('[test-runner] Model run completed:', modelRun)
   }
 
-  callbacks.onRunComplete(run.id, overallFailed ? 'failed' : 'completed')
+  callbacks.onRunComplete(
+    run.id,
+    signal.aborted ? 'cancelled' : overallFailed ? 'failed' : 'completed'
+  )
   console.log('[test-runner] Test run completed:', run)
 }
