@@ -1,28 +1,28 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { IconTank } from '@tabler/icons-vue'
 import { api } from '../api'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
-import { Button, Modal } from '@renderer/components/ui'
+import { useConfirmStore } from '@renderer/stores/confirm'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
 
 const testRunsStore = useTestRunsStore()
-const showCloseConfirm = ref(false)
+const confirmStore = useConfirmStore()
 
 const hasRunningRun = computed(() => testRunsStore.runs.some((r) => r.status === 'running'))
 
-function handleClose(): void {
+async function handleClose(): Promise<void> {
   if (hasRunningRun.value) {
-    showCloseConfirm.value = true
-  } else {
-    api.close()
+    const confirmed = await confirmStore.confirm({
+      title: 'Quit Cannonade?',
+      message: 'A test run is currently in progress. Quitting now will stop it.',
+      confirmText: 'Quit anyway',
+      danger: true
+    })
+    if (!confirmed) return
   }
-}
-
-function confirmClose(): void {
-  showCloseConfirm.value = false
   api.close()
 }
 </script>
@@ -46,14 +46,6 @@ function confirmClose(): void {
       </button>
     </div>
   </header>
-
-  <Modal v-model="showCloseConfirm" title="Quit Cannonade?">
-    <p>A test run is currently in progress. Quitting now will stop it.</p>
-    <template #actions="{ close }">
-      <Button @click="close">Cancel</Button>
-      <Button type="danger" @click="confirmClose">Quit anyway</Button>
-    </template>
-  </Modal>
 </template>
 
 <style scoped>

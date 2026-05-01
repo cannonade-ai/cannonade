@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { Button, Field, Input, Modal, Panel, Select, Textarea } from '@renderer/components/ui'
+import { Button, Field, Input, Panel, Select, Textarea } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
+import { useConfirmStore } from '@renderer/stores/confirm'
 import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
 import { IconTrash, IconX } from '@tabler/icons-vue'
 import { ref, watch } from 'vue'
+
+const confirmStore = useConfirmStore()
 
 const props = defineProps<{
   testCase: TestCase | null
@@ -93,11 +96,14 @@ function onSave(): void {
 
 const errors = ref({ name: false, userInput: false })
 
-const showDeleteModal = ref(false)
-
-function onConfirmDelete(): void {
-  showDeleteModal.value = false
-  emit('delete')
+async function onDelete(): Promise<void> {
+  const confirmed = await confirmStore.confirm({
+    title: 'Delete Test Case',
+    message: 'Are you sure you want to delete this test case? This action cannot be undone.',
+    confirmText: 'Delete',
+    danger: true
+  })
+  if (confirmed) emit('delete')
 }
 </script>
 
@@ -110,7 +116,7 @@ function onConfirmDelete(): void {
     </template>
 
     <template #footer>
-      <Button v-if="!isNew" type="danger-outline" :icon="IconTrash" @click="showDeleteModal = true">
+      <Button v-if="!isNew" type="danger-outline" :icon="IconTrash" @click="onDelete">
         Delete
       </Button>
       <div class="footer-right">
@@ -190,14 +196,6 @@ function onConfirmDelete(): void {
       </div>
     </div>
   </Panel>
-
-  <Modal v-model="showDeleteModal" title="Delete Test Case">
-    Are you sure you want to delete this test case? This action cannot be undone.
-    <template #actions="{ close }">
-      <Button @click="close">Cancel</Button>
-      <Button type="danger" @click="onConfirmDelete">Delete</Button>
-    </template>
-  </Modal>
 </template>
 
 <style scoped>
