@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Button, Field, Input, Panel, Select, Textarea } from '@renderer/components/ui'
+import { Button, Field, Input, Panel, Select, SplitPane, Textarea } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
@@ -125,8 +125,8 @@ async function onDelete(): Promise<void> {
       </div>
     </template>
 
-    <div class="editor-cols">
-      <div class="left-col">
+    <SplitPane>
+      <template #start>
         <div class="section">
           <div class="section-header">
             <span class="section-title">General</span>
@@ -169,9 +169,9 @@ async function onDelete(): Promise<void> {
             </Field>
           </div>
         </div>
-      </div>
+      </template>
 
-      <div class="right-col">
+      <template #end>
         <div class="section section-fill">
           <div class="section-header">
             <span class="section-title">Evaluation</span>
@@ -193,8 +193,8 @@ async function onDelete(): Promise<void> {
             </Field>
           </div>
         </div>
-      </div>
-    </div>
+      </template>
+    </SplitPane>
   </Panel>
 </template>
 
@@ -231,27 +231,6 @@ async function onDelete(): Promise<void> {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.editor-cols {
-  display: flex;
-  height: 100%;
-  gap: 0;
-}
-
-.left-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid var(--border);
-  overflow-y: auto;
-}
-
-.right-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
 }
 
 .section {

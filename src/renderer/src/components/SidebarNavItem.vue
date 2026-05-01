@@ -18,7 +18,7 @@ defineEmits<{ click: [] }>()
   </button>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .nav-item {
   display: flex;
   align-items: center;
@@ -32,14 +32,28 @@ defineEmits<{ click: [] }>()
   color: var(--text-secondary);
   background: transparent;
   border: none;
+  border-left: 3px solid transparent;
+
   cursor: pointer;
   text-align: left;
   overflow: hidden;
   transition:
-    background 0.12s,
-    color 0.12s,
+    background 0.15s,
+    border 0.15s,
+    color 0.15s,
     padding 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     gap 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &.active {
+    background: var(--surface-elevated);
+    border-left: 3px solid var(--accent);
+    color: var(--text-primary);
+  }
+
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 }
 
 span {
@@ -51,16 +65,5 @@ span {
   transition:
     max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
     opacity 0.2s ease;
-}
-
-.nav-item:hover {
-  background: var(--surface-elevated);
-  color: var(--text-primary);
-}
-
-.nav-item.active {
-  background: var(--surface-elevated);
-  color: var(--text-primary);
-  font-weight: 600;
 }
 </style>
