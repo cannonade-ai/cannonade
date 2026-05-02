@@ -33,14 +33,8 @@ function handleClick(tc: TestCase, e: PointerEvent): void {
     </template>
 
     <template #header-right>
-      <Button
-        type="secondary"
-        :icon="IconPlus"
-        :icon-size="13"
-        :icon-stroke-width="2.5"
-        @click="emit('add-case')"
-      >
-        Add New Case
+      <Button type="secondary" :icon="IconPlus" :icon-stroke-width="2.5" @click="emit('add-case')">
+        New
       </Button>
     </template>
 

@@ -31,6 +31,7 @@ withDefaults(
 <style scoped lang="scss">
 .textarea {
   width: 100%;
+  min-height: 3rem;
   padding: 6px 8px;
   font-size: var(--text-sm);
   font-family: var(--font-body);

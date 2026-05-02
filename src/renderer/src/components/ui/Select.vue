@@ -141,7 +141,6 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   transition: border-color 0.15s;
   user-select: none;
 
-  &:focus,
   &.open {
     border-color: var(--accent);
   }

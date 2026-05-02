@@ -149,7 +149,6 @@ const hasMetrics = computed<boolean>(() => {
       </div>
 
       <div v-if="hasMetrics" class="detail-block">
-        <span class="detail-label">Metrics</span>
         <div class="case-metrics">
           <div v-if="caseRun.result.metrics.tokensPerSecond != null" class="case-metric">
             <span class="case-metric-label">Tok/s</span>
@@ -164,6 +163,10 @@ const hasMetrics = computed<boolean>(() => {
           <div v-if="caseRun.result.metrics.score != null" class="case-metric">
             <span class="case-metric-label">Score</span>
             <span class="case-metric-value">{{ scoreLabel(caseRun.result) }}</span>
+          </div>
+          <div v-if="testCase.evaluation.threshold != null" class="case-metric">
+            <span class="case-metric-label">Threshold</span>
+            <span class="case-metric-value">{{ testCase.evaluation.threshold }}</span>
           </div>
           <div v-if="caseRun.startedAt && caseRun.completedAt" class="case-metric">
             <span class="case-metric-label">Duration</span>

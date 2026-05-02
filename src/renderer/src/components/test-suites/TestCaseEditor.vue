@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { Button, Field, Input, Panel, Select, SplitPane, Textarea } from '@renderer/components/ui'
+import { Button, Field, Input, NumberInput, Panel, Select, SplitPane, Textarea } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
 import { IconTrash, IconX } from '@tabler/icons-vue'
-import { ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const confirmStore = useConfirmStore()
 
@@ -39,6 +39,10 @@ const systemPrompt = ref('')
 const userInput = ref('')
 const selectedEvalType = ref<EvaluationConfig['type']>('exact_match')
 const evalExpected = ref('')
+const evalThreshold = ref<number>(0.9)
+
+const THRESHOLD_TYPES: EvaluationConfig['type'][] = ['bleu', 'rouge', 'levenshtein', 'f1', 'mrr']
+const showThreshold = computed(() => THRESHOLD_TYPES.includes(selectedEvalType.value))
 
 watch(
   () => props.testCase,
@@ -51,6 +55,7 @@ watch(
         tc.input.messages?.find((m) => m.role === 'user')?.content ?? tc.input.prompt ?? ''
       selectedEvalType.value = tc.evaluation.type
       evalExpected.value = typeof tc.evaluation.expected === 'string' ? tc.evaluation.expected : ''
+      evalThreshold.value = tc.evaluation.threshold ?? 0.9
     } else {
       name.value = ''
       description.value = ''
@@ -58,6 +63,7 @@ watch(
       userInput.value = ''
       selectedEvalType.value = 'exact_match'
       evalExpected.value = ''
+      evalThreshold.value = 0.9
     }
   },
   { immediate: true }
@@ -80,6 +86,7 @@ function onSave(): void {
     evaluation: {
       type: selectedEvalType.value,
       expected: evalExpected.value || undefined,
+      threshold: showThreshold.value ? evalThreshold.value : undefined,
       customValidator: props.testCase?.evaluation.customValidator ?? {
         language: 'javascript',
         code: ''
@@ -110,9 +117,9 @@ async function onDelete(): Promise<void> {
 <template>
   <Panel class="editor-panel" :title="isNew ? 'New Test Case' : 'Edit Test Case'">
     <template #header-right>
-      <button class="btn-close" @click="emit('close')">
+      <Button type="icon" class="btn-close" @click="emit('close')">
         <IconX :size="14" :stroke-width="2.5" />
-      </button>
+      </Button>
     </template>
 
     <template #footer>
@@ -176,19 +183,28 @@ async function onDelete(): Promise<void> {
           <div class="section-header">
             <span class="section-title">Evaluation</span>
           </div>
-          <div class="section-body section-body-fill">
+          <div class="section-body">
             <Field label="Method">
               <Select v-model="selectedEvalType" :options="evaluationTypes" />
             </Field>
             <Field label="Expected / Config" fill>
               <Textarea
                 v-model="evalExpected"
-                fill
+                :rows="4"
                 :placeholder="
                   selectedEvalType === 'contains'
                     ? 'Comma-separated values, e.g. hello,world'
                     : 'Enter expected output or configuration...'
                 "
+              />
+            </Field>
+            <Field v-if="showThreshold" label="Pass Threshold">
+              <NumberInput
+                v-model="evalThreshold"
+                :min="0"
+                :max="1"
+                :step="0.05"
+                placeholder="0.0 – 1.0"
               />
             </Field>
           </div>

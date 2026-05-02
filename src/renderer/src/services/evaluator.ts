@@ -48,7 +48,7 @@ function evaluateBleu(output: string, evaluation: EvaluationConfig): EvaluationR
     return { score: 0, passed: false, error: 'Model output was empty' }
   }
   const score = bleu(expected, output, 2)
-  return { score, passed: score >= PASS_THRESHOLD }
+  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
 }
 
 function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationResult {
@@ -65,13 +65,14 @@ function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationRes
     return { score: 0, passed: false }
   }
   const score = (2 * precision * recall) / (precision + recall)
-  return { score, passed: score >= PASS_THRESHOLD }
+  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
 }
 
 function evaluateExactMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  const score = output.trim() === expected.trim() ? 1 : 0
-  return { score, passed: score >= PASS_THRESHOLD }
+  const matched = output.trim() === expected.trim()
+  const score = matched ? 1 : 0
+  return { score, passed: matched }
 }
 
 function evaluateRegex(output: string, evaluation: EvaluationConfig): EvaluationResult {
@@ -103,7 +104,7 @@ function evaluateContains(output: string, evaluation: EvaluationConfig): Evaluat
   const score = matched.length / terms.length
   return {
     score,
-    passed: score >= PASS_THRESHOLD,
+    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
     details: `${matched.length}/${terms.length} terms found`
   }
 }
@@ -118,7 +119,7 @@ function evaluateRouge(output: string, evaluation: EvaluationConfig): Evaluation
     return { score: 0, passed: false, error: 'Model output was empty' }
   }
   const score = rougeL(output, expected, { caseSensitive: false })
-  return { score, passed: score >= PASS_THRESHOLD }
+  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
 }
 
 function evaluateLevenshtein(output: string, evaluation: EvaluationConfig): EvaluationResult {
@@ -132,7 +133,7 @@ function evaluateLevenshtein(output: string, evaluation: EvaluationConfig): Eval
   }
   const distance = levenshteinDistance(output.toLocaleLowerCase(), expected.toLocaleLowerCase())
   const score = 1 - distance / Math.max(output.length, expected.length)
-  return { score, passed: score >= PASS_THRESHOLD }
+  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
 }
 
 function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
@@ -175,7 +176,7 @@ function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): Evalua
   const score = matchedFields / totalFields
   return {
     score,
-    passed: score >= PASS_THRESHOLD,
+    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
     details: `Matched ${matchedFields}/${totalFields} keys`
   }
 }

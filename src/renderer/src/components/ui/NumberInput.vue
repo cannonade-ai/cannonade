@@ -1,12 +1,7 @@
 <script setup lang="ts">
 const model = defineModel<number | undefined>()
 
-function onChange(e: Event): void {
-  const val = (e.target as HTMLInputElement).value
-  model.value = val === '' ? undefined : parseFloat(val)
-}
-
-withDefaults(
+const props = withDefaults(
   defineProps<{
     min?: number
     max?: number
@@ -14,23 +9,68 @@ withDefaults(
     placeholder?: string
     disabled?: boolean
   }>(),
-  {
-    disabled: false
-  }
+  { disabled: false }
 )
+
+const ALLOWED_KEYS = new Set([
+  'Backspace',
+  'Delete',
+  'Tab',
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'ArrowDown',
+  'Home',
+  'End'
+])
+
+function onKeyDown(e: KeyboardEvent): void {
+  if (e.ctrlKey || e.metaKey) return
+  if (ALLOWED_KEYS.has(e.key)) return
+
+  const input = e.target as HTMLInputElement
+  const allowNegative = props.min === undefined || props.min < 0
+  const allowDecimal = props.step === undefined || !Number.isInteger(props.step)
+
+  if (e.key === '-' && allowNegative && input.selectionStart === 0 && !input.value.includes('-'))
+    return
+  if (e.key === '.' && allowDecimal && !input.value.includes('.')) return
+  if (/^\d$/.test(e.key)) return
+
+  e.preventDefault()
+}
+
+function onBlur(e: Event): void {
+  const input = e.target as HTMLInputElement
+  const val = input.value.trim()
+  if (val === '' || val === '-') {
+    model.value = undefined
+    input.value = ''
+    return
+  }
+  let n = parseFloat(val)
+  if (isNaN(n)) {
+    model.value = undefined
+    input.value = ''
+    return
+  }
+  if (props.min !== undefined && n < props.min) n = props.min
+  if (props.max !== undefined && n > props.max) n = props.max
+  model.value = n
+  input.value = String(n)
+}
 </script>
 
 <template>
   <input
     class="number-input"
-    type="number"
-    :min="min"
-    :max="max"
-    :step="step"
+    type="text"
+    inputmode="decimal"
     :placeholder="placeholder"
     :disabled="disabled"
     :value="model ?? ''"
-    @change="onChange"
+    @keydown="onKeyDown"
+    @blur="onBlur"
   />
 </template>
 
