@@ -52,7 +52,7 @@ const collapsed = ref(false)
   </aside>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .sidebar {
   display: flex;
   flex-direction: column;
@@ -63,15 +63,15 @@ const collapsed = ref(false)
   position: sticky;
   top: 0;
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
 
-.sidebar nav,
-.sidebar-bottom {
-  overflow: hidden;
-}
+  nav,
+  .sidebar-bottom {
+    overflow: hidden;
+  }
 
-.sidebar.collapsed {
-  width: 2.75rem;
+  &.collapsed {
+    width: 2.75rem;
+  }
 }
 
 .sidebar-nav {
@@ -103,10 +103,10 @@ const collapsed = ref(false)
   transform: translateY(-50%);
   z-index: 100;
   padding: 0;
-}
 
-.circle-btn:hover {
-  background: var(--surface-elevated);
+  &:hover {
+    background: var(--surface-elevated);
+  }
 }
 
 .arrow {
@@ -122,9 +122,9 @@ const collapsed = ref(false)
   stroke-linejoin: round;
   transition: d 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   d: path('M9 6 L15 12 L9 18');
-}
 
-.chevron.expanded {
-  d: path('M15 6 L9 12 L15 18');
+  &.expanded {
+    d: path('M15 6 L9 12 L15 18');
+  }
 }
 </style>

@@ -172,182 +172,178 @@ function toggle(): void {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .model-run-row {
   border: 1px solid var(--border);
   background: var(--surface-elevated);
   overflow: hidden;
-}
 
-.row-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  padding: 10px 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-  height: 3.5rem;
-}
+  .row-summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s;
+    height: 3.5rem;
 
-.row-summary:hover {
-  background: var(--surface-hover, rgba(255, 255, 255, 0.04));
-}
+    &:hover {
+      background: var(--surface-hover, rgba(255, 255, 255, 0.04));
+    }
+  }
 
-.summary-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  flex: 1;
-}
+  .summary-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    flex: 1;
+  }
 
-.status-icon {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
+  .status-icon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
 
-.status-icon.completed {
-  color: #22c55e;
-}
-.status-icon.failed,
-.status-icon.cancelled {
-  color: #ef4444;
-}
-.status-icon.running {
-  color: var(--accent);
-}
-.status-icon.pending {
-  color: var(--text-muted);
-}
+    &.completed {
+      color: #22c55e;
+    }
+    &.failed,
+    &.cancelled {
+      color: #ef4444;
+    }
+    &.running {
+      color: var(--accent);
+    }
+    &.pending {
+      color: var(--text-muted);
+    }
+  }
 
-.model-name {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-right: 1rem;
-}
+  .model-name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 1rem;
+  }
 
-.summary-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  flex-shrink: 0;
-}
+  .summary-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-shrink: 0;
+  }
 
-.summary-stat {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-}
+  .summary-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
 
-.stat-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
+  .stat-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
 
-.stat-value {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  font-family: var(--font-headline);
-  color: var(--text-primary);
-  line-height: 1;
-}
+  .stat-value {
+    font-size: var(--text-sm);
+    font-weight: 700;
+    font-family: var(--font-headline);
+    color: var(--text-primary);
+    line-height: 1;
+  }
 
-.stat-duration {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  min-width: 36px;
-  text-align: right;
-}
+  .stat-duration {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    min-width: 36px;
+    text-align: right;
+  }
 
-.row-details {
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  .row-details {
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
 
-.metrics-grid {
-  display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 0.5rem 0.75rem;
-}
+  .metrics-grid {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding: 0.5rem 0.75rem;
+  }
 
-.metric-group-divider {
-  width: 1px;
-  align-self: stretch;
-  background: var(--border);
-  flex-shrink: 0;
-}
+  .metric-group-divider {
+    width: 1px;
+    align-self: stretch;
+    background: var(--border);
+    flex-shrink: 0;
+  }
 
-.metric-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+  .metric-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 
-.group-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted);
-}
+    .group-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
 
-.group-values {
-  display: flex;
-  gap: 16px;
-}
+    .group-values {
+      display: flex;
+      gap: 16px;
+    }
+  }
 
-.metric {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+  .metric {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 
-.metric-label {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-}
+    .metric-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
 
-.metric-value {
-  font-size: var(--text-base);
-  font-weight: 700;
-  font-family: var(--font-headline);
-  color: var(--text-primary);
-}
+    .metric-value {
+      font-size: var(--text-base);
+      font-weight: 700;
+      font-family: var(--font-headline);
+      color: var(--text-primary);
+    }
+  }
 
-.error-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  font-size: var(--text-xs);
-  color: #ef4444;
-  line-height: 1.4;
-}
+  .error-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: var(--text-xs);
+    color: #ef4444;
+    line-height: 1.4;
+  }
 
-.test-cases {
-  display: flex;
-  flex-direction: column;
-}
-
-.test-case-list {
-  display: flex;
-  flex-direction: column;
+  .test-cases,
+  .test-case-list {
+    display: flex;
+    flex-direction: column;
+  }
 }
 </style>

@@ -76,7 +76,7 @@ async function showDeleteConfirm(): Promise<void> {
   </Panel>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .meta-tag {
   font-size: var(--text-xs);
   font-weight: 600;

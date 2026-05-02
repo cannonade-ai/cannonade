@@ -198,14 +198,16 @@ async function onDelete(): Promise<void> {
   </Panel>
 </template>
 
-<style scoped>
-.editor-panel :deep(.panel__body) {
-  padding: 0;
-  overflow: hidden;
-}
+<style scoped lang="scss">
+.editor-panel {
+  :deep(.panel__body) {
+    padding: 0;
+    overflow: hidden;
+  }
 
-.editor-panel :deep(.panel__footer) {
-  justify-content: space-between;
+  :deep(.panel__footer) {
+    justify-content: space-between;
+  }
 }
 
 .btn-close {
@@ -220,11 +222,11 @@ async function onDelete(): Promise<void> {
   transition:
     color 0.15s,
     background 0.15s;
-}
 
-.btn-close:hover {
-  color: var(--text-primary);
-  background: var(--surface-elevated);
+  &:hover {
+    color: var(--text-primary);
+    background: var(--surface-elevated);
+  }
 }
 
 .footer-right {
@@ -237,36 +239,36 @@ async function onDelete(): Promise<void> {
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid var(--border);
-}
 
-.section-fill {
-  flex: 1;
-  border-bottom: none;
-}
+  &-fill {
+    flex: 1;
+    border-bottom: none;
+  }
 
-.section-header {
-  padding: 8px 14px;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
-}
+  &-header {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
 
-.section-title {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-}
+  &-title {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+  }
 
-.section-body {
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
+  &-body {
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 
-.section-body-fill {
-  flex: 1;
-  overflow: hidden;
+    &-fill {
+      flex: 1;
+      overflow: hidden;
+    }
+  }
 }
 </style>

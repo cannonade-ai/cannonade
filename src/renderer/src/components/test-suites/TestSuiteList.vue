@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { IconTestPipe, IconDotsVertical } from '@tabler/icons-vue'
+import { Button } from '@renderer/components/ui'
 import { formatDate } from '@renderer/utils/format'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
 import { useTestSuiteMenus } from './useTestSuiteMenus'
@@ -39,14 +40,11 @@ const { suiteMenuItems } = useTestSuiteMenus()
               <icon-test-pipe :size="11" :stroke-width="2" />
               {{ suite.testCases.length }} cases
             </span>
-            <button
-              class="btn-menu"
-              @click.stop="
-                contextMenuStore.openAt(suiteMenuItems(suite.id), $event.currentTarget as Element)
-              "
-            >
-              <icon-dots-vertical :size="14" :stroke-width="2" />
-            </button>
+            <Button
+              type="icon"
+              :icon="IconDotsVertical"
+              @click.stop="contextMenuStore.openAt(suiteMenuItems(suite.id), $event.currentTarget)"
+            />
           </div>
           <span class="suite-date">Updated {{ formatDate(suite.updatedAt) }}</span>
         </div>
@@ -55,7 +53,7 @@ const { suiteMenuItems } = useTestSuiteMenus()
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .list-wrap {
   flex: 1;
   overflow-y: auto;
@@ -85,16 +83,16 @@ const { suiteMenuItems } = useTestSuiteMenus()
   cursor: pointer;
   transition: background 0.12s;
   height: var(--list-item-height);
-}
 
-.suite-item:hover {
-  background: var(--surface-hover);
-}
+  &:hover {
+    background: var(--surface-hover);
+  }
 
-.suite-item.active {
-  background: var(--accent-dim);
-  border-left: 2px solid var(--accent);
-  padding-left: 18px;
+  &.active {
+    background: var(--accent-dim);
+    border-left: 2px solid var(--accent);
+    padding-left: 18px;
+  }
 }
 
 .suite-main {
@@ -102,21 +100,21 @@ const { suiteMenuItems } = useTestSuiteMenus()
   flex-direction: column;
   gap: 4px;
   min-width: 0;
-}
 
-.suite-name {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-primary);
-}
+  .suite-name {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
 
-.suite-desc {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 480px;
+  .suite-desc {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 480px;
+  }
 }
 
 .suite-aside {
@@ -125,12 +123,17 @@ const { suiteMenuItems } = useTestSuiteMenus()
   align-items: flex-end;
   gap: 5px;
   flex-shrink: 0;
-}
 
-.aside-top {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  .aside-top {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .suite-date {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
 }
 
 .case-count {
@@ -144,34 +147,5 @@ const { suiteMenuItems } = useTestSuiteMenus()
   padding: 2px 8px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
-}
-
-.suite-date {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-
-.btn-menu {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition:
-    background 0.12s,
-    color 0.12s,
-    border-color 0.12s;
-}
-
-.btn-menu:hover {
-  background: var(--surface-elevated);
-  color: var(--text-secondary);
-  border-color: var(--border);
 }
 </style>

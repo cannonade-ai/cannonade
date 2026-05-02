@@ -128,19 +128,19 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .detail {
   display: flex;
   flex-direction: column;
   height: 100%;
-}
 
-.detail-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
-  flex-shrink: 0;
+  .detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+  }
 }
 
 .panels {
@@ -151,10 +151,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
   flex: 1;
   overflow: hidden;
   align-content: start;
-}
 
-.editor-visible {
-  align-content: stretch;
+  &.editor-visible {
+    align-content: stretch;
+  }
 }
 
 .editor-area {

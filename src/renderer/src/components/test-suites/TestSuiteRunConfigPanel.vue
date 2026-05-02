@@ -29,7 +29,7 @@ const config = defineModel<RunConfig | undefined>('config')
   </Panel>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .field-row {
   display: flex;
   gap: 8px;

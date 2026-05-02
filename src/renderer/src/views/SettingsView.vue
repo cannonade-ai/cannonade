@@ -64,37 +64,37 @@ const settings = useSettingsStore()
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .settings {
   max-width: 640px;
-}
 
-.page-title {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  font-family: var(--font-headline);
-  color: var(--text-primary);
-  margin-bottom: 28px;
+  .page-title {
+    font-size: var(--text-lg);
+    font-weight: 700;
+    font-family: var(--font-headline);
+    color: var(--text-primary);
+    margin-bottom: 28px;
+  }
 }
 
 .settings-group {
   margin-bottom: 28px;
-}
 
-.group-title {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
+  .group-title {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    font-family: var(--font-headline);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
 
-.group-body {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
+  .group-body {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+  }
 }
 
 .setting-row {
@@ -104,36 +104,36 @@ const settings = useSettingsStore()
   gap: 16px;
   padding: 14px 16px;
   background: var(--surface);
-}
 
-.setting-row + .setting-row {
-  border-top: 1px solid var(--border);
-}
+  & + .setting-row {
+    border-top: 1px solid var(--border);
+  }
 
-.setting-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+  .setting-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 
-.setting-label {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--text-primary);
-}
+    .setting-label {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
 
-.setting-desc {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
+    .setting-desc {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+    }
+  }
 
-.setting-value {
-  font-size: var(--text-xs);
-  font-family: var(--font-mono, monospace);
-  color: var(--text-muted);
-  word-break: break-all;
-  text-align: right;
-  max-width: 60%;
+  .setting-value {
+    font-size: var(--text-xs);
+    font-family: var(--font-mono, monospace);
+    color: var(--text-muted);
+    word-break: break-all;
+    text-align: right;
+    max-width: 60%;
+  }
 }
 
 .empty-group {
@@ -154,10 +154,15 @@ const settings = useSettingsStore()
   padding: 0;
   position: relative;
   transition: background 0.2s;
-}
 
-.toggle.on {
-  background: var(--accent);
+  &.on {
+    background: var(--accent);
+
+    .toggle-thumb {
+      transform: translateX(18px);
+      background: #fff;
+    }
+  }
 }
 
 .toggle-thumb {
@@ -173,11 +178,6 @@ const settings = useSettingsStore()
     background 0.2s;
 }
 
-.toggle.on .toggle-thumb {
-  transform: translateX(18px);
-  background: #fff;
-}
-
 .port-input {
   width: 80px;
   padding: 4px 8px;
@@ -188,10 +188,10 @@ const settings = useSettingsStore()
   font-size: var(--text-sm);
   font-family: var(--font-mono, monospace);
   text-align: right;
-}
 
-.port-input:focus {
-  outline: none;
-  border-color: var(--accent);
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
 }
 </style>

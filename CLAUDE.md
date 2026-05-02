@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**Cannonade** is a cross-platform desktop application built with Electron + Vue 3 + TypeScript + Vite + Pinia store. The project uses npm as the package manager.
+**Cannonade** is a cross-platform desktop application built with Electron + Vue 3 + TypeScript + Vite + Pinia store + sass. The project uses npm as the package manager.
 
 ```
 ## Commands
@@ -14,6 +14,7 @@ npm run build
 ## Coding Rules
 - NEVER write comments on the code.
 - Always add return type annotations for functions.
+- Always use scoped scss.
 - Always use :key with v-for.
 - Never use v-if on the same element as v-for.
 - Each component should be in its own file.

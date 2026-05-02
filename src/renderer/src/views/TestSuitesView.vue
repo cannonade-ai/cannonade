@@ -59,7 +59,7 @@ async function onNewSuite(): Promise<void> {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .view {
   display: flex;
   flex-direction: column;
@@ -69,9 +69,9 @@ async function onNewSuite(): Promise<void> {
 
 .suites-panel {
   flex: 1;
-}
 
-.suites-panel :deep(.panel__body) {
-  padding: 0;
+  :deep(.panel__body) {
+    padding: 0;
+  }
 }
 </style>

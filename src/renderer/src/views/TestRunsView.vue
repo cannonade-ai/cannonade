@@ -48,7 +48,7 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .view {
   display: flex;
   flex-direction: column;
@@ -62,24 +62,6 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
   gap: 12px;
   flex: 1;
   overflow: hidden;
-}
-
-.btn-new-run {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--accent);
-  background: var(--accent-dim);
-  border: 1px solid var(--accent-border);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-new-run:hover {
-  background: rgba(255, 179, 0, 0.3);
 }
 
 .empty-detail {

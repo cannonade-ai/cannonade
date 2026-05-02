@@ -32,28 +32,28 @@ const props = defineProps<{
   </Panel>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .meta-rows {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding-top: 4px;
   border-top: 1px solid var(--border);
-}
 
-.meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
+  .meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
-.meta-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
+    .meta-label {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+    }
 
-.meta-value {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+    .meta-value {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+    }
+  }
 }
 </style>

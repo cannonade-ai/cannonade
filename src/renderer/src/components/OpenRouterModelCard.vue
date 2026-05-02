@@ -48,7 +48,7 @@ const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .or-card {
   background: var(--surface);
   border: 1px solid var(--border);

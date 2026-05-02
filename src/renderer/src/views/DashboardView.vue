@@ -110,74 +110,45 @@ onMounted(() => store.load())
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .provider-select {
   width: auto;
   font-size: var(--text-xs);
   background: var(--surface);
 }
 
-.btn-refresh {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s,
-    border-color 0.15s;
-}
-
-.btn-refresh:hover:not(:disabled) {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-  border-color: var(--border-hover);
-}
-
-.btn-refresh:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
 .model-section {
   margin-bottom: 32px;
-}
 
-.model-section-label {
-  font-size: var(--text-xs);
-  font-weight: 600;
-  font-family: var(--font-headline);
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--text-muted);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+  .model-section-label {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    font-family: var(--font-headline);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
-.count-pill {
-  font-size: var(--text-xs);
-  background: var(--surface-elevated);
-  color: var(--text-muted);
-  padding: 1px 6px;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  text-transform: none;
-  letter-spacing: 0;
-}
+    .count-pill {
+      font-size: var(--text-xs);
+      background: var(--surface-elevated);
+      color: var(--text-muted);
+      padding: 1px 6px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      text-transform: none;
+      letter-spacing: 0;
+    }
+  }
 
-.models-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-  gap: 12px;
+  .models-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+    gap: 12px;
+  }
 }
 
 .state-message {
@@ -187,10 +158,10 @@ onMounted(() => store.load())
   color: var(--text-muted);
   font-size: var(--text-sm);
   padding: 40px 0;
-}
 
-.state-message.error {
-  color: var(--error);
+  &.error {
+    color: var(--error);
+  }
 }
 
 .spinner {

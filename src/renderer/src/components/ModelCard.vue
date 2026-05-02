@@ -63,7 +63,7 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .model-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -75,15 +75,15 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
-}
 
-.model-card:hover {
-  border-color: var(--border-hover);
-  box-shadow: 0 4px 16px var(--shadow);
-}
+  &:hover {
+    border-color: var(--border-hover);
+    box-shadow: 0 4px 16px var(--shadow);
+  }
 
-.model-card.loaded {
-  border-color: var(--accent-border);
+  &.loaded {
+    border-color: var(--accent-border);
+  }
 }
 
 .card-header {
@@ -125,19 +125,19 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   display: flex;
   align-items: baseline;
   gap: 4px;
-}
 
-.stat-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
+  &-label {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
 
-.stat-value {
-  font-size: var(--text-xs);
-  font-weight: 500;
-  color: var(--text-secondary);
+  &-value {
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
 }
 
 .quant-bits {
@@ -164,18 +164,18 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   display: flex;
   align-items: center;
   gap: 8px;
-}
 
-.instance-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--green);
-  flex-shrink: 0;
-}
+  &-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background: var(--green);
+    flex-shrink: 0;
+  }
 
-.instance-label {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  &-label {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
 }
 </style>

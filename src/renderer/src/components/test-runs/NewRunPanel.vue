@@ -162,7 +162,7 @@ function onSubmit(): void {
   </Panel>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .btn-close {
   display: flex;
   align-items: center;
@@ -175,11 +175,11 @@ function onSubmit(): void {
   transition:
     color 0.15s,
     background 0.15s;
-}
 
-.btn-close:hover {
-  color: var(--text-primary);
-  background: var(--surface-hover);
+  &:hover {
+    color: var(--text-primary);
+    background: var(--surface-hover);
+  }
 }
 
 .divider {
@@ -199,10 +199,10 @@ function onSubmit(): void {
   justify-content: space-between;
   gap: 12px;
   cursor: pointer;
-}
 
-.toggle-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
+  .toggle-label {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+  }
 }
 </style>

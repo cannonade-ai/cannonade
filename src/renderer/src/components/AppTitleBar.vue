@@ -48,25 +48,32 @@ async function handleClose(): Promise<void> {
   </header>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .title-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 40px;
-  padding: 0 12px 0 16px;
+  height: 2.5rem;
+  padding-left: 1rem;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   -webkit-app-region: drag;
   user-select: none;
   flex-shrink: 0;
-}
 
-.title-bar-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-secondary);
+  &-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+  }
+
+  &-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    -webkit-app-region: no-drag;
+  }
 }
 
 .app-name {
@@ -83,35 +90,27 @@ async function handleClose(): Promise<void> {
   margin-top: 1px;
 }
 
-.title-bar-controls {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  -webkit-app-region: no-drag;
-}
-
 .control-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 22px;
+  min-width: 2.5rem;
+  height: 2.5rem;
   border: none;
-  border-radius: 3px;
   background: transparent;
   cursor: pointer;
   color: var(--text-secondary);
   transition: background 0.15s;
-}
 
-.control-btn:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
+  &:hover {
+    background: var(--surface-hover);
+    color: var(--text-primary);
+  }
 
-.control-btn.close:hover {
-  background: var(--error);
-  color: #fff;
+  &.close:hover {
+    background: var(--error);
+    color: #fff;
+  }
 }
 
 .control-icon {
@@ -121,56 +120,62 @@ async function handleClose(): Promise<void> {
   position: relative;
 }
 
-.minimize .control-icon::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 10px;
-  height: 1.5px;
-  background: currentColor;
-  transform: translateY(-50%);
+.minimize .control-icon {
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 10px;
+    height: 1.5px;
+    background: currentColor;
+    transform: translateY(-50%);
+  }
 }
 
-.maximize .control-icon::before,
-.maximize .control-icon::after {
-  content: '';
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border: 1.5px solid currentColor;
+.maximize .control-icon {
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid currentColor;
+  }
+
+  &::before {
+    left: 0;
+    top: 0;
+  }
+
+  &::after {
+    right: 0;
+    bottom: 0;
+    border-left: none;
+    border-top: none;
+    width: 4px;
+    height: 4px;
+  }
 }
 
-.maximize .control-icon::before {
-  left: 0;
-  top: 0;
-}
+.close .control-icon {
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 10px;
+    height: 1.5px;
+    background: currentColor;
+  }
 
-.maximize .control-icon::after {
-  right: 0;
-  bottom: 0;
-  border-left: none;
-  border-top: none;
-  width: 4px;
-  height: 4px;
-}
+  &::before {
+    transform: translateY(-50%) rotate(45deg);
+  }
 
-.close .control-icon::before,
-.close .control-icon::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  width: 10px;
-  height: 1.5px;
-  background: currentColor;
-}
-
-.close .control-icon::before {
-  transform: translateY(-50%) rotate(45deg);
-}
-
-.close .control-icon::after {
-  transform: translateY(-50%) rotate(-45deg);
+  &::after {
+    transform: translateY(-50%) rotate(-45deg);
+  }
 }
 </style>

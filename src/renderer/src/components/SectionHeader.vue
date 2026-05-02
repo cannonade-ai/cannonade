@@ -8,7 +8,7 @@
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .section-header {
   display: flex;
   justify-content: end;

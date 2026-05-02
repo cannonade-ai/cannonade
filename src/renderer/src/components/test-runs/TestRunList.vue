@@ -49,9 +49,11 @@ function modelCount(run: TestRun): string {
   </Panel>
 </template>
 
-<style scoped>
-.runs-panel :deep(.panel__body) {
-  padding: 0;
+<style scoped lang="scss">
+.runs-panel {
+  :deep(.panel__body) {
+    padding: 0;
+  }
 }
 
 .empty {
@@ -76,17 +78,17 @@ function modelCount(run: TestRun): string {
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.12s;
-  border-left: 2px solid transparent;
+  border-left: 3px solid transparent;
   height: var(--list-item-height);
-}
 
-.run-item:hover {
-  background: var(--surface-hover);
-}
+  &:hover {
+    background: var(--surface-hover);
+  }
 
-.run-item.active {
-  background: var(--accent-dim);
-  border-left: 2px solid var(--accent);
+  &.active {
+    background: var(--surface-elevated);
+    border-left: 3px solid var(--accent);
+  }
 }
 
 .run-info {
@@ -94,20 +96,20 @@ function modelCount(run: TestRun): string {
   flex-direction: column;
   gap: 3px;
   min-width: 0;
-}
 
-.run-suite {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .run-suite {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
-.run-meta {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+  .run-meta {
+    font-size: var(--text-xs);
+    color: var(--text-secondary);
+  }
 }
 
 .run-aside {
@@ -116,10 +118,10 @@ function modelCount(run: TestRun): string {
   align-items: flex-end;
   gap: 4px;
   flex-shrink: 0;
-}
 
-.run-date {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
+  .run-date {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
 }
 </style>

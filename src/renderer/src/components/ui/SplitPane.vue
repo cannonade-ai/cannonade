@@ -29,7 +29,7 @@ function onDividerMousedown(e: MouseEvent): void {
       <slot name="start" />
     </div>
     <div class="split-pane__divider" @mousedown="onDividerMousedown">
-      <div class="split-pane__grip" />
+      <div class="split-pane__grip" @mousedown="onDividerMousedown" />
     </div>
     <div class="split-pane__end">
       <slot name="end" />
@@ -37,56 +37,56 @@ function onDividerMousedown(e: MouseEvent): void {
   </div>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .split-pane {
   display: flex;
   height: 100%;
   width: 100%;
-}
 
-.split-pane__start {
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  flex-shrink: 0;
-}
+  &__start {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
+  }
 
-.split-pane__divider {
-  width: 4px;
-  flex-shrink: 0;
-  cursor: col-resize;
-  background: var(--border);
-  transition: background 0.15s;
-  position: relative;
-}
+  &__divider {
+    width: 4px;
+    flex-shrink: 0;
+    cursor: col-resize;
+    background: var(--border);
+    transition: background 0.15s;
+    position: relative;
 
-.split-pane__divider:hover {
-  background: var(--accent);
-}
+    &:hover {
+      background: var(--accent);
 
-.split-pane__grip {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 1px;
-  height: 2rem;
-  border-radius: 6px;
-  background: var(--text-secondary);
-  opacity: 1;
-  transition: opacity 0.15s;
-  pointer-events: none;
-}
+      .split-pane__grip {
+        opacity: 1;
+      }
+    }
+  }
 
-.split-pane__divider:hover .split-pane__grip {
-  opacity: 1;
-}
+  &__grip {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1px;
+    height: 2rem;
+    border-radius: 6px;
+    background: var(--text-muted);
+    opacity: 1;
+    transition: opacity 0.15s;
+    pointer-events: none;
+  }
 
-.split-pane__end {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  min-width: 0;
+  &__end {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    min-width: 0;
+  }
 }
 </style>

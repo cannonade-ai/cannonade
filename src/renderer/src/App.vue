@@ -98,7 +98,7 @@ body {
 }
 </style>
 
-<style scoped>
+<style scoped lang="scss">
 .layout {
   display: flex;
   flex-direction: column;

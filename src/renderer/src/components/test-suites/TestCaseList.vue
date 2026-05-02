@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconPlus, IconDotsVertical } from '@tabler/icons-vue'
-import { Chevron, Panel, Badge } from '@renderer/components/ui'
+import { Button, Chevron, Panel, Badge } from '@renderer/components/ui'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
 import type { TestCase, TestSuite } from '@shared/app/test-suite'
 import { useTestCaseMenus } from './useTestCaseMenus'
@@ -33,10 +33,15 @@ function handleClick(tc: TestCase, e: PointerEvent): void {
     </template>
 
     <template #header-right>
-      <button class="btn-add" @click="emit('add-case')">
-        <IconPlus :size="13" :stroke-width="2.5" />
+      <Button
+        type="secondary"
+        :icon="IconPlus"
+        :icon-size="13"
+        :icon-stroke-width="2.5"
+        @click="emit('add-case')"
+      >
         Add New Case
-      </button>
+      </Button>
     </template>
 
     <div v-if="cases.length === 0" class="empty">
@@ -57,14 +62,11 @@ function handleClick(tc: TestCase, e: PointerEvent): void {
         </div>
         <div class="case-meta">
           <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
-          <button
-            class="btn-menu"
-            @click.stop="
-              contextMenuStore.openAt(testCaseMenuItems(tc.id), $event.currentTarget as Element)
-            "
-          >
-            <IconDotsVertical :size="14" :stroke-width="2" />
-          </button>
+          <Button
+            type="icon"
+            :icon="IconDotsVertical"
+            @click.stop="contextMenuStore.openAt(testCaseMenuItems(tc.id), $event.currentTarget)"
+          />
           <Chevron :expanded="selectedId === tc.id" />
         </div>
       </li>
@@ -72,33 +74,13 @@ function handleClick(tc: TestCase, e: PointerEvent): void {
   </Panel>
 </template>
 
-<style scoped>
+<style scoped lang="scss">
 .cases-panel {
   max-height: 19rem;
-}
 
-.cases-panel :deep(.panel__body) {
-  padding: 0;
-}
-
-.btn-add {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 10px;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  font-family: var(--font-body);
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid var(--accent-border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.btn-add:hover {
-  background: rgba(255, 179, 0, 0.3);
+  :deep(.panel__body) {
+    padding: 0;
+  }
 }
 
 .empty {
@@ -123,16 +105,21 @@ function handleClick(tc: TestCase, e: PointerEvent): void {
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.12s;
-}
 
-.case-item:hover {
-  background: var(--surface-hover);
-}
+  &:hover {
+    background: var(--surface-hover);
+  }
 
-.case-item.active {
-  background: var(--accent-dim);
-  border-left: 2px solid var(--accent-dim);
-  padding-left: 12px;
+  &.active {
+    background: var(--accent-dim);
+    border-left: 2px solid var(--accent-dim);
+    padding-left: 12px;
+
+    .eval-badge {
+      background: rgba(255, 179, 0, 0.15);
+      color: var(--accent);
+    }
+  }
 }
 
 .case-info {
@@ -175,29 +162,5 @@ function handleClick(tc: TestCase, e: PointerEvent): void {
   border-radius: var(--radius-full);
   text-transform: capitalize;
   letter-spacing: 0.02em;
-}
-
-.case-item.active .eval-badge {
-  background: rgba(255, 179, 0, 0.15);
-  color: var(--accent);
-}
-
-.btn-menu {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: background 0.12s;
-}
-
-.btn-menu:hover {
-  background: var(--surface-elevated);
 }
 </style>

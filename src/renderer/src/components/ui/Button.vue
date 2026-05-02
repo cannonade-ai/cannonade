@@ -4,7 +4,7 @@ import type { Component } from 'vue'
 
 const props = withDefaults(
   defineProps<{
-    type?: 'primary' | 'secondary' | 'danger' | 'danger-outline' | 'default'
+    type?: 'primary' | 'secondary' | 'danger' | 'danger-outline' | 'default' | 'icon'
     disabled?: boolean
     icon?: Component
     iconSize?: number
@@ -107,6 +107,18 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
 
     &:not(:disabled):hover {
       background: var(--error-dim);
+    }
+  }
+
+  &--icon {
+    background: none;
+    min-width: auto;
+    min-height: auto;
+    color: var(--text-secondary);
+    padding: 4px 2px;
+
+    &:not(:disabled):hover {
+      background: var(--surface-elevated);
     }
   }
 }
