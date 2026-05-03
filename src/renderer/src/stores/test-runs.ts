@@ -1,8 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, toRaw } from 'vue'
 import type { TestRun, TestRunConfig, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import { executeTestRun } from '../services/test-runner'
+import { api } from '../api'
 export interface SuiteSummary {
   id: string
   name: string
@@ -30,6 +31,10 @@ export const useTestRunsStore = defineStore('test-runs', () => {
 
   function cancelNewRun(): void {
     isCreatingNew.value = false
+  }
+
+  async function load(): Promise<void> {
+    testRuns.value = await api.listTestRuns()
   }
 
   function cancelRun(id: string): void {
@@ -130,19 +135,21 @@ export const useTestRunsStore = defineStore('test-runs', () => {
           testRun.status = status
           testRun.completedAt = new Date().toISOString()
           abortControllers.delete(runId)
+          api.saveTestRun(JSON.parse(JSON.stringify(toRaw(testRun))))
         }
       },
       controller.signal
     )
   }
 
-  function deleteRun(id: string): void {
+  async function deleteRun(id: string): Promise<void> {
     const index = testRuns.value.findIndex((r) => r.id === id)
     if (index === -1) return
     testRuns.value.splice(index, 1)
     if (selectedRunId.value === id) {
       selectedRunId.value = testRuns.value[0]?.id ?? null
     }
+    await api.deleteTestRun(id)
   }
 
   return {
@@ -150,6 +157,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     selectedRunId,
     selectedRun,
     isCreatingNew,
+    load,
     selectRun,
     startNewRun,
     cancelNewRun,

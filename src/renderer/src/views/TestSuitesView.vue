@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { IconPlus } from '@tabler/icons-vue'
+import { IconPlus, IconFolderOpen } from '@tabler/icons-vue'
 import type { TestSuite } from '@shared/app/test-suite'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
 import { Button, Panel, Badge } from '@renderer/components/ui'
 import { storeToRefs } from 'pinia'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
+import { api } from '@renderer/api'
 import { TestSuiteList, TestSuiteDetail } from '@renderer/components/test-suites'
 
 const store = useTestSuitesStore()
@@ -30,6 +31,11 @@ async function onSave(updated: TestSuite): Promise<void> {
   await store.save(updated)
 }
 
+async function openSuitesFolder(): Promise<void> {
+  const dir = await api.getSuitesDir()
+  await api.openPath(dir)
+}
+
 async function onNewSuite(): Promise<void> {
   const suite = store.create()
   await store.save(suite)
@@ -51,6 +57,11 @@ async function onNewSuite(): Promise<void> {
       <Panel class="suites-panel" title="Test Suites">
         <template #title-addon>
           <Badge>{{ suites.length }}</Badge>
+        </template>
+        <template #header-right>
+          <Button type="icon" title="Open suites folder" @click="openSuitesFolder">
+            <IconFolderOpen :size="15" />
+          </Button>
         </template>
 
         <TestSuiteList :suites="suites" :selected-id="selectedId" @select-suite="onSelectSuite" />

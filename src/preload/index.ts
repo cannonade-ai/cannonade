@@ -2,12 +2,13 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
-import { APP, SUITES, SETTINGS } from '@shared/app/ipc-channels'
+import { APP, SUITES, SETTINGS, TEST_RUNS } from '@shared/app/ipc-channels'
 import type { ProviderModelMap, Provider } from '@shared/provider-model-map'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type { Model } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
+import type { TestRun } from '@shared/app/test-run'
 
 const CHANNEL: Record<Provider, string> = {
   lmstudio: LMSTUDIO.FETCH_MODELS,
@@ -27,6 +28,8 @@ const api = {
     ipcRenderer.invoke(LMSTUDIO.DELETE_MODEL, model),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
+  getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),
+  openPath: (path: string): Promise<void> => ipcRenderer.invoke(APP.OPEN_PATH, path),
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
   maximize: (): void => ipcRenderer.send(APP.MAXIMIZE),
   close: (): void => ipcRenderer.send(APP.CLOSE),
@@ -35,7 +38,10 @@ const api = {
   deleteSuite: (id: string): Promise<void> => ipcRenderer.invoke(SUITES.DELETE, id),
   loadAppSettings: (): Promise<AppSettings> => ipcRenderer.invoke(SETTINGS.LOAD),
   saveAppSettings: (settings: AppSettings): Promise<void> =>
-    ipcRenderer.invoke(SETTINGS.SAVE, settings)
+    ipcRenderer.invoke(SETTINGS.SAVE, settings),
+  listTestRuns: (): Promise<TestRun[]> => ipcRenderer.invoke(TEST_RUNS.LIST),
+  saveTestRun: (run: TestRun): Promise<void> => ipcRenderer.invoke(TEST_RUNS.SAVE, run),
+  deleteTestRun: (id: string): Promise<void> => ipcRenderer.invoke(TEST_RUNS.DELETE, id)
 }
 
 if (process.contextIsolated) {

@@ -14,6 +14,7 @@ const suitesStore = useTestSuitesStore()
 
 onMounted(() => {
   if (suitesStore.suites.length === 0) suitesStore.load()
+  if (store.runs.length === 0) store.load()
 })
 
 function onSubmit(config: TestRunConfig, suite: TestSuite): void {

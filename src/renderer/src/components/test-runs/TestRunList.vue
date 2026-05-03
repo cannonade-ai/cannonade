@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import type { TestRun } from '@shared/app/test-run'
-import { Badge, Panel } from '@renderer/components/ui'
+import { Badge, Panel, Button } from '@renderer/components/ui'
 import { formatDate } from '@renderer/utils/format'
+import { IconFolderOpen } from '@tabler/icons-vue'
+import { api } from '@renderer/api'
+
+async function openRunsFolder(): Promise<void> {
+  const dir = await api.getRunsDir()
+  await api.openPath(dir)
+}
 
 defineProps<{
   runs: TestRun[]
@@ -22,6 +29,11 @@ function modelCount(run: TestRun): string {
   <Panel class="runs-panel" title="Test Runs">
     <template #title-addon>
       <Badge>{{ runs.length }}</Badge>
+    </template>
+    <template #header-right>
+      <Button type="icon" title="Open runs folder" @click="openRunsFolder">
+        <IconFolderOpen :size="15" />
+      </Button>
     </template>
 
     <div v-if="runs.length === 0" class="empty">No runs yet.</div>

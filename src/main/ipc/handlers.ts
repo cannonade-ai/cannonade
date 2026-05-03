@@ -1,5 +1,10 @@
-import { app, ipcMain, BrowserWindow } from 'electron'
-import { lmStudioProvider, loadModel, unloadModel, deleteModel } from '../../core/providers/lmstudio'
+import { app, ipcMain, BrowserWindow, shell } from 'electron'
+import {
+  lmStudioProvider,
+  loadModel,
+  unloadModel,
+  deleteModel
+} from '../../core/providers/lmstudio'
 import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
@@ -7,12 +12,14 @@ import { APP } from '@shared/app/ipc-channels'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
+import { registerTestRunHandlers } from './test-run-handlers'
 import type { ChatRequest } from '@shared/lm-studio/chat'
 import type { Model } from '@shared/lm-studio/ipc-contracts'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
   registerSettingsHandlers()
+  registerTestRunHandlers()
   ipcMain.handle(LMSTUDIO.FETCH_MODELS, async () => {
     return await lmStudioProvider.fetchModels()
   })
@@ -39,6 +46,8 @@ export function registerHandlers(): void {
 
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())
   ipcMain.handle(APP.GET_SUITES_DIR, () => join(app.getPath('userData'), 'suites'))
+  ipcMain.handle(APP.GET_RUNS_DIR, () => join(app.getPath('userData'), 'runs'))
+  ipcMain.handle(APP.OPEN_PATH, (_event, path: string) => shell.openPath(path))
 
   ipcMain.on(APP.MINIMIZE, () => BrowserWindow.getFocusedWindow()?.minimize())
   ipcMain.on(APP.MAXIMIZE, () => {
