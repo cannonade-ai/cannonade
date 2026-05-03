@@ -18,12 +18,6 @@ const emit = defineEmits<{
 
 const contextMenuStore = useContextMenuStore()
 const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
-console.log(contextMenuStore)
-console.log(testCaseMenuItems)
-
-function handleClick(tc: TestCase, e: PointerEvent): void {
-  contextMenuStore.open(testCaseMenuItems(tc.id), e)
-}
 </script>
 
 <template>
@@ -48,7 +42,7 @@ function handleClick(tc: TestCase, e: PointerEvent): void {
         class="case-item"
         :class="{ active: selectedId === tc.id }"
         @click="emit('select-case', tc.id)"
-        @contextmenu.prevent="handleClick(tc, $event)"
+        @contextmenu.prevent="contextMenuStore.open(testCaseMenuItems(tc.id), $event)"
       >
         <div class="case-info">
           <span class="case-name">{{ tc.name }}</span>

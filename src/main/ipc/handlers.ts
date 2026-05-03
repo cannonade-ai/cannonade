@@ -1,5 +1,5 @@
 import { app, ipcMain, BrowserWindow } from 'electron'
-import { lmStudioProvider } from '../../core/providers/lmstudio'
+import { lmStudioProvider, loadModel, unloadModel, deleteModel } from '../../core/providers/lmstudio'
 import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
@@ -8,6 +8,7 @@ import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
 import type { ChatRequest } from '@shared/lm-studio/chat'
+import type { Model } from '@shared/lm-studio/ipc-contracts'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
@@ -18,6 +19,18 @@ export function registerHandlers(): void {
 
   ipcMain.handle(LMSTUDIO.CHAT, async (_event, request: ChatRequest, apiToken?: string) => {
     return await lmStudioProvider.chat(request, apiToken)
+  })
+
+  ipcMain.handle(LMSTUDIO.LOAD_MODEL, async (_event, modelKey: string) => {
+    await loadModel(modelKey)
+  })
+
+  ipcMain.handle(LMSTUDIO.UNLOAD_MODEL, async (_event, instanceId: string) => {
+    await unloadModel(instanceId)
+  })
+
+  ipcMain.handle(LMSTUDIO.DELETE_MODEL, async (_event, model: Model) => {
+    await deleteModel(model)
   })
 
   ipcMain.handle(OPENROUTER.FETCH_MODELS, async () => {

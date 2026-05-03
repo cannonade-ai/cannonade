@@ -1,19 +1,36 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { IconDotsVertical } from '@tabler/icons-vue'
 import { formatBytes, formatContext } from '../utils/format'
 import Badge from './ui/Badge.vue'
+import Button from './ui/Button.vue'
 import type { Model } from '@shared/lm-studio/ipc-contracts'
+import { useContextMenuStore } from '@renderer/stores/context-menu'
+import { useModelMenus } from './useModelMenus'
 
 const props = defineProps<{ model: Model }>()
 
 const isLoaded = computed(() => props.model.loaded_instances.length > 0)
+const contextMenuStore = useContextMenuStore()
+const { modelMenuItems } = useModelMenus()
+
+function onContextMenu(event: MouseEvent): void {
+  contextMenuStore.open(modelMenuItems(props.model), event)
+}
+
+function onMenuButton(event: MouseEvent): void {
+  contextMenuStore.openAt(modelMenuItems(props.model), event.currentTarget as Element)
+}
 </script>
 
 <template>
-  <div class="model-card" :class="{ loaded: isLoaded }">
+  <div class="model-card" :class="{ loaded: isLoaded }" @contextmenu.prevent="onContextMenu">
     <div class="card-header">
       <h3 class="model-name">{{ model.display_name }}</h3>
-      <Badge v-if="isLoaded" type="success">Loaded</Badge>
+      <div class="card-header-actions">
+        <Badge v-if="isLoaded" type="success">Loaded</Badge>
+        <Button type="icon" :icon="IconDotsVertical" @click.stop="onMenuButton" />
+      </div>
     </div>
 
     <div class="card-meta">
@@ -91,6 +108,13 @@ const isLoaded = computed(() => props.model.loaded_instances.length > 0)
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
+}
+
+.card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .model-name {

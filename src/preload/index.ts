@@ -6,6 +6,7 @@ import { APP, SUITES, SETTINGS } from '@shared/app/ipc-channels'
 import type { ProviderModelMap, Provider } from '@shared/provider-model-map'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+import type { Model } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 
 const CHANNEL: Record<Provider, string> = {
@@ -18,6 +19,12 @@ const api = {
     ipcRenderer.invoke(CHANNEL[provider]),
   lmStudioChat: (request: ChatRequest, apiToken?: string): Promise<ChatResponse> =>
     ipcRenderer.invoke(LMSTUDIO.CHAT, request, apiToken),
+  lmStudioLoadModel: (modelKey: string): Promise<void> =>
+    ipcRenderer.invoke(LMSTUDIO.LOAD_MODEL, modelKey),
+  lmStudioUnloadModel: (instanceId: string): Promise<void> =>
+    ipcRenderer.invoke(LMSTUDIO.UNLOAD_MODEL, instanceId),
+  lmStudioDeleteModel: (model: Model): Promise<void> =>
+    ipcRenderer.invoke(LMSTUDIO.DELETE_MODEL, model),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
