@@ -1,4 +1,4 @@
-import type { EvaluationConfig } from '@shared/app/test-suite'
+import type { EvaluationConfig, EvaluationMethodResult, TestCase } from '@shared/app/test-suite'
 import { l as rougeL } from 'js-rouge'
 import { distance as levenshteinDistance } from 'fastest-levenshtein'
 import { bleu } from 'bleu-score'
@@ -10,7 +10,34 @@ export interface EvaluationResult {
   error?: string
 }
 
-const PASS_THRESHOLD = 0.9 // todo: make this parametric
+export interface MultiEvaluationResult {
+  score: number
+  passed: boolean
+  evalResults: EvaluationMethodResult[]
+  error?: string
+}
+
+const PASS_THRESHOLD = 0.9
+
+export function evaluateAll(output: string, testCase: TestCase): MultiEvaluationResult {
+  if (testCase.evaluations.length === 0) {
+    return { score: 0, passed: false, evalResults: [], error: 'No evaluation methods configured' }
+  }
+
+  const evalResults: EvaluationMethodResult[] = testCase.evaluations.map((ev) => {
+    const result = evaluate(output, ev)
+    return { type: ev.type, ...result }
+  })
+
+  const passed =
+    testCase.passingLogic === 'all'
+      ? evalResults.every((r) => r.passed)
+      : evalResults.some((r) => r.passed)
+
+  const score = evalResults.reduce((sum, r) => sum + r.score, 0) / evalResults.length
+
+  return { score, passed, evalResults }
+}
 
 export function evaluate(output: string, evaluation: EvaluationConfig): EvaluationResult {
   switch (evaluation.type) {

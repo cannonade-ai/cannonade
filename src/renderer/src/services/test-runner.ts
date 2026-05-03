@@ -2,7 +2,7 @@ import { api } from '../api'
 import type { TestRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import { evaluate } from './evaluator'
+import { evaluateAll } from './evaluator'
 
 export interface RunnerCallbacks {
   onRunStart(runId: string): void
@@ -116,7 +116,7 @@ export async function executeTestRun(
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
           const output = extractTextOutput(response.output)
-          const evaluation = evaluate(output, testCase.evaluation)
+          const evaluation = evaluateAll(output, testCase)
           const result: TestCaseResult = {
             testCaseId: testCase.id,
             output,
@@ -126,7 +126,7 @@ export async function executeTestRun(
               score: evaluation.score
             },
             passed: evaluation.passed,
-            details: evaluation.details,
+            evalResults: evaluation.evalResults,
             error: evaluation.error
           }
 
@@ -140,6 +140,7 @@ export async function executeTestRun(
             output: '',
             metrics: {},
             passed: false,
+            evalResults: [],
             error
           }
           results.push(result)

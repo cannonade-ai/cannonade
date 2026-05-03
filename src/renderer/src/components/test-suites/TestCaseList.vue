@@ -49,7 +49,13 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
           <span v-if="tc.description" class="case-desc">{{ tc.description }}</span>
         </div>
         <div class="case-meta">
-          <span class="eval-badge">{{ tc.evaluation.type.replace('_', ' ') }}</span>
+          <span class="eval-badge">
+            {{
+              tc.evaluations.length > 1
+                ? `${tc.evaluations.length} methods`
+                : tc.evaluations[0]?.type.replace('_', ' ')
+            }}
+          </span>
           <Button
             type="icon"
             :icon="IconDotsVertical"

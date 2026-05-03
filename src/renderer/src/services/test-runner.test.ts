@@ -11,14 +11,14 @@ vi.mock('../api', () => ({
 }))
 
 vi.mock('./evaluator', () => ({
-  evaluate: vi.fn()
+  evaluateAll: vi.fn()
 }))
 
 import { api } from '../api'
-import { evaluate } from './evaluator'
+import { evaluateAll } from './evaluator'
 
 const mockApi = vi.mocked(api)
-const mockEvaluate = vi.mocked(evaluate)
+const mockEvaluate = vi.mocked(evaluateAll)
 
 function makeCallbacks(): RunnerCallbacks {
   return {
@@ -42,7 +42,8 @@ function makeTestCase(overrides: Partial<TestCase> = {}): TestCase {
     id: 'tc-1',
     name: 'Test Case 1',
     input: { type: 'completion', prompt: 'Say hello' },
-    evaluation: baseEval,
+    evaluations: [baseEval],
+    passingLogic: 'any',
     ...overrides
   }
 }
@@ -97,7 +98,7 @@ function makeChatResponse(content: string, tps = 50, ttft = 0.1): ChatResponse {
 
 beforeEach(() => {
   vi.clearAllMocks()
-  mockEvaluate.mockReturnValue({ passed: true, score: 1 })
+  mockEvaluate.mockReturnValue({ passed: true, score: 1, evalResults: [] })
   mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('hello'))
 })
 
@@ -218,7 +219,7 @@ describe('executeTestRun – output extraction', () => {
   it('passes extracted message content to evaluate', async () => {
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('extracted output'))
     await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
-    expect(mockEvaluate).toHaveBeenCalledWith('extracted output', expect.any(Object))
+    expect(mockEvaluate).toHaveBeenCalledWith('extracted output', expect.objectContaining({ id: 'tc-1' }))
   })
 
   it('ignores non-message output items', async () => {
@@ -230,7 +231,7 @@ describe('executeTestRun – output extraction', () => {
       ]
     })
     await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
-    expect(mockEvaluate).toHaveBeenCalledWith('final answer', expect.any(Object))
+    expect(mockEvaluate).toHaveBeenCalledWith('final answer', expect.objectContaining({ id: 'tc-1' }))
   })
 
   it('joins multiple message outputs with newline', async () => {
@@ -242,14 +243,14 @@ describe('executeTestRun – output extraction', () => {
       ]
     })
     await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
-    expect(mockEvaluate).toHaveBeenCalledWith('part one\npart two', expect.any(Object))
+    expect(mockEvaluate).toHaveBeenCalledWith('part one\npart two', expect.objectContaining({ id: 'tc-1' }))
   })
 })
 
 describe('executeTestRun – case result construction', () => {
   it('maps response stats to result metrics', async () => {
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('hello', 100, 0.2))
-    mockEvaluate.mockReturnValue({ passed: true, score: 1 })
+    mockEvaluate.mockReturnValue({ passed: true, score: 1, evalResults: [] })
     const callbacks = makeCallbacks()
     await executeTestRun(makeRun(), makeSuite(), callbacks)
     expect(callbacks.onCaseComplete).toHaveBeenCalledWith(
@@ -270,11 +271,11 @@ describe('executeTestRun – case result construction', () => {
     )
   })
 
-  it('includes evaluation details and error in result', async () => {
+  it('includes evaluation error in result', async () => {
     mockEvaluate.mockReturnValue({
       passed: false,
       score: 0,
-      details: 'mismatch',
+      evalResults: [],
       error: 'no match'
     })
     const callbacks = makeCallbacks()
@@ -284,7 +285,6 @@ describe('executeTestRun – case result construction', () => {
       'tc-1',
       expect.objectContaining({
         passed: false,
-        details: 'mismatch',
         error: 'no match'
       }),
       expect.objectContaining({
@@ -353,7 +353,7 @@ describe('executeTestRun – error handling', () => {
 describe('executeTestRun – aggregate metrics', () => {
   it('computes correct aggregate for all passing results', async () => {
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('ok', 60, 0.1))
-    mockEvaluate.mockReturnValue({ passed: true, score: 1 })
+    mockEvaluate.mockReturnValue({ passed: true, score: 1, evalResults: [] })
     const callbacks = makeCallbacks()
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
     await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
@@ -380,8 +380,8 @@ describe('executeTestRun – aggregate metrics', () => {
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('ok'))
     mockEvaluate
-      .mockReturnValueOnce({ passed: true, score: 1 })
-      .mockReturnValueOnce({ passed: false, score: 0 })
+      .mockReturnValueOnce({ passed: true, score: 1, evalResults: [] })
+      .mockReturnValueOnce({ passed: false, score: 0, evalResults: [] })
     const callbacks = makeCallbacks()
     await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
     expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
@@ -415,7 +415,7 @@ describe('executeTestRun – aggregate metrics', () => {
     mockApi.lmStudioChat
       .mockResolvedValueOnce(makeChatResponse('ok', 40, 0.05))
       .mockResolvedValueOnce(makeChatResponse('ok', 80, 0.15))
-    mockEvaluate.mockReturnValue({ passed: true, score: 1 })
+    mockEvaluate.mockReturnValue({ passed: true, score: 1, evalResults: [] })
     const callbacks = makeCallbacks()
     await executeTestRun(makeRun(modelRuns), makeSuite(), callbacks)
     expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(

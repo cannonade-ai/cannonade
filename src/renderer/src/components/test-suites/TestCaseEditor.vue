@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Button, Field, Input, NumberInput, Panel, Select, SplitPane, Textarea } from '@renderer/components/ui'
+import { Button, Field, Input, Panel, Select, SplitPane, Textarea } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
-import { IconTrash, IconX } from '@tabler/icons-vue'
-import { computed, ref, watch } from 'vue'
+import { IconPlus, IconTrash, IconX } from '@tabler/icons-vue'
+import { ref, watch } from 'vue'
+import TestCaseEvaluationMethod from './TestCaseEvaluationMethod.vue'
 
 const confirmStore = useConfirmStore()
 
@@ -19,30 +20,27 @@ const emit = defineEmits<{
   delete: []
 }>()
 
-const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
-  { value: 'exact_match', label: 'Exact Match' },
-  { value: 'contains', label: 'Contains' },
-  { value: 'regex', label: 'Regex' },
-  { value: 'rouge', label: 'ROUGE' },
-  { value: 'levenshtein', label: 'Levenshtein' },
-  { value: 'f1', label: 'F1' },
-  { value: 'json_match', label: 'JSON Match' },
-  { value: 'bleu', label: 'BLEU' },
-  { value: 'mrr', label: 'MRR' },
-  { value: 'custom', label: 'Custom Validator' },
-  { value: 'code_execution', label: 'Code Execution' }
+const passingLogicOptions: SelectOption<'all' | 'any'>[] = [
+  { value: 'all', label: 'All must pass (AND)' },
+  { value: 'any', label: 'Any must pass (OR)' }
 ]
 
 const name = ref('')
 const description = ref('')
 const systemPrompt = ref('')
 const userInput = ref('')
-const selectedEvalType = ref<EvaluationConfig['type']>('exact_match')
-const evalExpected = ref('')
-const evalThreshold = ref<number>(0.9)
+const evaluations = ref<EvaluationConfig[]>([])
+const passingLogic = ref<'all' | 'any'>('all')
 
-const THRESHOLD_TYPES: EvaluationConfig['type'][] = ['bleu', 'rouge', 'levenshtein', 'f1', 'mrr']
-const showThreshold = computed(() => THRESHOLD_TYPES.includes(selectedEvalType.value))
+function defaultEvaluation(): EvaluationConfig {
+  return {
+    type: 'exact_match',
+    expected: undefined,
+    threshold: undefined,
+    customValidator: { language: 'javascript', code: '' },
+    codeExecution: { language: 'javascript', testCases: [] }
+  }
+}
 
 watch(
   () => props.testCase,
@@ -53,17 +51,15 @@ watch(
       systemPrompt.value = tc.input.messages?.find((m) => m.role === 'system')?.content ?? ''
       userInput.value =
         tc.input.messages?.find((m) => m.role === 'user')?.content ?? tc.input.prompt ?? ''
-      selectedEvalType.value = tc.evaluation.type
-      evalExpected.value = typeof tc.evaluation.expected === 'string' ? tc.evaluation.expected : ''
-      evalThreshold.value = tc.evaluation.threshold ?? 0.9
+      evaluations.value = tc.evaluations.length > 0 ? [...tc.evaluations] : [defaultEvaluation()]
+      passingLogic.value = tc.passingLogic ?? 'all'
     } else {
       name.value = ''
       description.value = ''
       systemPrompt.value = ''
       userInput.value = ''
-      selectedEvalType.value = 'exact_match'
-      evalExpected.value = ''
-      evalThreshold.value = 0.9
+      evaluations.value = [defaultEvaluation()]
+      passingLogic.value = 'all'
     }
   },
   { immediate: true }
@@ -83,25 +79,27 @@ function onSave(): void {
     name: name.value,
     description: description.value || undefined,
     input: { type: 'chat', messages },
-    evaluation: {
-      type: selectedEvalType.value,
-      expected: evalExpected.value || undefined,
-      threshold: showThreshold.value ? evalThreshold.value : undefined,
-      customValidator: props.testCase?.evaluation.customValidator ?? {
-        language: 'javascript',
-        code: ''
-      },
-      codeExecution: props.testCase?.evaluation.codeExecution ?? {
-        language: 'javascript',
-        testCases: []
-      }
-    }
+    evaluations: evaluations.value,
+    passingLogic: passingLogic.value
   }
 
   emit('save', testCase)
 }
 
 const errors = ref({ name: false, userInput: false })
+
+function addEvaluation(): void {
+  evaluations.value.push(defaultEvaluation())
+}
+
+function removeEvaluation(index: number): void {
+  if (evaluations.value.length <= 1) return
+  evaluations.value.splice(index, 1)
+}
+
+function updateEvaluation(index: number, updated: EvaluationConfig): void {
+  evaluations.value[index] = updated
+}
 
 async function onDelete(): Promise<void> {
   const confirmed = await confirmStore.confirm({
@@ -181,32 +179,38 @@ async function onDelete(): Promise<void> {
       <template #end>
         <div class="section section-fill">
           <div class="section-header">
-            <span class="section-title">Evaluation</span>
+            <span class="section-title">
+              Evaluation Methods
+              <span class="eval-count">{{ evaluations.length }}</span>
+            </span>
+            <Button
+              type="secondary"
+              :icon="IconPlus"
+              :icon-stroke-width="2.5"
+              @click="addEvaluation"
+            >
+              New
+            </Button>
           </div>
-          <div class="section-body">
-            <Field label="Method">
-              <Select v-model="selectedEvalType" :options="evaluationTypes" />
-            </Field>
-            <Field label="Expected / Config" fill>
-              <Textarea
-                v-model="evalExpected"
-                :rows="4"
-                :placeholder="
-                  selectedEvalType === 'contains'
-                    ? 'Comma-separated values, e.g. hello,world'
-                    : 'Enter expected output or configuration...'
-                "
+          <div class="section-body section-body-fill">
+            <div class="eval-methods">
+              <TestCaseEvaluationMethod
+                v-for="(ev, i) in evaluations"
+                :key="i"
+                :evaluation="ev"
+                :index="i"
+                @update="updateEvaluation(i, $event)"
+                @remove="removeEvaluation(i)"
               />
-            </Field>
-            <Field v-if="showThreshold" label="Pass Threshold">
-              <NumberInput
-                v-model="evalThreshold"
-                :min="0"
-                :max="1"
-                :step="0.05"
-                placeholder="0.0 – 1.0"
+            </div>
+            <div v-if="evaluations.length > 1" class="passing-logic">
+              <span class="passing-logic__label">Passing logic:</span>
+              <Select
+                v-model="passingLogic"
+                :options="passingLogicOptions"
+                class="passing-logic__select"
               />
-            </Field>
+            </div>
           </div>
         </div>
       </template>
@@ -259,15 +263,24 @@ async function onDelete(): Promise<void> {
   &-fill {
     flex: 1;
     border-bottom: none;
+    overflow: hidden;
   }
 
   &-header {
-    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px 6px 14px;
     border-bottom: 1px solid var(--border);
     background: var(--surface);
+    flex-shrink: 0;
+    min-height: 3rem;
   }
 
   &-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
     font-size: var(--text-xs);
     font-weight: 600;
     text-transform: uppercase;
@@ -283,8 +296,42 @@ async function onDelete(): Promise<void> {
 
     &-fill {
       flex: 1;
-      overflow: hidden;
+      overflow-y: auto;
     }
+  }
+}
+
+.eval-count {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-elevated);
+  border-radius: var(--radius-full);
+  padding: 1px 6px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.eval-methods {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.passing-logic {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 4px;
+
+  &__label {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  &__select {
+    flex: 1;
   }
 }
 </style>

@@ -41,11 +41,18 @@ const inputPrompt = computed<string | null>(() => {
   return props.testCase.input.prompt ?? null
 })
 
-const expectedOutput = computed<string | null>(() => {
-  const exp = props.testCase.evaluation.expected
+function expectedForEval(index: number): string | null {
+  const exp = props.testCase.evaluations[index]?.expected
+  if (exp == null) return null
+  const str = typeof exp === 'string' ? exp : JSON.stringify(exp)
+  return str.length > 20 ? str.slice(0, 20) + '…' : str
+}
+
+function fullExpectedForEval(index: number): string | null {
+  const exp = props.testCase.evaluations[index]?.expected
   if (exp == null) return null
   return typeof exp === 'string' ? exp : JSON.stringify(exp, null, 2)
-})
+}
 
 function formatMetricValue(value: number | undefined, suffix: string): string {
   if (value == null) return '—'
@@ -101,7 +108,6 @@ const hasMetrics = computed<boolean>(() => {
       </div>
 
       <div v-if="caseRun?.result" class="summary-right">
-        <span class="eval-type">{{ testCase.evaluation.type }}</span>
         <span class="score">{{ scoreLabel(caseRun.result) }}</span>
         <Chevron :expanded="expanded" />
       </div>
@@ -133,19 +139,35 @@ const hasMetrics = computed<boolean>(() => {
       </div>
 
       <div class="outputs-grid">
-        <div v-if="expectedOutput" class="output-col">
-          <span class="detail-label">Expected Output</span>
-          <pre class="detail-pre output-pre">{{ expectedOutput }}</pre>
-        </div>
         <div v-if="caseRun.result.output" class="output-col">
           <span class="detail-label">Actual Output</span>
           <pre class="detail-pre output-pre">{{ caseRun.result.output }}</pre>
         </div>
       </div>
 
-      <div v-if="caseRun.result.details != null" class="detail-block">
-        <span class="detail-label">Details</span>
-        <pre class="detail-pre">{{ JSON.stringify(caseRun.result.details, null, 2) }}</pre>
+      <div v-if="caseRun.result.evalResults?.length" class="detail-block">
+        <span class="detail-label">Evaluation - {{ testCase.passingLogic }}</span>
+        <div class="eval-results">
+          <div
+            v-for="(er, i) in caseRun.result.evalResults"
+            :key="i"
+            class="eval-result"
+            :class="er.passed ? 'passed' : 'failed'"
+          >
+            <div class="eval-result__row">
+              <span class="eval-result__type">{{ er.type.replace(/_/g, ' ') }}</span>
+              <span
+                v-if="expectedForEval(i) != null"
+                class="eval-result__expected"
+                :title="fullExpectedForEval(i) ?? undefined"
+                >{{ expectedForEval(i) }}</span
+              >
+              <span v-if="er.details" class="eval-result__detail">{{ er.details }}</span>
+              <span v-if="er.error" class="eval-result__error">{{ er.error }}</span>
+              <span class="eval-result__score">{{ (er.score * 100).toFixed(0) }}%</span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div v-if="hasMetrics" class="detail-block">
@@ -163,10 +185,6 @@ const hasMetrics = computed<boolean>(() => {
           <div v-if="caseRun.result.metrics.score != null" class="case-metric">
             <span class="case-metric-label">Score</span>
             <span class="case-metric-value">{{ scoreLabel(caseRun.result) }}</span>
-          </div>
-          <div v-if="testCase.evaluation.threshold != null" class="case-metric">
-            <span class="case-metric-label">Threshold</span>
-            <span class="case-metric-value">{{ testCase.evaluation.threshold }}</span>
           </div>
           <div v-if="caseRun.startedAt && caseRun.completedAt" class="case-metric">
             <span class="case-metric-label">Duration</span>
@@ -424,6 +442,68 @@ const hasMetrics = computed<boolean>(() => {
       font-weight: 700;
       font-family: var(--font-headline);
       color: var(--text-primary);
+    }
+  }
+
+  .eval-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .eval-result {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0.75rem;
+    border-left: 2px solid transparent;
+    background: var(--surface-elevated);
+
+    &.passed {
+      border-left-color: #22c55e;
+    }
+    &.failed {
+      border-left-color: #ef4444;
+    }
+
+    &__row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    &__type {
+      font-size: var(--text-xs);
+      font-weight: 600;
+      color: var(--text-primary);
+      text-transform: capitalize;
+      white-space: nowrap;
+    }
+
+    &__expected {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-family: var(--font-mono, monospace);
+      white-space: nowrap;
+    }
+
+    &__detail {
+      font-size: var(--text-xs);
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    &__error {
+      font-size: var(--text-xs);
+      color: #ef4444;
+      white-space: nowrap;
+    }
+
+    &__score {
+      font-size: var(--text-xs);
+      font-weight: 700;
+      font-family: var(--font-headline);
+      color: var(--text-secondary);
+      white-space: nowrap;
     }
   }
 

@@ -1,7 +1,19 @@
 import { ref, toRaw } from 'vue'
 import { defineStore } from 'pinia'
 import { api } from '../api'
-import type { TestSuite } from '@shared/app/test-suite'
+import type { TestCase, TestSuite } from '@shared/app/test-suite'
+
+function migrateTestCase(tc: TestCase & { evaluation?: unknown }): TestCase {
+  if (tc.evaluation && !tc.evaluations) {
+    const { evaluation, ...rest } = tc
+    return { ...rest, evaluations: [evaluation as TestCase['evaluations'][0]], passingLogic: 'all' }
+  }
+  return { passingLogic: 'all', ...tc }
+}
+
+function migrateSuite(suite: TestSuite): TestSuite {
+  return { ...suite, testCases: suite.testCases.map(migrateTestCase) }
+}
 
 export const useTestSuitesStore = defineStore('test-suites', () => {
   const suites = ref<TestSuite[]>([])
@@ -10,7 +22,7 @@ export const useTestSuitesStore = defineStore('test-suites', () => {
   async function load(): Promise<void> {
     loading.value = true
     try {
-      suites.value = await api.listSuites()
+      suites.value = (await api.listSuites()).map(migrateSuite)
     } finally {
       loading.value = false
     }

@@ -20,10 +20,9 @@ export interface TestCase {
 
   input: TestInput
 
-  // expected output OR validation rules
-  evaluation: EvaluationConfig
+  evaluations: EvaluationConfig[]
+  passingLogic: 'all' | 'any'
 
-  // override suite-level config if needed
   runConfig?: RunConfig
 
   timeoutMs?: number
@@ -121,6 +120,14 @@ export interface TestSuiteRun {
   aggregate: AggregateMetrics
 }
 
+export interface EvaluationMethodResult {
+  type: EvaluationConfig['type']
+  score: number
+  passed: boolean
+  details?: string
+  error?: string
+}
+
 export interface TestCaseResult {
   testCaseId: string
 
@@ -134,9 +141,9 @@ export interface TestCaseResult {
 
   passed: boolean
 
-  error?: string
+  evalResults: EvaluationMethodResult[]
 
-  details?: unknown
+  error?: string
 }
 
 export interface AggregateMetrics {
