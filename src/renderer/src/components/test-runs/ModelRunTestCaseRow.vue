@@ -146,7 +146,9 @@ const hasMetrics = computed<boolean>(() => {
       </div>
 
       <div v-if="caseRun.result.evalResults?.length" class="detail-block">
-        <span class="detail-label">Evaluation - {{ testCase.passingLogic }}</span>
+        <span class="detail-label">
+          Evaluation {{ testCase.evaluations.length > 1 ? '- ' + testCase.passingLogic : '' }}
+        </span>
         <div class="eval-results">
           <div
             v-for="(er, i) in caseRun.result.evalResults"

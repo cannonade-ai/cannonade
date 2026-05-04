@@ -6,7 +6,10 @@ import type { ChatResponse } from '@shared/lm-studio/chat'
 
 vi.mock('../api', () => ({
   api: {
-    lmStudioChat: vi.fn()
+    lmStudioChat: vi.fn(),
+    lmStudioDownloadModel: vi.fn(),
+    lmStudioDownloadModelStatus: vi.fn(),
+    lmStudioDeleteModelByHfId: vi.fn()
   }
 }))
 
@@ -23,6 +26,7 @@ const mockEvaluate = vi.mocked(evaluateAll)
 function makeCallbacks(): RunnerCallbacks {
   return {
     onRunStart: vi.fn(),
+    onModelDownloading: vi.fn(),
     onModelRunStart: vi.fn(),
     onCaseStart: vi.fn(),
     onCaseComplete: vi.fn(),
@@ -219,7 +223,10 @@ describe('executeTestRun – output extraction', () => {
   it('passes extracted message content to evaluate', async () => {
     mockApi.lmStudioChat.mockResolvedValue(makeChatResponse('extracted output'))
     await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
-    expect(mockEvaluate).toHaveBeenCalledWith('extracted output', expect.objectContaining({ id: 'tc-1' }))
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      'extracted output',
+      expect.objectContaining({ id: 'tc-1' })
+    )
   })
 
   it('ignores non-message output items', async () => {
@@ -231,7 +238,10 @@ describe('executeTestRun – output extraction', () => {
       ]
     })
     await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
-    expect(mockEvaluate).toHaveBeenCalledWith('final answer', expect.objectContaining({ id: 'tc-1' }))
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      'final answer',
+      expect.objectContaining({ id: 'tc-1' })
+    )
   })
 
   it('joins multiple message outputs with newline', async () => {
@@ -243,7 +253,10 @@ describe('executeTestRun – output extraction', () => {
       ]
     })
     await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
-    expect(mockEvaluate).toHaveBeenCalledWith('part one\npart two', expect.objectContaining({ id: 'tc-1' }))
+    expect(mockEvaluate).toHaveBeenCalledWith(
+      'part one\npart two',
+      expect.objectContaining({ id: 'tc-1' })
+    )
   })
 })
 

@@ -2,7 +2,11 @@ import type { Provider, ProviderModelMap } from '@shared/provider-model-map'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import { toRaw } from 'vue'
-import type { Model } from '@shared/lm-studio/ipc-contracts'
+import type {
+  Model,
+  DownloadModelResponse,
+  DownloadStatusResponse
+} from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
 
@@ -16,6 +20,12 @@ export const api = {
     window.api.lmStudioUnloadModel(instanceId),
   lmStudioDeleteModel: (model: Model): Promise<void> =>
     window.api.lmStudioDeleteModel(toRaw(model)),
+  lmStudioDownloadModel: (modelUrl: string): Promise<DownloadModelResponse> =>
+    window.api.lmStudioDownloadModel(modelUrl),
+  lmStudioDownloadModelStatus: (jobId: string): Promise<DownloadStatusResponse> =>
+    window.api.lmStudioDownloadModelStatus(jobId),
+  lmStudioDeleteModelByHfId: (hfModelId: string): Promise<void> =>
+    window.api.lmStudioDeleteModelByHfId(hfModelId),
   getAppVersion: (): Promise<string> => window.api.getAppVersion(),
   getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
   getRunsDir: (): Promise<string> => window.api.getRunsDir(),

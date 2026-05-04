@@ -2,7 +2,11 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 import type { Provider, ProviderModelMap } from '@shared/provider-model-map'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import type { Model } from '@shared/lm-studio/ipc-contracts'
+import type {
+  Model,
+  DownloadModelResponse,
+  DownloadStatusResponse
+} from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
 
@@ -12,6 +16,9 @@ export interface AppAPI {
   lmStudioLoadModel(modelKey: string): Promise<void>
   lmStudioUnloadModel(instanceId: string): Promise<void>
   lmStudioDeleteModel(model: Model): Promise<void>
+  lmStudioDownloadModel(modelUrl: string): Promise<DownloadModelResponse>
+  lmStudioDownloadModelStatus(jobId: string): Promise<DownloadStatusResponse>
+  lmStudioDeleteModelByHfId(hfModelId: string): Promise<void>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>

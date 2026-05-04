@@ -3,7 +3,11 @@ import { join } from 'path'
 import { homedir } from 'os'
 import { loadAppSettings } from '../../main/ipc/settings-handlers'
 import type { LLMProvider } from './base'
-import type { Model } from '@shared/lm-studio/ipc-contracts'
+import type {
+  Model,
+  DownloadModelResponse,
+  DownloadStatusResponse
+} from '@shared/lm-studio/ipc-contracts'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 
 async function apiBase(): Promise<string> {
@@ -29,6 +33,36 @@ export async function unloadModel(instanceId: string): Promise<void> {
     body: JSON.stringify({ instance_id: instanceId })
   })
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+}
+
+export async function downloadModel(modelUrl: string): Promise<DownloadModelResponse> {
+  const base = await apiBase()
+  const res = await fetch(`${base}/api/v1/models/download`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: modelUrl })
+  })
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+  return res.json() as Promise<DownloadModelResponse>
+}
+
+export async function getDownloadStatus(jobId: string): Promise<DownloadStatusResponse> {
+  const base = await apiBase()
+  const res = await fetch(`${base}/api/v1/models/download/status/${jobId}`)
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+  return res.json() as Promise<DownloadStatusResponse>
+}
+
+export async function deleteModelByHfId(hfModelId: string): Promise<void> {
+  const [publisher, modelName] = hfModelId.split('/')
+  const normalizedModelName = modelName.toLowerCase().replace(/-gguf$/, '')
+  const models = await lmStudioProvider.fetchModels()
+  const matching = models.filter(
+    (m) =>
+      m.publisher.toLowerCase() === publisher.toLowerCase() &&
+      m.key.toLowerCase() === normalizedModelName
+  )
+  await Promise.all(matching.map((m) => deleteModel(m)))
 }
 
 export async function deleteModel(model: Model): Promise<void> {

@@ -3,7 +3,10 @@ import {
   lmStudioProvider,
   loadModel,
   unloadModel,
-  deleteModel
+  deleteModel,
+  downloadModel,
+  getDownloadStatus,
+  deleteModelByHfId
 } from '../../core/providers/lmstudio'
 import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
@@ -38,6 +41,18 @@ export function registerHandlers(): void {
 
   ipcMain.handle(LMSTUDIO.DELETE_MODEL, async (_event, model: Model) => {
     await deleteModel(model)
+  })
+
+  ipcMain.handle(LMSTUDIO.DOWNLOAD_MODEL, async (_event, modelUrl: string) => {
+    return await downloadModel(modelUrl)
+  })
+
+  ipcMain.handle(LMSTUDIO.DOWNLOAD_MODEL_STATUS, async (_event, jobId: string) => {
+    return await getDownloadStatus(jobId)
+  })
+
+  ipcMain.handle(LMSTUDIO.DELETE_MODEL_BY_HF_ID, async (_event, hfModelId: string) => {
+    await deleteModelByHfId(hfModelId)
   })
 
   ipcMain.handle(OPENROUTER.FETCH_MODELS, async () => {

@@ -5,12 +5,13 @@ import {
   IconCircleMinus,
   IconCircleX,
   IconClock,
+  IconCloudDownload,
   IconLoader2
 } from '@tabler/icons-vue'
 import { computed } from 'vue'
 
 export type BadgeType = 'default' | 'primary' | 'secondary' | 'danger' | 'success' | 'info'
-export type Status = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+export type Status = 'pending' | 'downloading' | 'running' | 'completed' | 'failed' | 'cancelled'
 export type IconAnimation = 'spin' | 'pulse' | 'bounce'
 
 const props = defineProps<{
@@ -25,6 +26,7 @@ const statusBadgeTypeMap: Record<Status, BadgeType> = {
   completed: 'success',
   failed: 'danger',
   running: 'secondary',
+  downloading: 'info',
   pending: 'default',
   cancelled: 'default'
 }
@@ -37,6 +39,7 @@ const statusIconMap: Record<Status, Icon> = {
   completed: IconCircleCheck,
   failed: IconCircleX,
   running: IconLoader2,
+  downloading: IconCloudDownload,
   pending: IconClock,
   cancelled: IconCircleMinus
 }
@@ -60,6 +63,7 @@ const computedIcon = computed(() => {
 const computedIconAnimation = computed(() => {
   if (props.iconAnimation) return props.iconAnimation
   if (props.status === 'running') return 'spin'
+  if (props.status === 'downloading') return 'pulse'
   if (props.status === 'pending') return 'pulse'
   return null
 })

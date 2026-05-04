@@ -87,10 +87,24 @@ export const useTestRunsStore = defineStore('test-runs', () => {
           testRun.status = 'running'
           testRun.startedAt = new Date().toISOString()
         },
-        onModelRunStart(modelRunId: string): void {
+        onModelDownloading(
+          modelRunId: string,
+          downloadedBytes: number,
+          totalBytes: number,
+          estimatedCompletion?: string
+        ): void {
+          const modelRun = findModelRun(modelRunId)
+          if (!modelRun) return
+          modelRun.status = 'downloading'
+          modelRun.downloadedBytes = downloadedBytes
+          modelRun.totalBytes = totalBytes
+          modelRun.estimatedCompletion = estimatedCompletion
+        },
+        onModelRunStart(modelRunId: string, autoDownloaded: boolean): void {
           const modelRun = findModelRun(modelRunId)
           if (!modelRun) return
           modelRun.status = 'running'
+          modelRun.autoDownloaded = autoDownloaded
           modelRun.startedAt = new Date().toISOString()
         },
         onCaseStart(modelRunId: string, testCaseId: string): void {

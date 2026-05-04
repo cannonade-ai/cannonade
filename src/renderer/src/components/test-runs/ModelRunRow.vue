@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Chevron } from '@renderer/components/ui'
+import { Chevron, CircleProgress } from '@renderer/components/ui'
 import { ModelRunTestCaseRow } from '@renderer/components/test-runs'
 
 import type { ModelRef, PerModelRun, TestCaseRun } from '@shared/app/test-run'
@@ -8,6 +8,7 @@ import {
   IconAlertCircle,
   IconCheck,
   IconClock,
+  IconCloudDownload,
   IconLoader2,
   IconMinus,
   IconX
@@ -57,6 +58,23 @@ function score(mr: PerModelRun): string {
 function toggle(): void {
   expanded.value = !expanded.value
 }
+
+const downloadProgress = computed<number>(() => {
+  const { downloadedBytes, totalBytes } = props.modelRun
+  if (!downloadedBytes || !totalBytes) return 0
+  return Math.min(downloadedBytes / totalBytes, 1)
+})
+
+function remainingTime(estimatedCompletion: string): string {
+  const estCompletion = new Date(estimatedCompletion).getTime()
+  const now = Date.now()
+  if (estCompletion <= now || estimatedCompletion.includes('9999')) return '0s'
+  const diffMs = estCompletion - now
+  const totalSeconds = Math.ceil(diffMs / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`
+}
 </script>
 
 <template>
@@ -77,6 +95,11 @@ function toggle(): void {
             class="spin"
           />
           <IconClock v-else-if="modelRun.status === 'pending'" :size="14" :stroke-width="2" />
+          <IconCloudDownload
+            v-else-if="modelRun.status === 'downloading'"
+            :size="14"
+            :stroke-width="2"
+          />
           <IconMinus v-else :size="14" :stroke-width="2" />
         </span>
         <span class="model-name">{{ modelLabel(modelRun.modelRef) }}</span>
@@ -92,13 +115,22 @@ function toggle(): void {
       </div>
 
       <div class="summary-right">
-        <span class="stat-duration">{{ duration(modelRun) }}</span>
+        <template v-if="modelRun.status === 'downloading'">
+          <span v-if="modelRun.estimatedCompletion" class="download-eta">
+            {{ remainingTime(modelRun.estimatedCompletion) }}
+          </span>
+          <span class="download-progress">
+            <CircleProgress :progress="downloadProgress" :size="22" :stroke-width="2" />
+            <!--<IconCloudDownload :size="10" :stroke-width="2" class="download-icon" />-->
+          </span>
+        </template>
+        <span v-else class="stat-duration">{{ duration(modelRun) }}</span>
         <Chevron :expanded="expanded" />
       </div>
     </button>
 
     <div v-if="expanded" class="row-details">
-      <div v-if="modelRun.aggregate" class="metrics-grid">
+      <div v-if="modelRun.aggregate && !modelRun.error" class="metrics-grid">
         <template v-if="modelRun.aggregate.avgTokensPerSecond != null">
           <div class="metric-group">
             <span class="group-label">Tokens/s</span>
@@ -208,16 +240,20 @@ function toggle(): void {
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    color: var(--text-primary);
 
     &.completed {
-      color: #22c55e;
+      color: var(--green);
     }
     &.failed,
     &.cancelled {
-      color: #ef4444;
+      color: var(--error);
     }
     &.running {
       color: var(--accent);
+    }
+    &.downloading {
+      color: var(--blue);
     }
     &.pending {
       color: var(--text-muted);
@@ -239,6 +275,20 @@ function toggle(): void {
     align-items: center;
     gap: 14px;
     flex-shrink: 0;
+  }
+
+  .download-eta {
+    font-size: var(--text-xs);
+    color: var(--text-primary);
+    min-width: 36px;
+    text-align: right;
+  }
+
+  .download-progress {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .summary-stat {
@@ -338,6 +388,7 @@ function toggle(): void {
     font-size: var(--text-xs);
     color: #ef4444;
     line-height: 1.4;
+    padding: 0.75rem 0.5rem 0;
   }
 
   .test-cases,

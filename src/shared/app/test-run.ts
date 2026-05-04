@@ -21,7 +21,7 @@ export interface TestRunConfig {
   parallelRun?: boolean // for OpenRouter only
 }
 
-export type RunStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled'
+export type RunStatus = 'pending' | 'downloading' | 'running' | 'completed' | 'failed' | 'cancelled'
 
 export interface TestCaseRun {
   testCaseId: string
@@ -36,6 +36,9 @@ export interface PerModelRun {
   modelRef: ModelRef
   status: RunStatus
   autoDownloaded: boolean
+  downloadedBytes?: number
+  totalBytes?: number
+  estimatedCompletion?: string
   startedAt?: string
   completedAt?: string
   caseRuns: TestCaseRun[]

@@ -6,7 +6,13 @@ import { evaluateAll } from './evaluator'
 
 export interface RunnerCallbacks {
   onRunStart(runId: string): void
-  onModelRunStart(modelRunId: string): void
+  onModelDownloading(
+    modelRunId: string,
+    downloadedBytes: number,
+    totalBytes: number,
+    estimatedCompletion?: string
+  ): void
+  onModelRunStart(modelRunId: string, autoDownloaded: boolean): void
   onCaseStart(modelRunId: string, testCaseId: string): void
   onCaseComplete(
     modelRunId: string,
@@ -21,6 +27,47 @@ export interface RunnerCallbacks {
     error?: string
   ): void
   onRunComplete(runId: string, status: RunStatus): void
+}
+
+const HF_BASE_URL = 'https://huggingface.co/'
+const POLL_INTERVAL_MS = 1000
+
+function toHuggingFaceUrl(modelId: string): string {
+  return modelId.startsWith('https://') ? modelId : `${HF_BASE_URL}${modelId}`
+}
+
+function extractHfModelId(modelId: string): string {
+  return modelId.startsWith(HF_BASE_URL) ? modelId.slice(HF_BASE_URL.length) : modelId
+}
+
+async function downloadAndPoll(
+  modelRunId: string,
+  hfModelId: string,
+  callbacks: RunnerCallbacks,
+  signal: AbortSignal
+): Promise<boolean> {
+  const modelUrl = toHuggingFaceUrl(hfModelId)
+  const response = await api.lmStudioDownloadModel(modelUrl)
+
+  if (response.status === 'already_downloaded') {
+    return false
+  }
+
+  const jobId = response.job_id
+  await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS / 2))
+  while (!signal.aborted) {
+    const status = await api.lmStudioDownloadModelStatus(jobId)
+    if (status.status === 'completed') return true
+    if (status.status === 'failed') throw new Error(`Download failed for ${hfModelId}`)
+    callbacks.onModelDownloading(
+      modelRunId,
+      status.downloaded_bytes ?? 0,
+      status.total_size_bytes ?? response.total_size_bytes ?? 0,
+      status.estimated_completion
+    )
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
+  }
+  throw new Error('Aborted during download')
 }
 
 function buildRequest(testCase: TestCase, modelKey: string): ChatRequest {
@@ -92,17 +139,40 @@ export async function executeTestRun(
 
   for (const modelRun of run.modelRuns) {
     if (signal.aborted) break
-    callbacks.onModelRunStart(modelRun.id)
+
+    const results: TestCaseResult[] = []
+    let fatalError: string | undefined
+    let autoDownloaded = false
+
+    try {
+      if (modelRun.modelRef.source === 'huggingface') {
+        const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
+        autoDownloaded = await downloadAndPoll(modelRun.id, hfModelId, callbacks, signal)
+      }
+    } catch (err) {
+      fatalError = err instanceof Error ? err.message : String(err)
+      overallFailed = true
+      callbacks.onModelRunComplete(
+        modelRun.id,
+        signal.aborted ? 'cancelled' : 'failed',
+        computeAggregate(results, suite.testCases),
+        fatalError
+      )
+      continue
+    }
+
+    if (signal.aborted) break
+
+    callbacks.onModelRunStart(modelRun.id, autoDownloaded)
 
     const modelKey =
       modelRun.modelRef.source === 'installed'
         ? modelRun.modelRef.modelKey
         : modelRun.modelRef.modelId
 
-    const results: TestCaseResult[] = []
-    let fatalError: string | undefined
-
     console.log('[test-runner] Starting model run:', modelRun)
+
+    let modelInstanceId: string | undefined
 
     try {
       for (const testCase of suite.testCases) {
@@ -113,6 +183,7 @@ export async function executeTestRun(
 
         try {
           const response = await api.lmStudioChat(request)
+          if (!modelInstanceId) modelInstanceId = response.model_instance_id
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
           const output = extractTextOutput(response.output)
@@ -162,6 +233,27 @@ export async function executeTestRun(
       fatalError
     )
     console.log('[test-runner] Model run completed:', modelRun)
+
+    if (modelInstanceId) {
+      try {
+        await api.lmStudioUnloadModel(modelInstanceId)
+      } catch (err) {
+        console.error('[test-runner] Failed to unload model:', err)
+      }
+    }
+
+    if (
+      autoDownloaded &&
+      run.config.deleteAutoDownloadedModels &&
+      modelRun.modelRef.source === 'huggingface'
+    ) {
+      const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
+      try {
+        await api.lmStudioDeleteModelByHfId(hfModelId)
+      } catch (err) {
+        console.error('[test-runner] Failed to delete auto-downloaded model:', err)
+      }
+    }
   }
 
   callbacks.onRunComplete(
