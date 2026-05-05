@@ -5,7 +5,8 @@ import { toRaw } from 'vue'
 import type {
   Model,
   DownloadModelResponse,
-  DownloadStatusResponse
+  DownloadStatusResponse,
+  ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
@@ -26,6 +27,9 @@ export const api = {
     window.api.lmStudioDownloadModelStatus(jobId),
   lmStudioDeleteModelByHfId: (hfModelId: string): Promise<void> =>
     window.api.lmStudioDeleteModelByHfId(hfModelId),
+  lmStudioServerStatus: (): Promise<ServerStatusResponse> => window.api.lmStudioServerStatus(),
+  lmStudioServerStart: (): Promise<ServerStatusResponse> => window.api.lmStudioServerStart(),
+  lmStudioServerStop: (): Promise<ServerStatusResponse> => window.api.lmStudioServerStop(),
   getAppVersion: (): Promise<string> => window.api.getAppVersion(),
   getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
   getRunsDir: (): Promise<string> => window.api.getRunsDir(),

@@ -9,7 +9,8 @@ import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type {
   Model,
   DownloadModelResponse,
-  DownloadStatusResponse
+  DownloadStatusResponse,
+  ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
@@ -36,6 +37,12 @@ const api = {
     ipcRenderer.invoke(LMSTUDIO.DOWNLOAD_MODEL_STATUS, jobId),
   lmStudioDeleteModelByHfId: (hfModelId: string): Promise<void> =>
     ipcRenderer.invoke(LMSTUDIO.DELETE_MODEL_BY_HF_ID, hfModelId),
+  lmStudioServerStatus: (): Promise<ServerStatusResponse> =>
+    ipcRenderer.invoke(LMSTUDIO.SERVER_STATUS),
+  lmStudioServerStart: (): Promise<ServerStatusResponse> =>
+    ipcRenderer.invoke(LMSTUDIO.SERVER_START),
+  lmStudioServerStop: (): Promise<ServerStatusResponse> =>
+    ipcRenderer.invoke(LMSTUDIO.SERVER_STOP),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),

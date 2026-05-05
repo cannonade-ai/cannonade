@@ -5,7 +5,8 @@ import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type {
   Model,
   DownloadModelResponse,
-  DownloadStatusResponse
+  DownloadStatusResponse,
+  ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
@@ -19,6 +20,9 @@ export interface AppAPI {
   lmStudioDownloadModel(modelUrl: string): Promise<DownloadModelResponse>
   lmStudioDownloadModelStatus(jobId: string): Promise<DownloadStatusResponse>
   lmStudioDeleteModelByHfId(hfModelId: string): Promise<void>
+  lmStudioServerStatus(): Promise<ServerStatusResponse>
+  lmStudioServerStart(): Promise<ServerStatusResponse>
+  lmStudioServerStop(): Promise<ServerStatusResponse>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>

@@ -1,7 +1,40 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { IconRefresh, IconPlayerPlay, IconPlayerStop } from '@tabler/icons-vue'
 import { useSettingsStore } from '@renderer/stores/settings'
+import { api } from '@renderer/api'
 
 const settings = useSettingsStore()
+
+const serverRunning = ref<boolean | null>(null)
+const serverPort = ref<number | null>(null)
+const serverLoading = ref(false)
+
+async function refreshServerStatus(): Promise<void> {
+  serverLoading.value = true
+  const status = await api.lmStudioServerStatus()
+  serverRunning.value = status.running
+  serverPort.value = status.port
+  serverLoading.value = false
+}
+
+async function startServer(): Promise<void> {
+  serverLoading.value = true
+  const status = await api.lmStudioServerStart()
+  serverRunning.value = status.running
+  serverPort.value = status.port
+  serverLoading.value = false
+}
+
+async function stopServer(): Promise<void> {
+  serverLoading.value = true
+  const status = await api.lmStudioServerStop()
+  serverRunning.value = status.running
+  serverPort.value = status.port
+  serverLoading.value = false
+}
+
+onMounted(refreshServerStatus)
 </script>
 
 <template>
@@ -58,6 +91,47 @@ const settings = useSettingsStore()
             max="65535"
             @change="settings.lmStudioPort = Number(($event.target as HTMLInputElement).value)"
           />
+        </div>
+        <div class="setting-row">
+          <div class="setting-info">
+            <span class="setting-label">LM Studio server</span>
+            <span class="setting-desc">
+              <template v-if="serverRunning === null">Checking status…</template>
+              <template v-else-if="serverRunning">Running on port {{ serverPort }}</template>
+              <template v-else>Not running</template>
+            </span>
+          </div>
+          <div class="server-actions">
+            <span
+              class="status-dot"
+              :class="{ running: serverRunning === true, stopped: serverRunning === false }"
+            />
+            <button
+              v-if="serverRunning === false"
+              class="action-btn"
+              :disabled="serverLoading"
+              @click="startServer"
+            >
+              <IconPlayerPlay :size="14" />
+              Start
+            </button>
+            <button
+              v-if="serverRunning === true"
+              class="action-btn"
+              :disabled="serverLoading"
+              @click="stopServer"
+            >
+              <IconPlayerStop :size="14" />
+              Stop
+            </button>
+            <button
+              class="action-btn ghost"
+              :disabled="serverLoading"
+              @click="refreshServerStatus"
+            >
+              <IconRefresh :size="14" />
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -176,6 +250,51 @@ const settings = useSettingsStore()
   transition:
     transform 0.2s,
     background 0.2s;
+}
+
+.server-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex-shrink: 0;
+
+  &.running {
+    background: #22c55e;
+  }
+
+  &.stopped {
+    background: #ef4444;
+  }
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.ghost {
+    padding: 4px 6px;
+  }
 }
 
 .port-input {

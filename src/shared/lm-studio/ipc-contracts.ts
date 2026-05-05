@@ -39,6 +39,11 @@ export interface DownloadStatusResponse {
   estimated_completion?: string
 }
 
+export interface ServerStatusResponse {
+  running: boolean
+  port: number | null
+}
+
 export interface Model {
   type: 'llm' | 'embedding'
   publisher: string

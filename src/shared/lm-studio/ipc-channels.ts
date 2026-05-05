@@ -6,5 +6,8 @@ export const LMSTUDIO = {
   DELETE_MODEL: 'lmstudio:deleteModel',
   DOWNLOAD_MODEL: 'lmstudio:downloadModel',
   DOWNLOAD_MODEL_STATUS: 'lmstudio:downloadModelStatus',
-  DELETE_MODEL_BY_HF_ID: 'lmstudio:deleteModelByHfId'
+  DELETE_MODEL_BY_HF_ID: 'lmstudio:deleteModelByHfId',
+  SERVER_STATUS: 'lmstudio:serverStatus',
+  SERVER_START: 'lmstudio:serverStart',
+  SERVER_STOP: 'lmstudio:serverStop'
 } as const

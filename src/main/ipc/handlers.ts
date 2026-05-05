@@ -1,4 +1,5 @@
 import { app, ipcMain, BrowserWindow, shell } from 'electron'
+import { exec } from 'child_process'
 import {
   lmStudioProvider,
   loadModel,
@@ -17,7 +18,7 @@ import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
 import type { ChatRequest } from '@shared/lm-studio/chat'
-import type { Model } from '@shared/lm-studio/ipc-contracts'
+import type { Model, ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
@@ -53,6 +54,44 @@ export function registerHandlers(): void {
 
   ipcMain.handle(LMSTUDIO.DELETE_MODEL_BY_HF_ID, async (_event, hfModelId: string) => {
     await deleteModelByHfId(hfModelId)
+  })
+
+  ipcMain.handle(LMSTUDIO.SERVER_STATUS, (): Promise<ServerStatusResponse> => {
+    return new Promise((resolve) => {
+      exec('lms server status', (_err, stdout, stderr) => {
+        const output = (stdout || stderr).trim()
+        const portMatch = output.match(/port (\d+)/)
+        resolve({
+          running: output.toLowerCase().includes('is running'),
+          port: portMatch ? Number(portMatch[1]) : null
+        })
+      })
+    })
+  })
+
+  ipcMain.handle(LMSTUDIO.SERVER_START, (): Promise<ServerStatusResponse> => {
+    return new Promise((resolve) => {
+      exec('lms server start', (_err, stdout, stderr) => {
+        const output = (stdout || stderr).trim()
+        const portMatch = output.match(/port (\d+)/)
+        resolve({
+          running: output.toLowerCase().includes('running'),
+          port: portMatch ? Number(portMatch[1]) : null
+        })
+      })
+    })
+  })
+
+  ipcMain.handle(LMSTUDIO.SERVER_STOP, (): Promise<ServerStatusResponse> => {
+    return new Promise((resolve) => {
+      exec('lms server stop', (_err, stdout, stderr) => {
+        const output = (stdout || stderr).trim()
+        resolve({
+          running: !output.toLowerCase().includes('stopped'),
+          port: null
+        })
+      })
+    })
   })
 
   ipcMain.handle(OPENROUTER.FETCH_MODELS, async () => {
