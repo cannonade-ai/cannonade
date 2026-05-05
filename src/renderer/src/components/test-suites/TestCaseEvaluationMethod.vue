@@ -18,6 +18,7 @@ const emit = defineEmits<{
 const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'exact_match', label: 'Exact Match' },
   { value: 'contains', label: 'Contains' },
+  { value: 'not_contains', label: 'Not Contains' },
   { value: 'regex', label: 'Regex' },
   { value: 'rouge', label: 'ROUGE' },
   { value: 'levenshtein', label: 'Levenshtein' },

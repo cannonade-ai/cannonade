@@ -45,6 +45,8 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
       return evaluateExactMatch(output, evaluation)
     case 'contains':
       return evaluateContains(output, evaluation)
+    case 'not_contains':
+      return evaluateNotContains(output, evaluation)
     case 'regex':
       return evaluateRegex(output, evaluation)
     case 'rouge':
@@ -133,6 +135,24 @@ function evaluateContains(output: string, evaluation: EvaluationConfig): Evaluat
     score,
     passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
     details: `${matched.length}/${terms.length} terms found`
+  }
+}
+
+function evaluateNotContains(output: string, evaluation: EvaluationConfig): EvaluationResult {
+  const raw = typeof evaluation.expected === 'string' ? evaluation.expected : ''
+  const terms = raw
+    .split(',')
+    .map((t) => t.trim())
+    .filter(Boolean)
+  if (!terms.length) {
+    return { score: 0, passed: false, error: 'No search terms provided' }
+  }
+  const matched = terms.filter((t) => output.includes(t))
+  const score = 1 - matched.length / terms.length
+  return {
+    score,
+    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
+    details: `${matched.length}/${terms.length} forbidden terms found`
   }
 }
 

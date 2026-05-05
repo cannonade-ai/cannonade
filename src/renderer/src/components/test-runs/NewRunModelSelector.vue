@@ -30,7 +30,8 @@ function toggleInstalled(key: string): void {
 }
 
 function addHuggingFace(): void {
-  const id = hfInput.value.trim()
+  const raw = hfInput.value.trim()
+  const id = raw.includes('https://') ? raw.split('/').slice(-2).join('/') : raw
   if (!id) return
   if (props.modelValue.some((m) => m.source === 'huggingface' && m.modelId === id)) return
   emit('update:model-value', [...props.modelValue, { source: 'huggingface', modelId: id }])

@@ -61,6 +61,7 @@ export interface EvaluationConfig {
   type:
     | 'exact_match'
     | 'contains'
+    | 'not_contains'
     | 'json_match'
     | 'regex'
     | 'bleu'

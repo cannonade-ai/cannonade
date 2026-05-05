@@ -19,10 +19,7 @@ const visible = computed({
     {{ store.current?.message }}
     <template #actions="{ close }">
       <Button @click="close">{{ store.current?.cancelText ?? 'Cancel' }}</Button>
-      <Button
-        :type="store.current?.danger ? 'danger-outline' : 'primary'"
-        @click="store.respond(true)"
-      >
+      <Button :type="store.current?.danger ? 'danger' : 'primary'" @click="store.respond(true)">
         {{ store.current?.confirmText ?? 'Confirm' }}
       </Button>
     </template>
