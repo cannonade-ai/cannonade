@@ -36,9 +36,7 @@ function makeCallbacks(): RunnerCallbacks {
 }
 
 const baseEval: EvaluationConfig = {
-  type: 'exact_match',
-  customValidator: { language: 'javascript', code: '' },
-  codeExecution: { language: 'javascript', testCases: [] }
+  type: 'exact_match'
 }
 
 function makeTestCase(overrides: Partial<TestCase> = {}): TestCase {

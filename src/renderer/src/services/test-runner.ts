@@ -187,7 +187,7 @@ export async function executeTestRun(
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
           const output = extractTextOutput(response.output)
-          const evaluation = evaluateAll(output, testCase)
+          const evaluation = await evaluateAll(output, testCase)
           const result: TestCaseResult = {
             testCaseId: testCase.id,
             output,

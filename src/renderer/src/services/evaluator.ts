@@ -2,6 +2,7 @@ import type { EvaluationConfig, EvaluationMethodResult, TestCase } from '@shared
 import { l as rougeL } from 'js-rouge'
 import { distance as levenshteinDistance } from 'fastest-levenshtein'
 import { bleu } from 'bleu-score'
+import { api } from '@renderer/api'
 
 export interface EvaluationResult {
   score: number
@@ -19,15 +20,20 @@ export interface MultiEvaluationResult {
 
 const PASS_THRESHOLD = 0.9
 
-export function evaluateAll(output: string, testCase: TestCase): MultiEvaluationResult {
+export async function evaluateAll(
+  output: string,
+  testCase: TestCase
+): Promise<MultiEvaluationResult> {
   if (testCase.evaluations.length === 0) {
     return { score: 0, passed: false, evalResults: [], error: 'No evaluation methods configured' }
   }
 
-  const evalResults: EvaluationMethodResult[] = testCase.evaluations.map((ev) => {
-    const result = evaluate(output, ev)
-    return { type: ev.type, ...result }
-  })
+  const evalResults: EvaluationMethodResult[] = await Promise.all(
+    testCase.evaluations.map(async (ev) => {
+      const result = await evaluate(output, ev)
+      return { type: ev.type, ...result }
+    })
+  )
 
   const passed =
     testCase.passingLogic === 'all'
@@ -39,7 +45,10 @@ export function evaluateAll(output: string, testCase: TestCase): MultiEvaluation
   return { score, passed, evalResults }
 }
 
-export function evaluate(output: string, evaluation: EvaluationConfig): EvaluationResult {
+export async function evaluate(
+  output: string,
+  evaluation: EvaluationConfig
+): Promise<EvaluationResult> {
   switch (evaluation.type) {
     case 'exact_match':
       return evaluateExactMatch(output, evaluation)
@@ -59,6 +68,8 @@ export function evaluate(output: string, evaluation: EvaluationConfig): Evaluati
       return evaluateJsonMatch(output, evaluation)
     case 'bleu':
       return evaluateBleu(output, evaluation)
+    case 'custom':
+      return evaluateCustom(output, evaluation)
     default:
       return {
         score: 0,
@@ -225,6 +236,26 @@ function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): Evalua
     score,
     passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
     details: `Matched ${matchedFields}/${totalFields} keys`
+  }
+}
+
+async function evaluateCustom(
+  output: string,
+  evaluation: EvaluationConfig
+): Promise<EvaluationResult> {
+  if (!evaluation.customValidator?.code) {
+    return { score: 0, passed: false, error: 'No custom validator code provided' }
+  }
+  try {
+    const result = await api.runCustomValidator(evaluation.customValidator.code, output)
+    const score = Math.min(1, Math.max(0, result.score))
+    return {
+      score,
+      passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
+      details: result.details
+    }
+  } catch (err) {
+    return { score: 0, passed: false, error: `Custom validator error: ${err}` }
   }
 }
 

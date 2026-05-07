@@ -12,7 +12,8 @@ import {
 import { openRouterProvider } from '../../core/providers/openrouter'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
-import { APP } from '@shared/app/ipc-channels'
+import { APP, EVAL } from '@shared/app/ipc-channels'
+import { VM } from 'vm2'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
@@ -102,6 +103,13 @@ export function registerHandlers(): void {
   ipcMain.handle(APP.GET_SUITES_DIR, () => join(app.getPath('userData'), 'suites'))
   ipcMain.handle(APP.GET_RUNS_DIR, () => join(app.getPath('userData'), 'runs'))
   ipcMain.handle(APP.OPEN_PATH, (_event, path: string) => shell.openPath(path))
+
+  ipcMain.handle(EVAL.RUN_CUSTOM_VALIDATOR, (_event, code: string, output: string) => {
+    const vm = new VM({ timeout: 1000, allowAsync: false, sandbox: {} })
+    const fn = vm.run(`(${code})`) as (output: string) => { score: number; details?: string }
+    const result = fn(output)
+    return { score: Math.min(1, Math.max(0, result.score)), details: result.details }
+  })
 
   ipcMain.on(APP.MINIMIZE, () => BrowserWindow.getFocusedWindow()?.minimize())
   ipcMain.on(APP.MAXIMIZE, () => {

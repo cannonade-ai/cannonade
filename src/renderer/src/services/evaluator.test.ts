@@ -4,9 +4,7 @@ import type { EvaluationConfig } from '@shared/app/test-suite'
 
 describe('exact_match', () => {
   const base: EvaluationConfig = {
-    type: 'exact_match',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'exact_match'
   }
 
   it('passes when output matches expected exactly', () => {
@@ -29,9 +27,7 @@ describe('exact_match', () => {
 
 describe('contains', () => {
   const base: EvaluationConfig = {
-    type: 'contains',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'contains'
   }
 
   it('passes when all terms are found', () => {
@@ -63,9 +59,7 @@ describe('contains', () => {
 
 describe('regex', () => {
   const base: EvaluationConfig = {
-    type: 'regex',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'regex'
   }
 
   it('passes when output matches the pattern', () => {
@@ -100,9 +94,7 @@ describe('regex', () => {
 
 describe('rouge', () => {
   const base: EvaluationConfig = {
-    type: 'rouge',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'rouge'
   }
 
   it('passes with identical output and expected', () => {
@@ -161,9 +153,7 @@ describe('rouge', () => {
 
 describe('levenshtein', () => {
   const base: EvaluationConfig = {
-    type: 'levenshtein',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'levenshtein'
   }
 
   it('passes with identical output and expected', () => {
@@ -227,9 +217,7 @@ describe('levenshtein', () => {
 
 describe('f1', () => {
   const base: EvaluationConfig = {
-    type: 'f1',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'f1'
   }
 
   it('passes with identical output and expected', () => {
@@ -296,9 +284,7 @@ describe('f1', () => {
 
 describe('json_match', () => {
   const base: EvaluationConfig = {
-    type: 'json_match',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'json_match'
   }
 
   it('passes when all keys match', () => {
@@ -383,9 +369,7 @@ describe('json_match', () => {
 
 describe('bleu', () => {
   const base: EvaluationConfig = {
-    type: 'bleu',
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    type: 'bleu'
   }
 
   it('passes with identical output and expected', () => {
@@ -431,9 +415,7 @@ describe('bleu', () => {
 describe('unknown type', () => {
   it('returns error for unimplemented type', () => {
     const config = {
-      type: 'unknown_type',
-      customValidator: { language: 'javascript' as const, code: '' },
-      codeExecution: { language: 'javascript' as const, testCases: [] }
+      type: 'unknown_type'
     } as unknown as EvaluationConfig
     const result = evaluate('output', config)
     expect(result.passed).toBe(false)

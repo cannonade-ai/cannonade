@@ -38,6 +38,7 @@ export interface AppAPI {
   listTestRuns(): Promise<TestRun[]>
   saveTestRun(run: TestRun): Promise<void>
   deleteTestRun(id: string): Promise<void>
+  runCustomValidator(code: string, output: string): Promise<{ score: number; details?: string }>
 }
 
 declare global {

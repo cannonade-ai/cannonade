@@ -24,3 +24,7 @@ export const TEST_RUNS = {
   SAVE: 'test-runs:save',
   DELETE: 'test-runs:delete'
 } as const
+
+export const EVAL = {
+  RUN_CUSTOM_VALIDATOR: 'eval:runCustomValidator'
+} as const

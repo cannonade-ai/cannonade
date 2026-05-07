@@ -44,5 +44,9 @@ export const api = {
   saveAppSettings: (settings: AppSettings): Promise<void> => window.api.saveAppSettings(settings),
   listTestRuns: (): Promise<TestRun[]> => window.api.listTestRuns(),
   saveTestRun: (run: TestRun): Promise<void> => window.api.saveTestRun(run),
-  deleteTestRun: (id: string): Promise<void> => window.api.deleteTestRun(id)
+  deleteTestRun: (id: string): Promise<void> => window.api.deleteTestRun(id),
+  runCustomValidator: (
+    code: string,
+    output: string
+  ): Promise<{ score: number; details?: string }> => window.api.runCustomValidator(code, output)
 }

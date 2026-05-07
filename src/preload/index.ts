@@ -2,7 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
 import { OPENROUTER } from '@shared/open-router/ipc-channels'
-import { APP, SUITES, SETTINGS, TEST_RUNS } from '@shared/app/ipc-channels'
+import { APP, SUITES, SETTINGS, TEST_RUNS, EVAL } from '@shared/app/ipc-channels'
 import type { ProviderModelMap, Provider } from '@shared/provider-model-map'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
@@ -41,8 +41,7 @@ const api = {
     ipcRenderer.invoke(LMSTUDIO.SERVER_STATUS),
   lmStudioServerStart: (): Promise<ServerStatusResponse> =>
     ipcRenderer.invoke(LMSTUDIO.SERVER_START),
-  lmStudioServerStop: (): Promise<ServerStatusResponse> =>
-    ipcRenderer.invoke(LMSTUDIO.SERVER_STOP),
+  lmStudioServerStop: (): Promise<ServerStatusResponse> => ipcRenderer.invoke(LMSTUDIO.SERVER_STOP),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),
@@ -58,7 +57,12 @@ const api = {
     ipcRenderer.invoke(SETTINGS.SAVE, settings),
   listTestRuns: (): Promise<TestRun[]> => ipcRenderer.invoke(TEST_RUNS.LIST),
   saveTestRun: (run: TestRun): Promise<void> => ipcRenderer.invoke(TEST_RUNS.SAVE, run),
-  deleteTestRun: (id: string): Promise<void> => ipcRenderer.invoke(TEST_RUNS.DELETE, id)
+  deleteTestRun: (id: string): Promise<void> => ipcRenderer.invoke(TEST_RUNS.DELETE, id),
+  runCustomValidator: (
+    code: string,
+    output: string
+  ): Promise<{ score: number; details?: string }> =>
+    ipcRenderer.invoke(EVAL.RUN_CUSTOM_VALIDATOR, code, output)
 }
 
 if (process.contextIsolated) {

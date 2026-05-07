@@ -79,17 +79,17 @@ export interface EvaluationConfig {
   threshold?: number
 
   // for type: custom
-  customValidator: CustomValidator
+  customValidator?: CustomValidator
 
   // for type: code_execution
-  codeExecution: CodeExecutionConfig
+  codeExecution?: CodeExecutionConfig
 }
 
 export interface CustomValidator {
   language: 'javascript'
 
   // function as string:
-  // (output, expected, context) => { score: number; passed: boolean; details?: any }
+  // (output) => { score: number; details?: string }
   code: string
 }
 

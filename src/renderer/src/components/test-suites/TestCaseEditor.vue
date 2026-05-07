@@ -36,9 +36,7 @@ function defaultEvaluation(): EvaluationConfig {
   return {
     type: 'exact_match',
     expected: undefined,
-    threshold: undefined,
-    customValidator: { language: 'javascript', code: '' },
-    codeExecution: { language: 'javascript', testCases: [] }
+    threshold: undefined
   }
 }
 

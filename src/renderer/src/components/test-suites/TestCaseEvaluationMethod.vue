@@ -30,11 +30,28 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'code_execution', label: 'Code Execution' }
 ]
 
-const THRESHOLD_TYPES: EvaluationConfig['type'][] = ['bleu', 'rouge', 'levenshtein', 'f1', 'mrr']
+const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
+  'bleu',
+  'rouge',
+  'levenshtein',
+  'f1',
+  'mrr',
+  'custom'
+]
+
+const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
+  // output: full model output string
+  // return score between 0.0 (fail) and 1.0 (pass)
+  return {
+    score: output.length > 0 ? 1.0 : 0.0,
+    details: 'Output is non-empty'
+  }
+}`
 
 const type = ref<EvaluationConfig['type']>(props.evaluation.type)
 const expected = ref(typeof props.evaluation.expected === 'string' ? props.evaluation.expected : '')
 const threshold = ref(props.evaluation.threshold ?? 0.9)
+const customCode = ref(props.evaluation.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER)
 
 watch(
   () => props.evaluation,
@@ -42,18 +59,22 @@ watch(
     type.value = e.type
     expected.value = typeof e.expected === 'string' ? e.expected : ''
     threshold.value = e.threshold ?? 0.9
+    customCode.value = e.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER
   }
 )
 
 const showThreshold = computed(() => THRESHOLD_TYPES.includes(type.value))
+const showExpected = computed(() => type.value !== 'custom')
 const expectedLabel = computed(() => (type.value === 'regex' ? 'Pattern' : 'Expected'))
 
-watch([type, expected, threshold], () => {
+watch([type, expected, threshold, customCode], () => {
   emit('update', {
     ...props.evaluation,
     type: type.value,
-    expected: expected.value || undefined,
-    threshold: showThreshold.value ? threshold.value : undefined
+    expected: showExpected.value ? expected.value || undefined : undefined,
+    threshold: showThreshold.value ? threshold.value : undefined,
+    customValidator:
+      type.value === 'custom' ? { language: 'javascript', code: customCode.value } : undefined
   })
 })
 </script>
@@ -66,11 +87,22 @@ watch([type, expected, threshold], () => {
         <Select v-model="type" :options="evaluationTypes" class="eval-method__select" />
         <Button type="icon" :icon="IconX" @click="emit('remove')" />
       </div>
-      <Field :label="expectedLabel">
+      <Field v-if="showExpected" :label="expectedLabel">
         <Textarea
           v-model="expected"
           :rows="3"
           :placeholder="type === 'regex' ? 'e.g. ^[a-z,]+$' : 'Expected output...'"
+        />
+      </Field>
+      <Field v-if="type === 'custom'" label="Validator Function (JavaScript)">
+        <Textarea
+          v-model="customCode"
+          :rows="8"
+          :placeholder="CUSTOM_VALIDATOR_PLACEHOLDER"
+          autocorrect="off"
+          autocapitalize="off"
+          spellcheck="false"
+          class="eval-method__code"
         />
       </Field>
       <Field v-if="showThreshold" label="Threshold (0 – 1)">
@@ -115,6 +147,11 @@ watch([type, expected, threshold], () => {
   &__select {
     flex: 1;
     min-width: 0;
+  }
+
+  &__code {
+    font-family: monospace;
+    font-size: var(--text-xs);
   }
 
   &__remove {
