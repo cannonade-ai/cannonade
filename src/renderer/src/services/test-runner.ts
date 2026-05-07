@@ -234,7 +234,7 @@ export async function executeTestRun(
     )
     console.log('[test-runner] Model run completed:', modelRun)
 
-    if (modelInstanceId) {
+    if (run.config.unloadModelsAfterRun && modelInstanceId) {
       try {
         await api.lmStudioUnloadModel(modelInstanceId)
       } catch (err) {

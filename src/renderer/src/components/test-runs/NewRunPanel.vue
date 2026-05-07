@@ -27,12 +27,14 @@ const form = reactive<{
   provider: Provider
   models: ModelRef[]
   deleteAutoDownloadedModels: boolean
+  unloadModelsAfterRun: boolean
   parallelRun: boolean
 }>({
   suiteId: '',
   provider: 'lmstudio',
   models: [],
   deleteAutoDownloadedModels: false,
+  unloadModelsAfterRun: false,
   parallelRun: false
 })
 
@@ -55,6 +57,13 @@ watch(
     modelsStore.load()
   },
   { immediate: true }
+)
+
+watch(
+  () => form.deleteAutoDownloadedModels,
+  (val) => {
+    if (val) form.unloadModelsAfterRun = true
+  }
 )
 
 watch(
@@ -101,6 +110,7 @@ function onSubmit(): void {
       provider: form.provider,
       models: form.models,
       deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
+      unloadModelsAfterRun: form.provider === 'lmstudio' ? form.unloadModelsAfterRun : undefined,
       parallelRun: form.provider === 'openrouter' ? form.parallelRun : undefined
     },
     suite
@@ -143,9 +153,14 @@ function onSubmit(): void {
     <Field label="Options">
       <div class="options-list">
         <label v-if="form.provider === 'lmstudio'" class="toggle-row">
+          <span class="toggle-label">Unload models after run</span>
+          <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
+        </label>
+        <label v-if="form.provider === 'lmstudio'" class="toggle-row">
           <span class="toggle-label">Delete auto-downloaded models after run</span>
           <Toggle v-model="form.deleteAutoDownloadedModels" />
         </label>
+
         <label v-if="form.provider === 'openrouter'" class="toggle-row">
           <span class="toggle-label">Parallel run</span>
           <Toggle v-model="form.parallelRun" />

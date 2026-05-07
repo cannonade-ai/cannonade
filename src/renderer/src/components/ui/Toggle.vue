@@ -1,10 +1,14 @@
 <script setup lang="ts">
 const model = defineModel<boolean>({ required: true })
+
+const props = defineProps<{
+  disabled?: boolean
+}>()
 </script>
 
 <template>
-  <span class="toggle">
-    <input v-model="model" type="checkbox" class="toggle__input" />
+  <span class="toggle" :class="{ 'toggle--disabled': props.disabled }">
+    <input v-model="model" type="checkbox" class="toggle__input" :disabled="props.disabled" />
     <span class="toggle__track" />
   </span>
 </template>
@@ -47,6 +51,11 @@ const model = defineModel<boolean>({ required: true })
         transform 0.15s,
         background 0.15s;
     }
+  }
+
+  &--disabled {
+    opacity: 0.4;
+    pointer-events: none;
   }
 
   &__input:checked + &__track {

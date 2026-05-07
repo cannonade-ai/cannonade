@@ -18,6 +18,7 @@ export interface TestRunConfig {
   provider: Provider
   models: ModelRef[]
   deleteAutoDownloadedModels?: boolean // for LM Studio only
+  unloadModelsAfterRun?: boolean // for LM Studio only
   parallelRun?: boolean // for OpenRouter only
 }
 
