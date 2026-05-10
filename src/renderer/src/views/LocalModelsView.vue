@@ -3,8 +3,7 @@ import { Button, Select } from '@renderer/components/ui'
 import { IconRefresh } from '@tabler/icons-vue'
 import { computed, onMounted } from 'vue'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
-import ModelCard from '@renderer/components/ModelCard.vue'
-import OpenRouterModelCard from '@renderer/components/OpenRouterModelCard.vue'
+import LocalModelCard from '@renderer/components/LocalModelCard.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
 import type { Provider } from '@renderer/stores/models'
 import { useModelsStore } from '@renderer/stores/models'
@@ -38,7 +37,7 @@ onMounted(() => store.load())
 </script>
 
 <template>
-  <div class="dashboard">
+  <div class="models">
     <SectionHeader>
       <Select v-model="provider" :options="providerOptions" class="provider-select" />
       <Button :icon="IconRefresh" @click="store.load()">Refresh</Button>
@@ -75,7 +74,7 @@ onMounted(() => store.load())
           <span class="count-pill">{{ llms.length }}</span>
         </h3>
         <div class="models-grid">
-          <ModelCard v-for="model in llms" :key="model.key" :model="model" />
+          <LocalModelCard v-for="model in llms" :key="model.key" :model="model" />
         </div>
       </section>
 
@@ -85,19 +84,7 @@ onMounted(() => store.load())
           <span class="count-pill">{{ embeddings.length }}</span>
         </h3>
         <div class="models-grid">
-          <ModelCard v-for="model in embeddings" :key="model.key" :model="model" />
-        </div>
-      </section>
-    </template>
-
-    <template v-else-if="store.provider === 'openrouter' && store.orModels.length > 0">
-      <section class="model-section">
-        <h3 class="model-section-label">
-          Models
-          <span class="count-pill">{{ store.orModels.length }}</span>
-        </h3>
-        <div class="models-grid">
-          <OpenRouterModelCard v-for="model in store.orModels" :key="model.id" :model="model" />
+          <LocalModelCard v-for="model in embeddings" :key="model.key" :model="model" />
         </div>
       </section>
     </template>
