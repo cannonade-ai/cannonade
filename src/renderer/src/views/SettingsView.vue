@@ -2,17 +2,21 @@
 import { ref, onMounted } from 'vue'
 import { IconRefresh, IconPlayerPlay, IconPlayerStop } from '@tabler/icons-vue'
 import { useSettingsStore } from '@renderer/stores/settings'
+import { useModelsStore } from '@renderer/stores/models'
 import { api } from '@renderer/api'
+import type { ProviderCapabilities } from '@shared/provider/capabilities'
 
 const settings = useSettingsStore()
+const modelsStore = useModelsStore()
 
+const capabilities = ref<ProviderCapabilities | null>(null)
 const serverRunning = ref<boolean | null>(null)
 const serverPort = ref<number | null>(null)
 const serverLoading = ref(false)
 
 async function refreshServerStatus(): Promise<void> {
   serverLoading.value = true
-  const status = await api.lmStudioServerStatus()
+  const status = await api.serverStatus('lmstudio')
   serverRunning.value = status.running
   serverPort.value = status.port
   serverLoading.value = false
@@ -20,7 +24,7 @@ async function refreshServerStatus(): Promise<void> {
 
 async function startServer(): Promise<void> {
   serverLoading.value = true
-  const status = await api.lmStudioServerStart()
+  const status = await api.serverStart('lmstudio')
   serverRunning.value = status.running
   serverPort.value = status.port
   serverLoading.value = false
@@ -28,13 +32,16 @@ async function startServer(): Promise<void> {
 
 async function stopServer(): Promise<void> {
   serverLoading.value = true
-  const status = await api.lmStudioServerStop()
+  const status = await api.serverStop('lmstudio')
   serverRunning.value = status.running
   serverPort.value = status.port
   serverLoading.value = false
 }
 
-onMounted(refreshServerStatus)
+onMounted(async () => {
+  capabilities.value = await modelsStore.getCapabilities('lmstudio')
+  refreshServerStatus()
+})
 </script>
 
 <template>
@@ -92,43 +99,45 @@ onMounted(refreshServerStatus)
             @change="settings.lmStudioPort = Number(($event.target as HTMLInputElement).value)"
           />
         </div>
-        <div class="setting-row">
-          <div class="setting-info">
-            <span class="setting-label">LM Studio server</span>
-            <span class="setting-desc">
-              <template v-if="serverRunning === null">Checking status…</template>
-              <template v-else-if="serverRunning">Running on port {{ serverPort }}</template>
-              <template v-else>Not running</template>
-            </span>
+        <template v-if="capabilities?.serverControl">
+          <div class="setting-row">
+            <div class="setting-info">
+              <span class="setting-label">LM Studio server</span>
+              <span class="setting-desc">
+                <template v-if="serverRunning === null">Checking status…</template>
+                <template v-else-if="serverRunning">Running on port {{ serverPort }}</template>
+                <template v-else>Not running</template>
+              </span>
+            </div>
+            <div class="server-actions">
+              <span
+                class="status-dot"
+                :class="{ running: serverRunning === true, stopped: serverRunning === false }"
+              />
+              <button
+                v-if="serverRunning === false"
+                class="action-btn"
+                :disabled="serverLoading"
+                @click="startServer"
+              >
+                <IconPlayerPlay :size="14" />
+                Start
+              </button>
+              <button
+                v-if="serverRunning === true"
+                class="action-btn"
+                :disabled="serverLoading"
+                @click="stopServer"
+              >
+                <IconPlayerStop :size="14" />
+                Stop
+              </button>
+              <button class="action-btn ghost" :disabled="serverLoading" @click="refreshServerStatus">
+                <IconRefresh :size="14" />
+              </button>
+            </div>
           </div>
-          <div class="server-actions">
-            <span
-              class="status-dot"
-              :class="{ running: serverRunning === true, stopped: serverRunning === false }"
-            />
-            <button
-              v-if="serverRunning === false"
-              class="action-btn"
-              :disabled="serverLoading"
-              @click="startServer"
-            >
-              <IconPlayerPlay :size="14" />
-              Start
-            </button>
-            <button
-              v-if="serverRunning === true"
-              class="action-btn"
-              :disabled="serverLoading"
-              @click="stopServer"
-            >
-              <IconPlayerStop :size="14" />
-              Stop
-            </button>
-            <button class="action-btn ghost" :disabled="serverLoading" @click="refreshServerStatus">
-              <IconRefresh :size="14" />
-            </button>
-          </div>
-        </div>
+        </template>
       </div>
     </section>
   </div>
