@@ -1,7 +1,7 @@
 import type { LLMProvider } from './base'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { Model } from '@shared/open-router/ipc-contracts'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+import type { ChatResponse } from '@shared/lm-studio/chat'
 
 const API_BASE = 'http://localhost:3000'
 
@@ -45,7 +45,7 @@ export const openRouterProvider: LLMProvider = {
     return data.data.map(mapToExternalModel)
   },
 
-  async chat(_modelId: string, _request: ChatRequest): Promise<ChatResponse> {
+  async chat(): Promise<ChatResponse> {
     throw new Error('not implemented')
   }
 }
