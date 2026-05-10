@@ -2,6 +2,7 @@ import { app, ipcMain, BrowserWindow, shell } from 'electron'
 import { exec } from 'child_process'
 import {
   lmStudioProvider,
+  fetchModels,
   loadModel,
   unloadModel,
   deleteModel,
@@ -26,11 +27,11 @@ export function registerHandlers(): void {
   registerSettingsHandlers()
   registerTestRunHandlers()
   ipcMain.handle(LMSTUDIO.FETCH_MODELS, async () => {
-    return await lmStudioProvider.fetchModels()
+    return await fetchModels()
   })
 
-  ipcMain.handle(LMSTUDIO.CHAT, async (_event, request: ChatRequest, apiToken?: string) => {
-    return await lmStudioProvider.chat(request, apiToken)
+  ipcMain.handle(LMSTUDIO.CHAT, async (_event, request: ChatRequest) => {
+    return await lmStudioProvider.chat!(request.model, request)
   })
 
   ipcMain.handle(LMSTUDIO.LOAD_MODEL, async (_event, modelKey: string) => {
@@ -96,7 +97,7 @@ export function registerHandlers(): void {
   })
 
   ipcMain.handle(OPENROUTER.FETCH_MODELS, async () => {
-    return await openRouterProvider.fetchModels()
+    return await openRouterProvider.fetchExternalModels!()
   })
 
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())

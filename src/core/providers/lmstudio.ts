@@ -1,12 +1,15 @@
 import { readFile, rm } from 'fs/promises'
 import { join } from 'path'
 import { homedir } from 'os'
+import { exec } from 'child_process'
 import { loadAppSettings } from '../../main/ipc/settings-handlers'
 import type { LLMProvider } from './base'
+import type { LocalModel } from '@shared/provider/local-model'
 import type {
   Model,
   DownloadModelResponse,
-  DownloadStatusResponse
+  DownloadStatusResponse,
+  ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 
@@ -15,86 +18,186 @@ async function apiBase(): Promise<string> {
   return `http://localhost:${settings.lmStudioPort}`
 }
 
-export async function loadModel(modelKey: string): Promise<void> {
+async function fetchRawModels(): Promise<Model[]> {
   const base = await apiBase()
-  const res = await fetch(`${base}/api/v1/models/load`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: modelKey })
+  const res = await fetch(`${base}/api/v1/models`)
+  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+  const data = (await res.json()) as { models: Model[] }
+  return data.models
+}
+
+function mapToLocalModel(model: Model): LocalModel {
+  return {
+    id: model.key,
+    name: model.display_name,
+    providerId: 'lmstudio',
+    sizeBytes: model.size_bytes,
+    meta: {
+      type: model.type,
+      publisher: model.publisher,
+      architecture: model.architecture,
+      quantization: model.quantization,
+      params_string: model.params_string,
+      loaded_instances: model.loaded_instances,
+      max_context_length: model.max_context_length,
+      format: model.format,
+      capabilities: model.capabilities,
+      description: model.description
+    }
+  }
+}
+
+function execCommand(command: string): Promise<string> {
+  return new Promise((resolve) => {
+    exec(command, (_err, stdout, stderr) => {
+      resolve((stdout || stderr).trim())
+    })
   })
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-}
-
-export async function unloadModel(instanceId: string): Promise<void> {
-  const base = await apiBase()
-  const res = await fetch(`${base}/api/v1/models/unload`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ instance_id: instanceId })
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-}
-
-export async function downloadModel(modelUrl: string): Promise<DownloadModelResponse> {
-  const base = await apiBase()
-  const res = await fetch(`${base}/api/v1/models/download`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: modelUrl })
-  })
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-  return res.json() as Promise<DownloadModelResponse>
-}
-
-export async function getDownloadStatus(jobId: string): Promise<DownloadStatusResponse> {
-  const base = await apiBase()
-  const res = await fetch(`${base}/api/v1/models/download/status/${jobId}`)
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-  return res.json() as Promise<DownloadStatusResponse>
-}
-
-export async function deleteModelByHfId(hfModelId: string): Promise<void> {
-  const [publisher, modelName] = hfModelId.split('/')
-  const normalizedModelName = modelName.toLowerCase().replace(/-gguf$/, '')
-  const models = await lmStudioProvider.fetchModels()
-  const matching = models.filter(
-    (m) =>
-      m.publisher.toLowerCase() === publisher.toLowerCase() &&
-      m.key.toLowerCase() === normalizedModelName
-  )
-  await Promise.all(matching.map((m) => deleteModel(m)))
-}
-
-export async function deleteModel(model: Model): Promise<void> {
-  const settingsPath = join(homedir(), '.lmstudio', 'settings.json')
-  const raw = await readFile(settingsPath, 'utf-8')
-  const settings = JSON.parse(raw) as { downloadsFolder: string }
-  const folderName = `${model.key}-${(model.format ?? '').toUpperCase()}`
-  const modelPath = join(settings.downloadsFolder, model.publisher, folderName)
-  await rm(modelPath, { recursive: true, force: true })
 }
 
 export const lmStudioProvider: LLMProvider = {
-  async fetchModels(): Promise<Model[]> {
-    const base = await apiBase()
-    const res = await fetch(`${base}/api/v1/models`)
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-    const data = (await res.json()) as { models: Model[] }
-    return data.models
+  id: 'lmstudio',
+
+  capabilities: {
+    chat: true,
+    localModels: true,
+    externalModels: false,
+    downloadModel: true,
+    downloadStatus: true,
+    deleteModel: true,
+    loadModel: true,
+    serverControl: true,
+    requiresApiKey: false
   },
 
-  async chat(request: ChatRequest, apiToken?: string): Promise<ChatResponse> {
-    const base = await apiBase()
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-    if (apiToken) headers['Authorization'] = `Bearer ${apiToken}`
+  async fetchLocalModels(): Promise<LocalModel[]> {
+    return (await fetchRawModels()).map(mapToLocalModel)
+  },
 
+  async chat(modelId: string, request: ChatRequest): Promise<ChatResponse> {
+    const base = await apiBase()
     const res = await fetch(`${base}/api/v1/chat`, {
       method: 'POST',
-      headers,
-      body: JSON.stringify(request)
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...request, model: modelId })
     })
-
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     return res.json() as Promise<ChatResponse>
+  },
+
+  async downloadModel(url: string): Promise<DownloadModelResponse> {
+    const base = await apiBase()
+    const res = await fetch(`${base}/api/v1/models/download`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: url })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    return res.json() as Promise<DownloadModelResponse>
+  },
+
+  async getDownloadStatus(jobId: string): Promise<DownloadStatusResponse> {
+    const base = await apiBase()
+    const res = await fetch(`${base}/api/v1/models/download/status/${jobId}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    return res.json() as Promise<DownloadStatusResponse>
+  },
+
+  async deleteModel(modelId: string): Promise<void> {
+    const models = await fetchRawModels()
+    const model = models.find((m) => m.key === modelId)
+    if (!model) throw new Error(`Model not found: ${modelId}`)
+    const settingsPath = join(homedir(), '.lmstudio', 'settings.json')
+    const raw = await readFile(settingsPath, 'utf-8')
+    const settings = JSON.parse(raw) as { downloadsFolder: string }
+    const folderName = `${model.key}-${(model.format ?? '').toUpperCase()}`
+    const modelPath = join(settings.downloadsFolder, model.publisher, folderName)
+    await rm(modelPath, { recursive: true, force: true })
+  },
+
+  async deleteModelByHfId(hfModelId: string): Promise<void> {
+    const [publisher, modelName] = hfModelId.split('/')
+    const normalizedModelName = modelName.toLowerCase().replace(/-gguf$/, '')
+    const models = await fetchRawModels()
+    const matching = models.filter(
+      (m) =>
+        m.publisher.toLowerCase() === publisher.toLowerCase() &&
+        m.key.toLowerCase() === normalizedModelName
+    )
+    await Promise.all(matching.map((m) => lmStudioProvider.deleteModel!(m.key)))
+  },
+
+  async loadModel(modelId: string): Promise<void> {
+    const base = await apiBase()
+    const res = await fetch(`${base}/api/v1/models/load`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: modelId })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+  },
+
+  async unloadModel(instanceId: string): Promise<void> {
+    const base = await apiBase()
+    const res = await fetch(`${base}/api/v1/models/unload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ instance_id: instanceId })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+  },
+
+  async getServerStatus(): Promise<ServerStatusResponse> {
+    const output = await execCommand('lms server status')
+    const portMatch = output.match(/port (\d+)/)
+    return {
+      running: output.toLowerCase().includes('is running'),
+      port: portMatch ? Number(portMatch[1]) : null
+    }
+  },
+
+  async startServer(): Promise<ServerStatusResponse> {
+    const output = await execCommand('lms server start')
+    const portMatch = output.match(/port (\d+)/)
+    return {
+      running: output.toLowerCase().includes('running'),
+      port: portMatch ? Number(portMatch[1]) : null
+    }
+  },
+
+  async stopServer(): Promise<ServerStatusResponse> {
+    const output = await execCommand('lms server stop')
+    return {
+      running: !output.toLowerCase().includes('stopped'),
+      port: null
+    }
   }
+}
+
+export async function fetchModels(): Promise<Model[]> {
+  return fetchRawModels()
+}
+
+export async function loadModel(modelKey: string): Promise<void> {
+  await lmStudioProvider.loadModel!(modelKey)
+}
+
+export async function unloadModel(instanceId: string): Promise<void> {
+  await lmStudioProvider.unloadModel!(instanceId)
+}
+
+export async function downloadModel(modelUrl: string): Promise<DownloadModelResponse> {
+  return lmStudioProvider.downloadModel!(modelUrl)
+}
+
+export async function getDownloadStatus(jobId: string): Promise<DownloadStatusResponse> {
+  return lmStudioProvider.getDownloadStatus!(jobId)
+}
+
+export async function deleteModelByHfId(hfModelId: string): Promise<void> {
+  await lmStudioProvider.deleteModelByHfId!(hfModelId)
+}
+
+export async function deleteModel(model: Model): Promise<void> {
+  await lmStudioProvider.deleteModel!(model.key)
 }
