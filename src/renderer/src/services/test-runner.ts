@@ -2,6 +2,8 @@ import { api } from '../api'
 import type { TestRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+import type { ProviderId } from '@shared/provider/ids'
+import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { evaluateAll } from './evaluator'
 
 export interface RunnerCallbacks {
@@ -41,13 +43,14 @@ function extractHfModelId(modelId: string): string {
 }
 
 async function downloadAndPoll(
+  providerId: ProviderId,
   modelRunId: string,
   hfModelId: string,
   callbacks: RunnerCallbacks,
   signal: AbortSignal
 ): Promise<boolean> {
   const modelUrl = toHuggingFaceUrl(hfModelId)
-  const response = await api.lmStudioDownloadModel(modelUrl)
+  const response = await api.downloadModel(providerId, modelUrl)
 
   if (response.status === 'already_downloaded') {
     return false
@@ -56,7 +59,7 @@ async function downloadAndPoll(
   const jobId = response.job_id
   await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS / 2))
   while (!signal.aborted) {
-    const status = await api.lmStudioDownloadModelStatus(jobId)
+    const status = await api.getDownloadStatus(providerId, jobId)
     if (status.status === 'completed') return true
     if (status.status === 'failed') throw new Error(`Download failed for ${hfModelId}`)
     callbacks.onModelDownloading(
@@ -132,6 +135,9 @@ export async function executeTestRun(
   callbacks: RunnerCallbacks,
   signal: AbortSignal = new AbortController().signal
 ): Promise<void> {
+  const providerId = run.config.provider
+  const capabilities: ProviderCapabilities = await api.getCapabilities(providerId)
+
   callbacks.onRunStart(run.id)
   console.log('[test-runner] Starting test run:', run, suite)
 
@@ -145,9 +151,9 @@ export async function executeTestRun(
     let autoDownloaded = false
 
     try {
-      if (modelRun.modelRef.source === 'huggingface') {
+      if (capabilities.downloadModel && modelRun.modelRef.source === 'huggingface') {
         const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
-        autoDownloaded = await downloadAndPoll(modelRun.id, hfModelId, callbacks, signal)
+        autoDownloaded = await downloadAndPoll(providerId, modelRun.id, hfModelId, callbacks, signal)
       }
     } catch (err) {
       fatalError = err instanceof Error ? err.message : String(err)
@@ -182,7 +188,7 @@ export async function executeTestRun(
         const request = buildRequest(testCase, modelKey)
 
         try {
-          const response = await api.lmStudioChat(request)
+          const response = await api.chat(providerId, modelKey, request)
           if (!modelInstanceId) modelInstanceId = response.model_instance_id
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
@@ -234,22 +240,23 @@ export async function executeTestRun(
     )
     console.log('[test-runner] Model run completed:', modelRun)
 
-    if (run.config.unloadModelsAfterRun && modelInstanceId) {
+    if (capabilities.loadModel && run.config.unloadModelsAfterRun && modelInstanceId) {
       try {
-        await api.lmStudioUnloadModel(modelInstanceId)
+        await api.unloadModel(providerId, modelInstanceId)
       } catch (err) {
         console.error('[test-runner] Failed to unload model:', err)
       }
     }
 
     if (
+      capabilities.deleteModel &&
       autoDownloaded &&
       run.config.deleteAutoDownloadedModels &&
       modelRun.modelRef.source === 'huggingface'
     ) {
       const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
       try {
-        await api.lmStudioDeleteModelByHfId(hfModelId)
+        await api.deleteModelByHfId(providerId, hfModelId)
       } catch (err) {
         console.error('[test-runner] Failed to delete auto-downloaded model:', err)
       }
