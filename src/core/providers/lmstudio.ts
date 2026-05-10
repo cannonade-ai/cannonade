@@ -27,23 +27,26 @@ async function fetchRawModels(): Promise<Model[]> {
 }
 
 function mapToLocalModel(model: Model): LocalModel {
+  const meta: Record<string, string | number> = {}
+  if (model.publisher) meta.publisher = model.publisher
+  if (model.architecture) meta.architecture = model.architecture
+  if (model.quantization?.name) meta.quantization = model.quantization.name
+  if (model.params_string) meta.params_string = model.params_string
+  if (model.format) meta.format = model.format
+
   return {
     id: model.key,
     name: model.display_name,
     providerId: 'lmstudio',
     sizeBytes: model.size_bytes,
-    meta: {
-      type: model.type,
-      publisher: model.publisher,
-      architecture: model.architecture,
-      quantization: model.quantization,
-      params_string: model.params_string,
-      loaded_instances: model.loaded_instances,
-      max_context_length: model.max_context_length,
-      format: model.format,
-      capabilities: model.capabilities,
-      description: model.description
-    }
+    type: model.type,
+    loadedInstances: model.loaded_instances.map((i) => ({
+      id: i.id,
+      config: { context_length: i.config.context_length }
+    })),
+    capabilities: model.capabilities,
+    maxContextLength: model.max_context_length,
+    meta
   }
 }
 

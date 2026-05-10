@@ -8,7 +8,7 @@ function migrateTestCase(tc: TestCase & { evaluation?: unknown }): TestCase {
     const { evaluation, ...rest } = tc
     return { ...rest, evaluations: [evaluation as TestCase['evaluations'][0]], passingLogic: 'all' }
   }
-  return { passingLogic: 'all', ...tc }
+  return tc
 }
 
 function migrateSuite(suite: TestSuite): TestSuite {

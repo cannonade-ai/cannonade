@@ -15,15 +15,12 @@ const capabilities = ref<ProviderCapabilities | null>(null)
 
 const providerOptions: SelectOption<LocalProviderId>[] = [{ value: 'lmstudio', label: 'LM Studio' }]
 
-const byLoaded = (a: LocalModel, b: LocalModel): number => {
-  const aLoaded = (a.meta.loaded_instances as unknown[])?.length ?? 0
-  const bLoaded = (b.meta.loaded_instances as unknown[])?.length ?? 0
-  return bLoaded - aLoaded
-}
+const byLoaded = (a: LocalModel, b: LocalModel): number =>
+  b.loadedInstances.length - a.loadedInstances.length
 
-const llms = computed(() => store.localModels.filter((m) => m.meta.type === 'llm').sort(byLoaded))
+const llms = computed(() => store.localModels.filter((m) => m.type === 'llm').sort(byLoaded))
 const embeddings = computed(() =>
-  store.localModels.filter((m) => m.meta.type === 'embedding').sort(byLoaded)
+  store.localModels.filter((m) => m.type === 'embedding').sort(byLoaded)
 )
 
 const providerLabel = computed(() =>

@@ -6,8 +6,6 @@ import { api } from '@renderer/api'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 
-type LoadedInstance = { id: string }
-
 export function useModelMenus(): {
   modelMenuItems: (
     model: LocalModel,
@@ -21,8 +19,7 @@ export function useModelMenus(): {
     model: LocalModel,
     capabilities: ProviderCapabilities | null
   ): ContextMenuItem[] {
-    const loadedInstances = (model.meta.loaded_instances as LoadedInstance[]) ?? []
-    const isLoaded = loadedInstances.length > 0
+    const isLoaded = model.loadedInstances.length > 0
     const providerId = model.providerId
 
     const items: ContextMenuItem[] = []
@@ -44,7 +41,7 @@ export function useModelMenus(): {
           label: 'Unload',
           icon: IconPlayerStop,
           action: async (): Promise<void> => {
-            for (const instance of loadedInstances) {
+            for (const instance of model.loadedInstances) {
               await api.unloadModel(providerId, instance.id)
             }
             await modelsStore.loadLocalModels()
@@ -67,7 +64,7 @@ export function useModelMenus(): {
           })
           if (!ok) return
           if (isLoaded) {
-            for (const instance of loadedInstances) {
+            for (const instance of model.loadedInstances) {
               await api.unloadModel(providerId, instance.id)
             }
           }

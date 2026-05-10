@@ -14,23 +14,8 @@ const props = defineProps<{
   capabilities: ProviderCapabilities | null
 }>()
 
-type LoadedInstance = { id: string; config: { context_length: number } }
-
-const loadedInstances = computed(
-  () => (props.model.meta.loaded_instances as LoadedInstance[]) ?? []
-)
+const loadedInstances = computed(() => props.model.loadedInstances)
 const isLoaded = computed(() => loadedInstances.value.length > 0)
-const modelType = computed(() => props.model.meta.type as string | undefined)
-const publisher = computed(() => props.model.meta.publisher as string | undefined)
-const format = computed(() => props.model.meta.format as string | undefined)
-const paramsString = computed(() => props.model.meta.params_string as string | undefined)
-const maxContextLength = computed(() => props.model.meta.max_context_length as number | undefined)
-const architecture = computed(() => props.model.meta.architecture as string | undefined)
-const quantization = computed(() => props.model.meta.quantization as { name: string } | undefined)
-const modelCapabilities = computed(
-  () =>
-    props.model.meta.capabilities as { vision: boolean; trained_for_tool_use: boolean } | undefined
-)
 
 const contextMenuStore = useContextMenuStore()
 const { modelMenuItems } = useModelMenus()
@@ -58,15 +43,17 @@ function onMenuButton(event: MouseEvent): void {
     </div>
 
     <div class="card-meta">
-      <span class="publisher">{{ publisher }}</span>
-      <Badge type="secondary">{{ modelType === 'llm' ? 'LLM' : 'Embedding' }}</Badge>
-      <Badge v-if="format" type="secondary">{{ format.toUpperCase() }}</Badge>
+      <span class="publisher">{{ model.meta.publisher }}</span>
+      <Badge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</Badge>
+      <Badge v-if="model.meta.format" type="secondary">
+        {{ String(model.meta.format).toUpperCase() }}
+      </Badge>
     </div>
 
     <div class="card-stats">
-      <span v-if="paramsString" class="stat">
+      <span v-if="model.meta.params_string" class="stat">
         <span class="stat-label">Params</span>
-        <span class="stat-value">{{ paramsString }}</span>
+        <span class="stat-value">{{ model.meta.params_string }}</span>
       </span>
       <span class="stat">
         <span class="stat-label">Size</span>
@@ -74,28 +61,28 @@ function onMenuButton(event: MouseEvent): void {
       </span>
       <span class="stat">
         <span class="stat-label">Ctx</span>
-        <span class="stat-value">{{ formatContext(maxContextLength ?? 0) }}</span>
+        <span class="stat-value">{{ formatContext(model.maxContextLength ?? 0) }}</span>
       </span>
-      <span v-if="architecture" class="stat">
+      <span v-if="model.meta.architecture" class="stat">
         <span class="stat-label">Arch</span>
-        <span class="stat-value">{{ architecture }}</span>
+        <span class="stat-value">{{ model.meta.architecture }}</span>
       </span>
-      <span v-if="quantization?.name" class="stat">
+      <span v-if="model.meta.quantization" class="stat">
         <span class="stat-label">Quant</span>
-        <span class="stat-value">{{ quantization.name }}</span>
+        <span class="stat-value">{{ model.meta.quantization }}</span>
       </span>
     </div>
 
-    <div v-if="modelCapabilities" class="card-capabilities">
-      <Badge :type="modelCapabilities.vision ? 'success' : 'default'" square>Vision</Badge>
-      <Badge :type="modelCapabilities.trained_for_tool_use ? 'success' : 'default'" square>
+    <div v-if="model.capabilities" class="card-capabilities">
+      <Badge :type="model.capabilities.vision ? 'success' : 'default'" square>Vision</Badge>
+      <Badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
         Tool use
       </Badge>
 
       <div v-if="isLoaded" class="loaded-instances">
-        <div v-for="instance in loadedInstances" :key="instance.id" class="instance">
+        <div v-for="(instance, i) in loadedInstances" :key="instance.id ?? i" class="instance">
           <span class="instance-dot" />
-          <span class="instance-label">
+          <span v-if="instance.config?.context_length" class="instance-label">
             {{ formatContext(instance.config.context_length) }} ctx
           </span>
         </div>
