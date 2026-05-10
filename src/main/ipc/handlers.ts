@@ -15,8 +15,9 @@ export function registerHandlers(): void {
   registerSettingsHandlers()
   registerTestRunHandlers()
 
-  ipcMain.handle(PROVIDER.GET_CAPABILITIES, (_event, providerId: ProviderId) =>
-    getProvider(providerId).capabilities
+  ipcMain.handle(
+    PROVIDER.GET_CAPABILITIES,
+    (_event, providerId: ProviderId) => getProvider(providerId).capabilities
   )
 
   ipcMain.handle(PROVIDER.FETCH_LOCAL_MODELS, (_event, providerId: ProviderId) => {

@@ -153,7 +153,13 @@ export async function executeTestRun(
     try {
       if (capabilities.downloadModel && modelRun.modelRef.source === 'huggingface') {
         const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
-        autoDownloaded = await downloadAndPoll(providerId, modelRun.id, hfModelId, callbacks, signal)
+        autoDownloaded = await downloadAndPoll(
+          providerId,
+          modelRun.id,
+          hfModelId,
+          callbacks,
+          signal
+        )
       }
     } catch (err) {
       fatalError = err instanceof Error ? err.message : String(err)

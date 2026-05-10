@@ -26,14 +26,10 @@ const format = computed(() => props.model.meta.format as string | undefined)
 const paramsString = computed(() => props.model.meta.params_string as string | undefined)
 const maxContextLength = computed(() => props.model.meta.max_context_length as number | undefined)
 const architecture = computed(() => props.model.meta.architecture as string | undefined)
-const quantization = computed(
-  () => props.model.meta.quantization as { name: string } | undefined
-)
+const quantization = computed(() => props.model.meta.quantization as { name: string } | undefined)
 const modelCapabilities = computed(
   () =>
-    props.model.meta.capabilities as
-      | { vision: boolean; trained_for_tool_use: boolean }
-      | undefined
+    props.model.meta.capabilities as { vision: boolean; trained_for_tool_use: boolean } | undefined
 )
 
 const contextMenuStore = useContextMenuStore()

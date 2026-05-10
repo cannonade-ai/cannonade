@@ -8,7 +8,7 @@ import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ProviderId } from '@shared/provider/ids'
 import { LOCAL_PROVIDERS } from '@shared/provider/ids'
-import { IconPlayerPlay } from '@tabler/icons-vue'
+import { IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, watch } from 'vue'
 
 const props = defineProps<{

@@ -29,12 +29,9 @@ const api = {
     ipcRenderer.invoke(PROVIDER.LOAD_MODEL, providerId, modelId),
   unloadModel: (providerId: ProviderId, instanceId: string) =>
     ipcRenderer.invoke(PROVIDER.UNLOAD_MODEL, providerId, instanceId),
-  serverStatus: (providerId: ProviderId) =>
-    ipcRenderer.invoke(PROVIDER.SERVER_STATUS, providerId),
-  serverStart: (providerId: ProviderId) =>
-    ipcRenderer.invoke(PROVIDER.SERVER_START, providerId),
-  serverStop: (providerId: ProviderId) =>
-    ipcRenderer.invoke(PROVIDER.SERVER_STOP, providerId),
+  serverStatus: (providerId: ProviderId) => ipcRenderer.invoke(PROVIDER.SERVER_STATUS, providerId),
+  serverStart: (providerId: ProviderId) => ipcRenderer.invoke(PROVIDER.SERVER_START, providerId),
+  serverStop: (providerId: ProviderId) => ipcRenderer.invoke(PROVIDER.SERVER_STOP, providerId),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),

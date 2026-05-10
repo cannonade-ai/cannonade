@@ -9,7 +9,10 @@ import type { ProviderCapabilities } from '@shared/provider/capabilities'
 type LoadedInstance = { id: string }
 
 export function useModelMenus(): {
-  modelMenuItems: (model: LocalModel, capabilities: ProviderCapabilities | null) => ContextMenuItem[]
+  modelMenuItems: (
+    model: LocalModel,
+    capabilities: ProviderCapabilities | null
+  ) => ContextMenuItem[]
 } {
   const confirmStore = useConfirmStore()
   const modelsStore = useModelsStore()

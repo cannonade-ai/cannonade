@@ -13,9 +13,7 @@ import { useModelsStore } from '@renderer/stores/models'
 const store = useModelsStore()
 const capabilities = ref<ProviderCapabilities | null>(null)
 
-const providerOptions: SelectOption<LocalProviderId>[] = [
-  { value: 'lmstudio', label: 'LM Studio' }
-]
+const providerOptions: SelectOption<LocalProviderId>[] = [{ value: 'lmstudio', label: 'LM Studio' }]
 
 const byLoaded = (a: LocalModel, b: LocalModel): number => {
   const aLoaded = (a.meta.loaded_instances as unknown[])?.length ?? 0
@@ -54,11 +52,7 @@ onMounted(() => {
 <template>
   <div class="models">
     <SectionHeader>
-      <Select
-        v-model="provider"
-        :options="providerOptions"
-        class="provider-select"
-      />
+      <Select v-model="provider" :options="providerOptions" class="provider-select" />
       <Button :icon="IconRefresh" @click="store.loadLocalModels()">Refresh</Button>
     </SectionHeader>
 

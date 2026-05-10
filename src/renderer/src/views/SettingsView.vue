@@ -132,7 +132,11 @@ onMounted(async () => {
                 <IconPlayerStop :size="14" />
                 Stop
               </button>
-              <button class="action-btn ghost" :disabled="serverLoading" @click="refreshServerStatus">
+              <button
+                class="action-btn ghost"
+                :disabled="serverLoading"
+                @click="refreshServerStatus"
+              >
                 <IconRefresh :size="14" />
               </button>
             </div>

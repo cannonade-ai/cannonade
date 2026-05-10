@@ -121,7 +121,6 @@ function remainingTime(estimatedCompletion: string): string {
           </span>
           <span class="download-progress">
             <CircleProgress :progress="downloadProgress" :size="22" :stroke-width="2" />
-            <!--<IconCloudDownload :size="10" :stroke-width="2" class="download-icon" />-->
           </span>
         </template>
         <span v-else class="stat-duration">{{ duration(modelRun) }}</span>
