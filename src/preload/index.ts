@@ -1,47 +1,40 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
-import { OPENROUTER } from '@shared/open-router/ipc-channels'
+import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, SUITES, SETTINGS, TEST_RUNS, EVAL } from '@shared/app/ipc-channels'
-import type { ProviderModelMap, Provider } from '@shared/provider-model-map'
+import type { ProviderId } from '@shared/provider/ids'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import type {
-  Model,
-  DownloadModelResponse,
-  DownloadStatusResponse,
-  ServerStatusResponse
-} from '@shared/lm-studio/ipc-contracts'
+import type { ChatRequest } from '@shared/lm-studio/chat'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
 
-const CHANNEL: Record<Provider, string> = {
-  lmstudio: LMSTUDIO.FETCH_MODELS,
-  openrouter: OPENROUTER.FETCH_MODELS
-}
-
 const api = {
-  fetchModels: <P extends Provider>(provider: P): Promise<ProviderModelMap[P][]> =>
-    ipcRenderer.invoke(CHANNEL[provider]),
-  lmStudioChat: (request: ChatRequest, apiToken?: string): Promise<ChatResponse> =>
-    ipcRenderer.invoke(LMSTUDIO.CHAT, request, apiToken),
-  lmStudioLoadModel: (modelKey: string): Promise<void> =>
-    ipcRenderer.invoke(LMSTUDIO.LOAD_MODEL, modelKey),
-  lmStudioUnloadModel: (instanceId: string): Promise<void> =>
-    ipcRenderer.invoke(LMSTUDIO.UNLOAD_MODEL, instanceId),
-  lmStudioDeleteModel: (model: Model): Promise<void> =>
-    ipcRenderer.invoke(LMSTUDIO.DELETE_MODEL, model),
-  lmStudioDownloadModel: (modelUrl: string): Promise<DownloadModelResponse> =>
-    ipcRenderer.invoke(LMSTUDIO.DOWNLOAD_MODEL, modelUrl),
-  lmStudioDownloadModelStatus: (jobId: string): Promise<DownloadStatusResponse> =>
-    ipcRenderer.invoke(LMSTUDIO.DOWNLOAD_MODEL_STATUS, jobId),
-  lmStudioDeleteModelByHfId: (hfModelId: string): Promise<void> =>
-    ipcRenderer.invoke(LMSTUDIO.DELETE_MODEL_BY_HF_ID, hfModelId),
-  lmStudioServerStatus: (): Promise<ServerStatusResponse> =>
-    ipcRenderer.invoke(LMSTUDIO.SERVER_STATUS),
-  lmStudioServerStart: (): Promise<ServerStatusResponse> =>
-    ipcRenderer.invoke(LMSTUDIO.SERVER_START),
-  lmStudioServerStop: (): Promise<ServerStatusResponse> => ipcRenderer.invoke(LMSTUDIO.SERVER_STOP),
+  fetchLocalModels: (providerId: ProviderId) =>
+    ipcRenderer.invoke(PROVIDER.FETCH_LOCAL_MODELS, providerId),
+  fetchExternalModels: (providerId: ProviderId) =>
+    ipcRenderer.invoke(PROVIDER.FETCH_EXTERNAL_MODELS, providerId),
+  chat: (providerId: ProviderId, modelId: string, request: ChatRequest) =>
+    ipcRenderer.invoke(PROVIDER.CHAT, providerId, modelId, request),
+  getCapabilities: (providerId: ProviderId) =>
+    ipcRenderer.invoke(PROVIDER.GET_CAPABILITIES, providerId),
+  downloadModel: (providerId: ProviderId, url: string) =>
+    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL, providerId, url),
+  getDownloadStatus: (providerId: ProviderId, jobId: string) =>
+    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL_STATUS, providerId, jobId),
+  deleteModel: (providerId: ProviderId, modelId: string) =>
+    ipcRenderer.invoke(PROVIDER.DELETE_MODEL, providerId, modelId),
+  deleteModelByHfId: (providerId: ProviderId, hfModelId: string) =>
+    ipcRenderer.invoke(PROVIDER.DELETE_MODEL_BY_HF_ID, providerId, hfModelId),
+  loadModel: (providerId: ProviderId, modelId: string) =>
+    ipcRenderer.invoke(PROVIDER.LOAD_MODEL, providerId, modelId),
+  unloadModel: (providerId: ProviderId, instanceId: string) =>
+    ipcRenderer.invoke(PROVIDER.UNLOAD_MODEL, providerId, instanceId),
+  serverStatus: (providerId: ProviderId) =>
+    ipcRenderer.invoke(PROVIDER.SERVER_STATUS, providerId),
+  serverStart: (providerId: ProviderId) =>
+    ipcRenderer.invoke(PROVIDER.SERVER_START, providerId),
+  serverStop: (providerId: ProviderId) =>
+    ipcRenderer.invoke(PROVIDER.SERVER_STOP, providerId),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),

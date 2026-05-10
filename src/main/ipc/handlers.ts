@@ -1,103 +1,106 @@
 import { app, ipcMain, BrowserWindow, shell } from 'electron'
-import { exec } from 'child_process'
-import {
-  lmStudioProvider,
-  fetchModels,
-  loadModel,
-  unloadModel,
-  deleteModel,
-  downloadModel,
-  getDownloadStatus,
-  deleteModelByHfId
-} from '../../core/providers/lmstudio'
-import { openRouterProvider } from '../../core/providers/openrouter'
-import { LMSTUDIO } from '@shared/lm-studio/ipc-channels'
-import { OPENROUTER } from '@shared/open-router/ipc-channels'
+import { getProvider } from '../../core/providers/registry'
+import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, EVAL } from '@shared/app/ipc-channels'
 import { VM } from 'vm2'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
+import type { ProviderId } from '@shared/provider/ids'
 import type { ChatRequest } from '@shared/lm-studio/chat'
-import type { Model, ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
   registerSettingsHandlers()
   registerTestRunHandlers()
-  ipcMain.handle(LMSTUDIO.FETCH_MODELS, async () => {
-    return await fetchModels()
+
+  ipcMain.handle(PROVIDER.GET_CAPABILITIES, (_event, providerId: ProviderId) =>
+    getProvider(providerId).capabilities
+  )
+
+  ipcMain.handle(PROVIDER.FETCH_LOCAL_MODELS, (_event, providerId: ProviderId) => {
+    const provider = getProvider(providerId)
+    if (!provider.fetchLocalModels) throw new Error(`${providerId}: fetchLocalModels not supported`)
+    return provider.fetchLocalModels()
   })
 
-  ipcMain.handle(LMSTUDIO.CHAT, async (_event, request: ChatRequest) => {
-    return await lmStudioProvider.chat!(request.model, request)
+  ipcMain.handle(PROVIDER.FETCH_EXTERNAL_MODELS, (_event, providerId: ProviderId) => {
+    const provider = getProvider(providerId)
+    if (!provider.fetchExternalModels)
+      throw new Error(`${providerId}: fetchExternalModels not supported`)
+    return provider.fetchExternalModels()
   })
 
-  ipcMain.handle(LMSTUDIO.LOAD_MODEL, async (_event, modelKey: string) => {
-    await loadModel(modelKey)
+  ipcMain.handle(
+    PROVIDER.CHAT,
+    (_event, providerId: ProviderId, modelId: string, request: ChatRequest) => {
+      const provider = getProvider(providerId)
+      if (!provider.chat) throw new Error(`${providerId}: chat not supported`)
+      return provider.chat(modelId, request)
+    }
+  )
+
+  ipcMain.handle(PROVIDER.DOWNLOAD_MODEL, (_event, providerId: ProviderId, url: string) => {
+    const provider = getProvider(providerId)
+    if (!provider.downloadModel) throw new Error(`${providerId}: downloadModel not supported`)
+    return provider.downloadModel(url)
   })
 
-  ipcMain.handle(LMSTUDIO.UNLOAD_MODEL, async (_event, instanceId: string) => {
-    await unloadModel(instanceId)
+  ipcMain.handle(
+    PROVIDER.DOWNLOAD_MODEL_STATUS,
+    (_event, providerId: ProviderId, jobId: string) => {
+      const provider = getProvider(providerId)
+      if (!provider.getDownloadStatus)
+        throw new Error(`${providerId}: getDownloadStatus not supported`)
+      return provider.getDownloadStatus(jobId)
+    }
+  )
+
+  ipcMain.handle(PROVIDER.DELETE_MODEL, (_event, providerId: ProviderId, modelId: string) => {
+    const provider = getProvider(providerId)
+    if (!provider.deleteModel) throw new Error(`${providerId}: deleteModel not supported`)
+    return provider.deleteModel(modelId)
   })
 
-  ipcMain.handle(LMSTUDIO.DELETE_MODEL, async (_event, model: Model) => {
-    await deleteModel(model)
+  ipcMain.handle(
+    PROVIDER.DELETE_MODEL_BY_HF_ID,
+    (_event, providerId: ProviderId, hfModelId: string) => {
+      const provider = getProvider(providerId)
+      if (!provider.deleteModelByHfId)
+        throw new Error(`${providerId}: deleteModelByHfId not supported`)
+      return provider.deleteModelByHfId(hfModelId)
+    }
+  )
+
+  ipcMain.handle(PROVIDER.LOAD_MODEL, (_event, providerId: ProviderId, modelId: string) => {
+    const provider = getProvider(providerId)
+    if (!provider.loadModel) throw new Error(`${providerId}: loadModel not supported`)
+    return provider.loadModel(modelId)
   })
 
-  ipcMain.handle(LMSTUDIO.DOWNLOAD_MODEL, async (_event, modelUrl: string) => {
-    return await downloadModel(modelUrl)
+  ipcMain.handle(PROVIDER.UNLOAD_MODEL, (_event, providerId: ProviderId, instanceId: string) => {
+    const provider = getProvider(providerId)
+    if (!provider.unloadModel) throw new Error(`${providerId}: unloadModel not supported`)
+    return provider.unloadModel(instanceId)
   })
 
-  ipcMain.handle(LMSTUDIO.DOWNLOAD_MODEL_STATUS, async (_event, jobId: string) => {
-    return await getDownloadStatus(jobId)
+  ipcMain.handle(PROVIDER.SERVER_STATUS, (_event, providerId: ProviderId) => {
+    const provider = getProvider(providerId)
+    if (!provider.getServerStatus) throw new Error(`${providerId}: getServerStatus not supported`)
+    return provider.getServerStatus()
   })
 
-  ipcMain.handle(LMSTUDIO.DELETE_MODEL_BY_HF_ID, async (_event, hfModelId: string) => {
-    await deleteModelByHfId(hfModelId)
+  ipcMain.handle(PROVIDER.SERVER_START, (_event, providerId: ProviderId) => {
+    const provider = getProvider(providerId)
+    if (!provider.startServer) throw new Error(`${providerId}: startServer not supported`)
+    return provider.startServer()
   })
 
-  ipcMain.handle(LMSTUDIO.SERVER_STATUS, (): Promise<ServerStatusResponse> => {
-    return new Promise((resolve) => {
-      exec('lms server status', (_err, stdout, stderr) => {
-        const output = (stdout || stderr).trim()
-        const portMatch = output.match(/port (\d+)/)
-        resolve({
-          running: output.toLowerCase().includes('is running'),
-          port: portMatch ? Number(portMatch[1]) : null
-        })
-      })
-    })
-  })
-
-  ipcMain.handle(LMSTUDIO.SERVER_START, (): Promise<ServerStatusResponse> => {
-    return new Promise((resolve) => {
-      exec('lms server start', (_err, stdout, stderr) => {
-        const output = (stdout || stderr).trim()
-        const portMatch = output.match(/port (\d+)/)
-        resolve({
-          running: output.toLowerCase().includes('running'),
-          port: portMatch ? Number(portMatch[1]) : null
-        })
-      })
-    })
-  })
-
-  ipcMain.handle(LMSTUDIO.SERVER_STOP, (): Promise<ServerStatusResponse> => {
-    return new Promise((resolve) => {
-      exec('lms server stop', (_err, stdout, stderr) => {
-        const output = (stdout || stderr).trim()
-        resolve({
-          running: !output.toLowerCase().includes('stopped'),
-          port: null
-        })
-      })
-    })
-  })
-
-  ipcMain.handle(OPENROUTER.FETCH_MODELS, async () => {
-    return await openRouterProvider.fetchExternalModels!()
+  ipcMain.handle(PROVIDER.SERVER_STOP, (_event, providerId: ProviderId) => {
+    const provider = getProvider(providerId)
+    if (!provider.stopServer) throw new Error(`${providerId}: stopServer not supported`)
+    return provider.stopServer()
   })
 
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())
