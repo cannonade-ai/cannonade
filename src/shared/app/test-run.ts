@@ -1,4 +1,4 @@
-import type { Provider } from '../provider-model-map'
+import type { ProviderId } from '../provider/ids'
 import type { TestCaseResult, AggregateMetrics } from './test-suite'
 
 export interface InstalledModelRef {
@@ -15,7 +15,7 @@ export type ModelRef = InstalledModelRef | HuggingFaceModelRef
 
 export interface TestRunConfig {
   suiteId: string
-  provider: Provider
+  provider: ProviderId
   models: ModelRef[]
   deleteAutoDownloadedModels?: boolean // for LM Studio only
   unloadModelsAfterRun?: boolean // for LM Studio only
