@@ -4,29 +4,38 @@ import { IconDotsVertical } from '@tabler/icons-vue'
 import { formatBytes, formatContext } from '../utils/format'
 import Badge from './ui/Badge.vue'
 import Button from './ui/Button.vue'
-import type { Model } from '@shared/lm-studio/ipc-contracts'
+import type { LocalModel } from '@shared/provider/local-model'
+import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
 import { useModelMenus } from './useModelMenus'
 
-const props = defineProps<{ model: Model }>()
+const props = defineProps<{
+  model: LocalModel
+  capabilities: ProviderCapabilities | null
+}>()
 
-const isLoaded = computed(() => props.model.loaded_instances.length > 0)
+const loadedInstances = computed(() => props.model.loadedInstances)
+const isLoaded = computed(() => loadedInstances.value.length > 0)
+
 const contextMenuStore = useContextMenuStore()
 const { modelMenuItems } = useModelMenus()
 
 function onContextMenu(event: MouseEvent): void {
-  contextMenuStore.open(modelMenuItems(props.model), event)
+  contextMenuStore.open(modelMenuItems(props.model, props.capabilities), event)
 }
 
 function onMenuButton(event: MouseEvent): void {
-  contextMenuStore.openAt(modelMenuItems(props.model), event.currentTarget as Element)
+  contextMenuStore.openAt(
+    modelMenuItems(props.model, props.capabilities),
+    event.currentTarget as Element
+  )
 }
 </script>
 
 <template>
   <div class="model-card" :class="{ loaded: isLoaded }" @contextmenu.prevent="onContextMenu">
     <div class="card-header">
-      <h3 class="model-name">{{ model.display_name }}</h3>
+      <h3 class="model-name">{{ model.name }}</h3>
       <div class="card-header-actions">
         <Badge v-if="isLoaded" type="success">Loaded</Badge>
         <Button type="icon" :icon="IconDotsVertical" @click.stop="onMenuButton" />
@@ -34,44 +43,46 @@ function onMenuButton(event: MouseEvent): void {
     </div>
 
     <div class="card-meta">
-      <span class="publisher">{{ model.publisher }}</span>
+      <span class="publisher">{{ model.meta.publisher }}</span>
       <Badge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</Badge>
-      <Badge v-if="model.format" type="secondary">{{ model.format.toUpperCase() }}</Badge>
+      <Badge v-if="model.meta.format" type="secondary">
+        {{ String(model.meta.format).toUpperCase() }}
+      </Badge>
     </div>
 
     <div class="card-stats">
-      <span v-if="model.params_string" class="stat">
+      <span v-if="model.meta.params_string" class="stat">
         <span class="stat-label">Params</span>
-        <span class="stat-value">{{ model.params_string }}</span>
+        <span class="stat-value">{{ model.meta.params_string }}</span>
       </span>
       <span class="stat">
         <span class="stat-label">Size</span>
-        <span class="stat-value">{{ formatBytes(model.size_bytes) }}</span>
+        <span class="stat-value">{{ formatBytes(model.sizeBytes) }}</span>
       </span>
       <span class="stat">
         <span class="stat-label">Ctx</span>
-        <span class="stat-value">{{ formatContext(model.max_context_length) }}</span>
+        <span class="stat-value">{{ formatContext(model.maxContextLength ?? 0) }}</span>
       </span>
-      <span v-if="model.architecture" class="stat">
+      <span v-if="model.meta.architecture" class="stat">
         <span class="stat-label">Arch</span>
-        <span class="stat-value">{{ model.architecture }}</span>
+        <span class="stat-value">{{ model.meta.architecture }}</span>
       </span>
-      <span v-if="model.quantization?.name" class="stat">
+      <span v-if="model.meta.quantization" class="stat">
         <span class="stat-label">Quant</span>
-        <span class="stat-value">{{ model.quantization.name }}</span>
+        <span class="stat-value">{{ model.meta.quantization }}</span>
       </span>
     </div>
 
     <div v-if="model.capabilities" class="card-capabilities">
-      <Badge :type="model.capabilities.vision ? 'success' : 'default'" square> Vision </Badge>
+      <Badge :type="model.capabilities.vision ? 'success' : 'default'" square>Vision</Badge>
       <Badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
         Tool use
       </Badge>
 
       <div v-if="isLoaded" class="loaded-instances">
-        <div v-for="instance in model.loaded_instances" :key="instance.id" class="instance">
+        <div v-for="(instance, i) in loadedInstances" :key="instance.id ?? i" class="instance">
           <span class="instance-dot" />
-          <span class="instance-label">
+          <span v-if="instance.config?.context_length" class="instance-label">
             {{ formatContext(instance.config.context_length) }} ctx
           </span>
         </div>
@@ -162,11 +173,6 @@ function onMenuButton(event: MouseEvent): void {
     font-weight: 500;
     color: var(--text-secondary);
   }
-}
-
-.quant-bits {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
 }
 
 .card-capabilities {

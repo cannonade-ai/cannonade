@@ -2,49 +2,55 @@
 import { computed } from 'vue'
 import { formatContext, formatPrice } from '../utils/format'
 import Badge from './ui/Badge.vue'
-import type { Model } from '@shared/open-router/ipc-contracts'
+import type { ExternalModel } from '@shared/provider/external-model'
 
-const props = defineProps<{ model: Model }>()
+const props = defineProps<{ model: ExternalModel }>()
 
 const publisher = computed(() => props.model.id.split('/')[0] ?? props.model.id)
+const architecture = computed(
+  () => props.model.meta.architecture as { modality?: string; tokenizer?: string } | undefined
+)
+const pricing = computed(
+  () => props.model.meta.pricing as { prompt: string; completion: string } | undefined
+)
+const topProvider = computed(
+  () => props.model.meta.top_provider as { max_completion_tokens?: number } | undefined
+)
+const description = computed(() => props.model.meta.description as string | undefined)
 </script>
 
 <template>
   <div class="or-card">
     <div class="card-header">
       <h3 class="model-name">{{ model.name }}</h3>
-      <Badge type="info">{{ model.architecture.modality }}</Badge>
+      <Badge v-if="architecture?.modality" type="info">{{ architecture.modality }}</Badge>
     </div>
 
     <div class="card-meta">
       <span class="publisher">{{ publisher }}</span>
-      <Badge v-if="model.architecture.tokenizer" type="secondary">{{
-        model.architecture.tokenizer
-      }}</Badge>
+      <Badge v-if="architecture?.tokenizer" type="secondary">{{ architecture.tokenizer }}</Badge>
     </div>
 
     <div class="card-stats">
       <span class="stat">
         <span class="stat-label">Context</span>
-        <span class="stat-value">{{ formatContext(model.context_length) }}</span>
+        <span class="stat-value">{{ formatContext(model.contextLength) }}</span>
       </span>
-      <span class="stat">
+      <span v-if="pricing" class="stat">
         <span class="stat-label">Prompt</span>
-        <span class="stat-value">{{ formatPrice(model.pricing.prompt) }}</span>
+        <span class="stat-value">{{ formatPrice(pricing.prompt) }}</span>
       </span>
-      <span class="stat">
+      <span v-if="pricing" class="stat">
         <span class="stat-label">Completion</span>
-        <span class="stat-value">{{ formatPrice(model.pricing.completion) }}</span>
+        <span class="stat-value">{{ formatPrice(pricing.completion) }}</span>
       </span>
-      <span v-if="model.top_provider.max_completion_tokens" class="stat">
+      <span v-if="topProvider?.max_completion_tokens" class="stat">
         <span class="stat-label">Max out</span>
-        <span class="stat-value">{{
-          formatContext(model.top_provider.max_completion_tokens)
-        }}</span>
+        <span class="stat-value">{{ formatContext(topProvider.max_completion_tokens) }}</span>
       </span>
     </div>
 
-    <p v-if="model.description" class="description">{{ model.description }}</p>
+    <p v-if="description" class="description">{{ description }}</p>
   </div>
 </template>
 

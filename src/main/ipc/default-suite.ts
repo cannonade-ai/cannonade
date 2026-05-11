@@ -1,100 +1,183 @@
 import { TestSuite } from '@shared/app/test-suite'
 
 export const DEFAULT_SUITE: TestSuite = {
-  id: 'default-suite-1',
-  name: 'Customer Support Eval',
-  description: 'Evaluates response quality across common customer support scenarios',
+  id: 'sample-test-suite',
+  name: 'Sample Test Suite',
+  description: 'Example test suite with different cases and evals',
   version: '1.2.0',
-  createdAt: '2026-03-15T10:00:00Z',
-  updatedAt: '2026-04-10T14:32:00Z',
-  defaultRunConfig: {
-    temperature: 0.7,
-    maxTokens: 2048,
-    topP: 1.0
-  },
+  createdAt: '2026-05-05T19:34:12.462Z',
+  updatedAt: '2026-05-05T19:34:12.462Z',
+  defaultRunConfig: {},
   testCases: [
     {
+      passingLogic: 'all',
       id: 'tc-1',
-      name: 'Polite refund response',
-      description: 'Should acknowledge and offer help with refund',
-      input: {
-        type: 'chat',
-        messages: [
-          { role: 'system', content: 'You are a helpful and empathetic customer support agent.' },
-          { role: 'user', content: 'I want a refund for my order #1234.' }
-        ]
-      },
-      evaluation: {
-        type: 'exact_match',
-        expected: 'I understand you would like a refund for order #1234.',
-        customValidator: { language: 'javascript', code: '' },
-        codeExecution: { language: 'javascript', testCases: [] }
-      }
-    },
-    {
-      id: 'tc-2',
-      name: 'Escalation detection',
-      description: 'Detects when to escalate to a human agent',
-      input: {
-        type: 'chat',
-        messages: [
-          { role: 'system', content: 'You are a customer support agent.' },
-          {
-            role: 'user',
-            content: 'This is absolutely unacceptable, I demand to speak to a manager now!'
-          }
-        ]
-      },
-      evaluation: {
-        type: 'regex',
-        expected: '(escalat|transfer|manager|specialist)',
-        customValidator: { language: 'javascript', code: '' },
-        codeExecution: { language: 'javascript', testCases: [] }
-      }
-    },
-    {
-      id: 'tc-3',
-      name: 'FAQ — shipping policy',
-      description: 'Correctly quotes the shipping policy',
-      input: {
-        type: 'chat',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a support agent. Shipping takes 3–5 business days.'
-          },
-          { role: 'user', content: 'How long does shipping take?' }
-        ]
-      },
-      evaluation: {
-        type: 'bleu',
-        expected: 'Shipping typically takes 3 to 5 business days.',
-        threshold: 0.7,
-        customValidator: { language: 'javascript', code: '' },
-        codeExecution: { language: 'javascript', testCases: [] }
-      }
-    },
-    {
-      id: 'tc-4',
-      name: 'JSON structured response',
-      description: 'Returns a properly structured JSON ticket',
+      name: 'planets',
+      description: 'list planets',
       input: {
         type: 'chat',
         messages: [
           {
             role: 'system',
             content:
-              'Reply with a JSON object: { "category": string, "priority": "low"|"medium"|"high" }'
+              'You are a helpful assistant. Answer questions directly without any explanation.'
           },
-          { role: 'user', content: 'My laptop screen is cracked.' }
+          {
+            role: 'user',
+            content:
+              "List the planets of our solar system in order from the Sun, separated by commas, all lowercase. Don't add any spaces to your response."
+          }
         ]
       },
-      evaluation: {
-        type: 'json_match',
-        expected: { category: 'hardware', priority: 'high' },
-        customValidator: { language: 'javascript', code: '' },
-        codeExecution: { language: 'javascript', testCases: [] }
-      }
+      evaluations: [
+        {
+          type: 'exact_match',
+          expected: 'mercury,venus,earth,mars,jupiter,saturn,uranus,neptune'
+        }
+      ]
+    },
+    {
+      passingLogic: 'all',
+      id: 'tc-2',
+      name: 'Reasoning 1',
+      description: 'Reasonin detection',
+      input: {
+        type: 'chat',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a helpful assistant. Answer questions directly without any explanation.'
+          },
+          {
+            role: 'user',
+            content: 'A farmer has 17 sheep. All but 9 run away. How many are left?'
+          }
+        ]
+      },
+      evaluations: [
+        {
+          type: 'regex',
+          expected: '.*9.*'
+        },
+        {
+          type: 'not_contains',
+          expected: '17,8'
+        }
+      ]
+    },
+    {
+      passingLogic: 'all',
+      id: 'tc-3',
+      name: 'Reasoning 2',
+      description: 'Reasonin detection',
+      input: {
+        type: 'chat',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a helpful assistant. Answer questions directly without any explanation.'
+          },
+          {
+            role: 'user',
+            content: 'What is the capital of Australia?'
+          }
+        ]
+      },
+      evaluations: [
+        {
+          type: 'regex',
+          expected: '.*(C|c)anberra.*'
+        }
+      ]
+    },
+    {
+      id: 'tc-4',
+      name: 'Math calculation',
+      description: 'Simple command test with exact response type',
+      input: {
+        type: 'chat',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'You are a calculator. You will receive a math problem. Execute the request and respond with the only with the answer of the question, do not explain anything'
+          },
+          {
+            role: 'user',
+            content: '10 * (9 - 4) + (5 - 7) * 20'
+          }
+        ]
+      },
+      evaluations: [
+        {
+          type: 'exact_match',
+          expected: '10'
+        }
+      ],
+      passingLogic: 'all'
+    },
+    {
+      passingLogic: 'all',
+      id: 'tc-5',
+      name: 'Poem',
+      input: {
+        type: 'chat',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are helpful assistant. answer without thinking'
+          },
+          {
+            role: 'user',
+            content: 'Write a poem about this 5 words: elephant, red, nucleoplasm, dream, warning'
+          }
+        ]
+      },
+      evaluations: [
+        {
+          type: 'contains',
+          expected: 'elephant, red, nucleoplasm, dream, warning'
+        },
+        {
+          type: 'regex',
+          expected: '.*elephant.*'
+        }
+      ]
+    },
+    {
+      passingLogic: 'all',
+      id: 'tc-6',
+      name: 'Custom test',
+      description: 'this should not work ',
+      input: {
+        type: 'chat',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are helpful assistant. answer without thinking'
+          },
+          {
+            role: 'user',
+            content: 'generate a random human name and surname'
+          }
+        ]
+      },
+      evaluations: [
+        {
+          type: 'custom',
+          customValidator: {
+            language: 'javascript',
+            code: '(output) => {\n  const words = output.trim().split(/\\s+/)\n\n  // Must contain at least name + surname\n  if (words.length < 2) {\n    return {\n      score: 0.0,\n      details: \'Must contain at least 2 words\'\n    }\n  }\n\n  for (const word of words) {\n    // First letter must be uppercase\n    const firstLetter = word[0]\n    if (firstLetter !== firstLetter.toUpperCase()) {\n      return {\n        score: 0.0,\n        details: `Word "${word}" must start with uppercase`\n      }\n    }\n\n    // Remaining letters must be alphabetic lowercase\n    for (let i = 1; i < word.length; i++) {\n      const char = word[i]\n\n      const isLetter =\n        char.toLowerCase() !== char.toUpperCase()\n\n      const isLowercase =\n        char === char.toLowerCase()\n\n      if (!isLetter || !isLowercase) {\n        return {\n          score: 0.0,\n          details: `Invalid character in "${word}"`\n        }\n      }\n    }\n  }\n\n  return {\n    score: 1.0,\n    details: \'Valid full name\'\n  }\n}'
+          },
+          codeExecution: {
+            language: 'javascript',
+            testCases: []
+          },
+          threshold: 0.9
+        }
+      ]
     }
   ]
 }

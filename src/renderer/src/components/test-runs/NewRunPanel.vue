@@ -6,8 +6,9 @@ import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { Provider } from '@shared/provider-model-map'
-import { IconPlayerPlay } from '@tabler/icons-vue'
+import type { ProviderId } from '@shared/provider/ids'
+import { LOCAL_PROVIDERS } from '@shared/provider/ids'
+import { IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, watch } from 'vue'
 
 const props = defineProps<{
@@ -24,7 +25,7 @@ const settingsStore = useSettingsStore()
 
 const form = reactive<{
   suiteId: string
-  provider: Provider
+  provider: ProviderId
   models: ModelRef[]
   deleteAutoDownloadedModels: boolean
   unloadModelsAfterRun: boolean
@@ -53,8 +54,13 @@ watch(
   (next) => {
     form.models = []
     if (next === 'lmstudio') form.parallelRun = false
-    modelsStore.provider = next
-    modelsStore.load()
+    if (next in LOCAL_PROVIDERS) {
+      modelsStore.localProvider = next as 'lmstudio'
+      modelsStore.loadLocalModels()
+    } else {
+      modelsStore.externalProvider = next as 'openrouter'
+      modelsStore.loadExternalModels()
+    }
   },
   { immediate: true }
 )
@@ -76,14 +82,14 @@ watch(
 )
 
 const installedModels = computed(() => {
-  if (form.provider === 'lmstudio') {
-    return modelsStore.lmModels.map((m) => ({
-      key: m.key,
-      label: m.display_name,
-      loaded: m.loaded_instances?.length > 0
+  if (form.provider in LOCAL_PROVIDERS) {
+    return modelsStore.localModels.map((m) => ({
+      key: m.id,
+      label: m.name,
+      loaded: m.loadedInstances.length > 0
     }))
   }
-  return modelsStore.orModels.map((m) => ({ key: m.id, label: m.name, loaded: false }))
+  return modelsStore.externalModels.map((m) => ({ key: m.id, label: m.name, loaded: false }))
 })
 
 const suiteOptions = computed<SelectOption<string>[]>(() =>

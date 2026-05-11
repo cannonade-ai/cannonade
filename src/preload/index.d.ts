@@ -1,9 +1,11 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import type { Provider, ProviderModelMap } from '@shared/provider-model-map'
+import type { ProviderId } from '@shared/provider/ids'
+import type { LocalModel } from '@shared/provider/local-model'
+import type { ExternalModel } from '@shared/provider/external-model'
+import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type {
-  Model,
   DownloadModelResponse,
   DownloadStatusResponse,
   ServerStatusResponse
@@ -12,17 +14,19 @@ import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
 
 export interface AppAPI {
-  fetchModels<P extends Provider>(provider: P): Promise<ProviderModelMap[P][]>
-  lmStudioChat(request: ChatRequest, apiToken?: string): Promise<ChatResponse>
-  lmStudioLoadModel(modelKey: string): Promise<void>
-  lmStudioUnloadModel(instanceId: string): Promise<void>
-  lmStudioDeleteModel(model: Model): Promise<void>
-  lmStudioDownloadModel(modelUrl: string): Promise<DownloadModelResponse>
-  lmStudioDownloadModelStatus(jobId: string): Promise<DownloadStatusResponse>
-  lmStudioDeleteModelByHfId(hfModelId: string): Promise<void>
-  lmStudioServerStatus(): Promise<ServerStatusResponse>
-  lmStudioServerStart(): Promise<ServerStatusResponse>
-  lmStudioServerStop(): Promise<ServerStatusResponse>
+  fetchLocalModels(providerId: ProviderId): Promise<LocalModel[]>
+  fetchExternalModels(providerId: ProviderId): Promise<ExternalModel[]>
+  chat(providerId: ProviderId, modelId: string, request: ChatRequest): Promise<ChatResponse>
+  getCapabilities(providerId: ProviderId): Promise<ProviderCapabilities>
+  downloadModel(providerId: ProviderId, url: string): Promise<DownloadModelResponse>
+  getDownloadStatus(providerId: ProviderId, jobId: string): Promise<DownloadStatusResponse>
+  deleteModel(providerId: ProviderId, modelId: string): Promise<void>
+  deleteModelByHfId(providerId: ProviderId, hfModelId: string): Promise<void>
+  loadModel(providerId: ProviderId, modelId: string): Promise<void>
+  unloadModel(providerId: ProviderId, instanceId: string): Promise<void>
+  serverStatus(providerId: ProviderId): Promise<ServerStatusResponse>
+  serverStart(providerId: ProviderId): Promise<ServerStatusResponse>
+  serverStop(providerId: ProviderId): Promise<ServerStatusResponse>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>

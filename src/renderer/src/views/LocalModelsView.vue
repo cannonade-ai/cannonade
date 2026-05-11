@@ -1,47 +1,56 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
 import { IconRefresh } from '@tabler/icons-vue'
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
-import ModelCard from '@renderer/components/ModelCard.vue'
-import OpenRouterModelCard from '@renderer/components/OpenRouterModelCard.vue'
+import LocalModelCard from '@renderer/components/LocalModelCard.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
-import type { Provider } from '@renderer/stores/models'
+import type { LocalProviderId } from '@shared/provider/ids'
+import type { LocalModel } from '@shared/provider/local-model'
+import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { useModelsStore } from '@renderer/stores/models'
 
 const store = useModelsStore()
+const capabilities = ref<ProviderCapabilities | null>(null)
 
-const providerOptions: SelectOption<Provider>[] = [
-  { value: 'lmstudio', label: 'LM Studio' },
-  { value: 'openrouter', label: 'OpenRouter' }
-]
+const providerOptions: SelectOption<LocalProviderId>[] = [{ value: 'lmstudio', label: 'LM Studio' }]
 
-const byLoaded = (a: { loaded_instances: unknown[] }, b: { loaded_instances: unknown[] }): number =>
-  b.loaded_instances.length - a.loaded_instances.length
+const byLoaded = (a: LocalModel, b: LocalModel): number =>
+  b.loadedInstances.length - a.loadedInstances.length
 
-const llms = computed(() => store.lmModels.filter((m) => m.type === 'llm').sort(byLoaded))
+const llms = computed(() => store.localModels.filter((m) => m.type === 'llm').sort(byLoaded))
 const embeddings = computed(() =>
-  store.lmModels.filter((m) => m.type === 'embedding').sort(byLoaded)
+  store.localModels.filter((m) => m.type === 'embedding').sort(byLoaded)
 )
 
-const providerLabel = computed(() => (store.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'))
+const providerLabel = computed(() =>
+  store.localProvider === 'lmstudio' ? 'LM Studio' : store.localProvider
+)
 
-const provider = computed<Provider>({
-  get: () => store.provider,
+const provider = computed<LocalProviderId>({
+  get: () => store.localProvider,
   set: (v) => {
-    store.provider = v
-    store.load()
+    store.localProvider = v
+    store.loadLocalModels()
+    store.getCapabilities(v).then((caps) => {
+      capabilities.value = caps
+    })
   }
 })
 
-onMounted(() => store.load())
+onMounted(() => {
+  store.loadLocalModels()
+  store.getCapabilities(store.localProvider).then((caps) => {
+    capabilities.value = caps
+  })
+})
 </script>
 
 <template>
-  <div class="dashboard">
+  <div class="models">
     <SectionHeader>
       <Select v-model="provider" :options="providerOptions" class="provider-select" />
-      <Button :icon="IconRefresh" @click="store.load()">Refresh</Button>
+      <Button :icon="IconRefresh" @click="store.loadLocalModels()">Refresh</Button>
     </SectionHeader>
 
     <div v-if="store.loading" class="state-message">
@@ -68,14 +77,19 @@ onMounted(() => store.load())
       {{ store.error }}
     </div>
 
-    <template v-else-if="store.provider === 'lmstudio' && store.lmModels.length > 0">
+    <template v-else-if="store.localModels.length > 0">
       <section v-if="llms.length > 0" class="model-section">
         <h3 class="model-section-label">
           LLMs
           <span class="count-pill">{{ llms.length }}</span>
         </h3>
         <div class="models-grid">
-          <ModelCard v-for="model in llms" :key="model.key" :model="model" />
+          <LocalModelCard
+            v-for="model in llms"
+            :key="model.id"
+            :model="model"
+            :capabilities="capabilities"
+          />
         </div>
       </section>
 
@@ -85,27 +99,18 @@ onMounted(() => store.load())
           <span class="count-pill">{{ embeddings.length }}</span>
         </h3>
         <div class="models-grid">
-          <ModelCard v-for="model in embeddings" :key="model.key" :model="model" />
-        </div>
-      </section>
-    </template>
-
-    <template v-else-if="store.provider === 'openrouter' && store.orModels.length > 0">
-      <section class="model-section">
-        <h3 class="model-section-label">
-          Models
-          <span class="count-pill">{{ store.orModels.length }}</span>
-        </h3>
-        <div class="models-grid">
-          <OpenRouterModelCard v-for="model in store.orModels" :key="model.id" :model="model" />
+          <LocalModelCard
+            v-for="model in embeddings"
+            :key="model.id"
+            :model="model"
+            :capabilities="capabilities"
+          />
         </div>
       </section>
     </template>
 
     <div v-else class="state-message">
-      No models found. Make sure {{ providerLabel }} is running{{
-        store.provider === 'lmstudio' ? ' on port 1234' : ' on port 3000'
-      }}.
+      No models found. Make sure {{ providerLabel }} is running.
     </div>
   </div>
 </template>
