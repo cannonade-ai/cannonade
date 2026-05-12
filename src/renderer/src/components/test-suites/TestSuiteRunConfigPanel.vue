@@ -16,7 +16,7 @@ const config = defineModel<RunConfig | undefined>('config')
       </Field>
     </div>
     <Field label="Max Tokens">
-      <NumberInput v-model="config!.maxTokens" :min="1" />
+      <NumberInput v-model="config!.maxTokens" :min="1" :max="999999999999" />
     </Field>
     <div class="field-row">
       <Field label="Freq. Penalty" grow>

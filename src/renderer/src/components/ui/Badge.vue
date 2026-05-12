@@ -94,7 +94,7 @@ const computedIconAnimation = computed(() => {
   border-radius: var(--radius-full);
 
   &.square {
-    border-radius: var(--radius);
+    border-radius: 2px;
   }
   text-transform: capitalize;
 
@@ -109,7 +109,7 @@ const computedIconAnimation = computed(() => {
   }
 
   &.secondary {
-    background: var(--accent-dim);
+    background: var(--accent-bg);
     color: var(--accent);
   }
 

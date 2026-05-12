@@ -95,7 +95,7 @@ function onMenuButton(event: MouseEvent): void {
 .model-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -110,7 +110,7 @@ function onMenuButton(event: MouseEvent): void {
   }
 
   &.loaded {
-    border-color: var(--accent-border);
+    border-color: var(--accent-dim);
   }
 }
 

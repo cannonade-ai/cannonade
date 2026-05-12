@@ -17,7 +17,7 @@ const props = defineProps<{
       <Input v-model="name" />
     </Field>
     <Field label="Description">
-      <Textarea v-model="description as string" :rows="3" />
+      <Textarea v-model="description" fill :rows="3" />
     </Field>
     <div class="meta-rows">
       <div class="meta-row">

@@ -25,7 +25,7 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
 <template>
   <div class="view">
     <SectionHeader>
-      <Button type="secondary" :icon="IconPlayerPlay" @click="store.startNewRun"> New Run </Button>
+      <Button type="primary" :icon="IconPlayerPlay" @click="store.startNewRun"> New Run </Button>
     </SectionHeader>
 
     <div class="panels">

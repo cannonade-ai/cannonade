@@ -29,12 +29,13 @@ async function handleClose(): Promise<void> {
 
 <template>
   <header class="title-bar">
-    <div class="title-bar-left">
+    <div class="left" />
+    <div class="center">
       <IconTank color="rgb(151, 106, 0)" :size="22" :stroke-width="1" />
       <span class="app-name">Cannonade</span>
       <span class="app-version">v{{ appVersion }}</span>
     </div>
-    <div class="title-bar-controls">
+    <div class="right">
       <button class="control-btn minimize" @click="api.minimize()">
         <span class="control-icon" />
       </button>
@@ -53,6 +54,7 @@ async function handleClose(): Promise<void> {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: relative;
   height: 2.5rem;
   padding-left: 1rem;
   background: var(--surface);
@@ -61,14 +63,22 @@ async function handleClose(): Promise<void> {
   user-select: none;
   flex-shrink: 0;
 
-  &-left {
+  .left,
+  .center {
     display: flex;
     align-items: center;
     gap: 8px;
     color: var(--text-secondary);
   }
 
-  &-controls {
+  .center {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .right {
     display: flex;
     align-items: center;
     gap: 4px;

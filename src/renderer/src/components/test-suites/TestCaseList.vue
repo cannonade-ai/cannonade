@@ -96,23 +96,23 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
   justify-content: space-between;
   gap: 10px;
   padding: 10px 14px;
+  border-left: var(--inactive-left-border);
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.12s;
 
-  &:hover {
-    background: var(--surface-hover);
-  }
-
   &.active {
-    background: var(--accent-dim);
-    border-left: 2px solid var(--accent-dim);
-    padding-left: 12px;
+    background: var(--surface-elevated);
+    border-left: var(--active-left-border);
 
     .eval-badge {
-      background: rgba(255, 179, 0, 0.15);
+      background: var(--accent-bg);
       color: var(--accent);
     }
+  }
+
+  &:hover {
+    background: var(--surface-hover);
   }
 }
 

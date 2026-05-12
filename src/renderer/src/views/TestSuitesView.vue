@@ -51,7 +51,7 @@ async function onNewSuite(): Promise<void> {
 
     <template v-else>
       <SectionHeader>
-        <Button type="secondary" :icon="IconPlus" @click="onNewSuite">New Suite</Button>
+        <Button type="primary" :icon="IconPlus" @click="onNewSuite">New Suite</Button>
       </SectionHeader>
 
       <Panel class="suites-panel" title="Test Suites">

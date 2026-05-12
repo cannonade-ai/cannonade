@@ -200,7 +200,7 @@ const hasMetrics = computed<boolean>(() => {
 
 <style scoped lang="scss">
 .test-case-row {
-  border-bottom: 1px solid hsl(from var(--border) h s 10%);
+  border-bottom: 1px solid var(--border);
   background: var(--surface);
   overflow: hidden;
 

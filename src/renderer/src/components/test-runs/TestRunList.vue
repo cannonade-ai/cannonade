@@ -90,16 +90,16 @@ function modelCount(run: TestRun): string {
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.12s;
-  border-left: 3px solid transparent;
+  border-left: var(--inactive-left-border);
   height: var(--list-item-height);
-
-  &:hover {
-    background: var(--surface-hover);
-  }
 
   &.active {
     background: var(--surface-elevated);
-    border-left: 3px solid var(--accent);
+    border-left: var(--active-left-border);
+  }
+
+  &:hover {
+    background: var(--surface-hover);
   }
 }
 

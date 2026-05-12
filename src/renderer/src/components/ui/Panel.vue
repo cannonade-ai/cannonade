@@ -37,7 +37,8 @@ defineProps<{
   height: 100%;
   overflow: hidden;
   border: 1px solid var(--border);
-  background: var(--surface);
+  background: var(--panel);
+  border-radius: var(--radius);
 
   &__header {
     display: flex;
@@ -45,6 +46,7 @@ defineProps<{
     justify-content: space-between;
     gap: 12px;
     padding: 10px 14px;
+    background: var(--panel-header);
     border-bottom: 2px solid var(--border);
     flex-shrink: 0;
     flex-wrap: wrap;

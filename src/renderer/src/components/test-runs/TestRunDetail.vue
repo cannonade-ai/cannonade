@@ -63,7 +63,7 @@ async function showDeleteConfirm(): Promise<void> {
       <Button type="danger-outline" :icon="IconTrash" @click="showDeleteConfirm">Delete</Button>
     </template>
 
-    <div class="section-label">Model Results</div>
+    <!--<div class="section-label">Model Results</div>-->
     <div class="model-list">
       <ModelRunRow
         v-for="(mr, i) in run.modelRuns"
