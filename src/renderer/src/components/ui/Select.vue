@@ -127,6 +127,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   display: flex;
   align-items: center;
   width: 100%;
+  height: 1.875rem;
   box-sizing: border-box;
   padding: 0.375rem 0.75rem;
   padding-right: 2rem;

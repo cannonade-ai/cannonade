@@ -32,7 +32,7 @@ defineEmits<{ click: [] }>()
   color: var(--text-secondary);
   background: transparent;
   border: none;
-  border-left: 3px solid transparent;
+  border-left: var(--inactive-left-border);
 
   cursor: pointer;
   text-align: left;
@@ -46,7 +46,7 @@ defineEmits<{ click: [] }>()
 
   &.active {
     background: var(--surface-elevated);
-    border-left: 3px solid var(--accent);
+    border-left: var(--active-left-border);
     color: var(--text-primary);
   }
 

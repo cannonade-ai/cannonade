@@ -37,7 +37,7 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
   padding: 6px 14px;
   font-size: var(--text-xs);
   font-weight: 500;
-  min-height: 1.5rem;
+  height: 1.875rem;
   min-width: 4rem;
   font-family: var(--font-body);
   border-radius: var(--radius);
@@ -67,10 +67,7 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
   }
 
   &--primary {
-    font-weight: 600;
-    padding: 6px 16px;
     background: var(--accent);
-    border-color: transparent;
     color: #000;
 
     &:not(:disabled):hover {
@@ -79,12 +76,12 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
   }
 
   &--secondary {
-    background: var(--accent-dim);
-    border: 1px solid var(--accent-border);
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
     color: var(--accent);
 
     &:not(:disabled):hover {
-      background: rgba(255, 179, 0, 0.3);
+      background: var(--accent-dim);
     }
   }
 

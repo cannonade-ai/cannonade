@@ -79,7 +79,7 @@ const { suiteMenuItems } = useTestSuiteMenus()
   gap: 16px;
   padding: var(--list-item-padding);
   border-bottom: 1px solid var(--border);
-  border-left: 2px solid transparent;
+  border-left: var(--inactive-left-border);
   cursor: pointer;
   transition: background 0.12s;
   height: var(--list-item-height);
@@ -90,7 +90,7 @@ const { suiteMenuItems } = useTestSuiteMenus()
 
   &.active {
     background: var(--accent-dim);
-    border-left: 2px solid var(--accent);
+    border-left: var(--active-left-border);
     padding-left: 18px;
   }
 }
