@@ -8,6 +8,7 @@ const props = withDefaults(
     step?: number
     placeholder?: string
     disabled?: boolean
+    alignRight?: boolean
   }>(),
   { disabled: false }
 )
@@ -64,6 +65,7 @@ function onBlur(e: Event): void {
 <template>
   <input
     class="number-input"
+    :class="{ 'number-input--right': alignRight }"
     type="text"
     inputmode="decimal"
     :placeholder="placeholder"
@@ -102,6 +104,10 @@ function onBlur(e: Event): void {
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+
+  &--right {
+    text-align: right;
   }
 }
 </style>

@@ -7,6 +7,7 @@ withDefaults(
     disabled?: boolean
     error?: boolean
     type?: 'text' | 'password' | 'email' | 'search'
+    alignRight?: boolean
   }>(),
   {
     type: 'text',
@@ -20,7 +21,7 @@ withDefaults(
   <input
     v-model="model"
     class="input"
-    :class="{ 'input--error': error }"
+    :class="{ 'input--error': error, 'input--right': alignRight }"
     :type="type"
     :placeholder="placeholder"
     :disabled="disabled"
@@ -62,6 +63,10 @@ withDefaults(
     &:focus {
       border-color: var(--error);
     }
+  }
+
+  &--right {
+    text-align: right;
   }
 }
 </style>
