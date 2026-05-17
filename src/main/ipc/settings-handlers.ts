@@ -8,21 +8,26 @@ function settingsPath(): string {
   return join(app.getPath('userData'), 'settings.json')
 }
 
-export async function loadAppSettings(): Promise<AppSettings> {
+let cache: AppSettings = { ...DEFAULT_APP_SETTINGS }
+
+export async function initAppSettings(): Promise<void> {
   try {
     const raw = await fs.readFile(settingsPath(), 'utf-8')
-    return { ...DEFAULT_APP_SETTINGS, ...(JSON.parse(raw) as Partial<AppSettings>) }
+    cache = { ...DEFAULT_APP_SETTINGS, ...(JSON.parse(raw) as Partial<AppSettings>) }
   } catch {
-    return { ...DEFAULT_APP_SETTINGS }
+    cache = { ...DEFAULT_APP_SETTINGS }
   }
 }
 
+export function getAppSettings(): AppSettings {
+  return cache
+}
+
 export function registerSettingsHandlers(): void {
-  ipcMain.handle(SETTINGS.LOAD, async (): Promise<AppSettings> => {
-    return loadAppSettings()
-  })
+  ipcMain.handle(SETTINGS.LOAD, (): AppSettings => cache)
 
   ipcMain.handle(SETTINGS.SAVE, async (_event, settings: AppSettings): Promise<void> => {
+    cache = settings
     await fs.writeFile(settingsPath(), JSON.stringify(settings, null, 2), 'utf-8')
   })
 }

@@ -35,7 +35,6 @@ defineProps<{
   display: flex;
   flex-direction: column;
   gap: 2px;
-  flex: 1;
   min-width: 0;
 }
 

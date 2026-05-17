@@ -1,9 +1,27 @@
-export const DEFAULT_LM_STUDIO_PORT = 1234
+export type FontSize = 'sm' | 'md' | 'lg'
+
+export const DEFAULT_LM_STUDIO_URL = 'http://localhost:1234'
 
 export interface AppSettings {
-  lmStudioPort: number
+  isDark: boolean
+  fontSize: FontSize
+  language: string
+  lastSuiteId: string | null
+  autoDeleteModels: boolean
+  parallelRuns: boolean
+  defaultTestTimeout: number
+  lmStudioUrl: string
+  lmStudioRemote: boolean
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
-  lmStudioPort: DEFAULT_LM_STUDIO_PORT
+  isDark: true,
+  fontSize: 'md',
+  language: 'en',
+  lastSuiteId: null,
+  autoDeleteModels: false,
+  parallelRuns: false,
+  defaultTestTimeout: 42000,
+  lmStudioUrl: DEFAULT_LM_STUDIO_URL,
+  lmStudioRemote: false
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { computed, onMounted, onUnmounted } from 'vue'
 import { IconX, IconAdjustments, IconServer, IconPalette, IconTestPipe } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import SettingsModalNav from './SettingsModalNav.vue'
@@ -11,7 +11,12 @@ import SettingsModalTestRuns from './SettingsModalTestRuns.vue'
 type SectionId = 'general' | 'providers' | 'appearance' | 'test-runs'
 
 const nav = useNavigationStore()
-const activeSection = ref<SectionId>('general')
+const activeSection = computed({
+  get: () => nav.settingsSection as SectionId,
+  set: (v: SectionId) => {
+    nav.settingsSection = v
+  }
+})
 
 const sections: { id: SectionId; label: string; icon: unknown }[] = [
   { id: 'general', label: 'General', icon: IconAdjustments },

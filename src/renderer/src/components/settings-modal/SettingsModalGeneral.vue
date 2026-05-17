@@ -1,22 +1,18 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@renderer/stores/settings'
-import type { LogLevel } from '@renderer/stores/settings'
-import Select from '@renderer/components/ui/Select.vue'
-import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import Button from '@renderer/components/ui/Button.vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import SettingsModalRow from './SettingsModalRow.vue'
 import SettingsModalDivider from './SettingsModalDivider.vue'
+import { IconFolderOpen } from '@tabler/icons-vue'
+import { api } from '@renderer/api'
 
 const settings = useSettingsStore()
 const confirmStore = useConfirmStore()
 
-const logLevelOptions: SelectOption<LogLevel>[] = [
-  { value: 'debug', label: 'Debug' },
-  { value: 'info', label: 'Info' },
-  { value: 'warn', label: 'Warn' },
-  { value: 'error', label: 'Error' }
-]
+async function openSuitesFolder(): Promise<void> {
+  if (settings.suitesDir) await api.openPath(settings.suitesDir)
+}
 
 function openGithubIssues(): void {
   window.open('https://github.com/BekirUzun/cannonade/issues')
@@ -41,7 +37,15 @@ async function handleReset(): Promise<void> {
     </SettingsModalRow>
     <SettingsModalDivider label="Files" />
     <SettingsModalRow label="Suites folder" hint="Where test suite files are stored on disk">
-      <span class="path-value">{{ settings.suitesDir }}</span>
+      <div class="path-row">
+        <span class="path-value">{{ settings.suitesDir }}</span>
+        <Button
+          type="icon"
+          :icon="IconFolderOpen"
+          title="Open suites folder"
+          @click="openSuitesFolder"
+        />
+      </div>
     </SettingsModalRow>
     <SettingsModalDivider label="Resources" />
     <SettingsModalRow label="Report an issue">
@@ -73,12 +77,20 @@ async function handleReset(): Promise<void> {
   color: var(--text-muted);
 }
 
+.path-row {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 .path-value {
   font-size: var(--text-xs);
   font-family: var(--font-mono);
   color: var(--text-muted);
-  max-width: 260px;
-  word-break: break-all;
-  text-align: right;
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
 }
 </style>

@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { IconRefresh, IconPlayerPlay, IconPlayerStop } from '@tabler/icons-vue'
 import { useSettingsStore } from '@renderer/stores/settings'
 import { useModelsStore } from '@renderer/stores/models'
 import { api } from '@renderer/api'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
-import NumberInput from '@renderer/components/ui/NumberInput.vue'
+import type { ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
+import Toggle from '@renderer/components/ui/Toggle.vue'
+import Input from '@renderer/components/ui/Input.vue'
 import Button from '@renderer/components/ui/Button.vue'
 import SettingsModalRow from './SettingsModalRow.vue'
 import SettingsModalDivider from './SettingsModalDivider.vue'
@@ -14,71 +16,75 @@ const settings = useSettingsStore()
 const modelsStore = useModelsStore()
 
 const capabilities = ref<ProviderCapabilities | null>(null)
-const serverRunning = ref<boolean | null>(null)
-const serverPort = ref<number | null>(null)
+const serverStatus = ref<ServerStatusResponse | null>(null)
 const serverLoading = ref(false)
+const lmStudioUrlInput = ref(settings.lmStudioUrl)
 
-async function refreshServerStatus(): Promise<void> {
+watch(lmStudioUrlInput, (value) => {
+  try {
+    new URL(value)
+    settings.lmStudioUrl = value
+  } catch {
+    /* invalid url */
+  }
+})
+
+async function withLoading(fn: () => Promise<ServerStatusResponse>): Promise<void> {
   serverLoading.value = true
-  const status = await api.serverStatus('lmstudio')
-  serverRunning.value = status.running
-  serverPort.value = status.port
+  serverStatus.value = await fn()
   serverLoading.value = false
 }
 
-async function startServer(): Promise<void> {
-  serverLoading.value = true
-  const status = await api.serverStart('lmstudio')
-  serverRunning.value = status.running
-  serverPort.value = status.port
-  serverLoading.value = false
-}
+const refreshServerStatus = (): Promise<void> => withLoading(() => api.serverStatus('lmstudio'))
+const startServer = (): Promise<void> => withLoading(() => api.serverStart('lmstudio'))
+const stopServer = (): Promise<void> => withLoading(() => api.serverStop('lmstudio'))
 
-async function stopServer(): Promise<void> {
-  serverLoading.value = true
-  const status = await api.serverStop('lmstudio')
-  serverRunning.value = status.running
-  serverPort.value = status.port
-  serverLoading.value = false
-}
+watch(
+  () => settings.lmStudioRemote,
+  (remote) => {
+    if (!remote) refreshServerStatus()
+  }
+)
 
 onMounted(async () => {
   capabilities.value = await modelsStore.getCapabilities('lmstudio')
-  refreshServerStatus()
+  if (!settings.lmStudioRemote) refreshServerStatus()
 })
 </script>
 
 <template>
   <div class="section">
     <SettingsModalDivider label="LM Studio" />
-    <SettingsModalRow label="Port" hint="Local LM Studio server port">
-      <NumberInput
-        :model-value="settings.lmStudioPort"
-        :min="1"
-        :max="65535"
-        align-right
-        class="input-sm"
-        @update:model-value="
-          (v) => {
-            if (v !== undefined) settings.lmStudioPort = v
-          }
-        "
+    <SettingsModalRow label="API URL" hint="LM Studio server URL">
+      <Input
+        v-model="lmStudioUrlInput"
+        type="url"
+        placeholder="http://localhost:1234"
+        class="input-url"
       />
     </SettingsModalRow>
-    <template v-if="capabilities?.serverControl">
+    <SettingsModalRow label="Remote server" hint="Connect to LM Studio on another device">
+      <Toggle v-model="settings.lmStudioRemote" />
+    </SettingsModalRow>
+    <template v-if="capabilities?.serverControl && !settings.lmStudioRemote">
       <SettingsModalRow label="Server">
         <div class="server-controls">
           <span
             class="status-dot"
-            :class="{ running: serverRunning === true, stopped: serverRunning === false }"
+            :class="{
+              running: serverStatus?.running === true,
+              stopped: serverStatus?.running === false
+            }"
           />
           <span class="status-label">
-            <template v-if="serverRunning === null">Checking…</template>
-            <template v-else-if="serverRunning">Running on port {{ serverPort }}</template>
+            <template v-if="serverStatus === null">Checking…</template>
+            <template v-else-if="serverStatus.running">
+              Running on port {{ serverStatus.port }}
+            </template>
             <template v-else>Not running</template>
           </span>
           <Button
-            v-if="serverRunning === false"
+            v-if="serverStatus?.running === false"
             :icon="IconPlayerPlay"
             :disabled="serverLoading"
             @click="startServer"
@@ -86,7 +92,7 @@ onMounted(async () => {
             Start
           </Button>
           <Button
-            v-if="serverRunning === true"
+            v-if="serverStatus?.running === true"
             :icon="IconPlayerStop"
             :disabled="serverLoading"
             @click="stopServer"
@@ -111,8 +117,8 @@ onMounted(async () => {
   flex-direction: column;
 }
 
-.input-sm {
-  width: 100px;
+.input-url {
+  width: 250px;
 }
 
 .server-controls {

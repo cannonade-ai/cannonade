@@ -1,55 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { api } from '../api'
-import { DEFAULT_LM_STUDIO_PORT } from '@shared/app/app-settings'
+import {
+  DEFAULT_APP_SETTINGS as DEFAULTS,
+  DEFAULT_LM_STUDIO_URL,
+  type FontSize
+} from '@shared/app/app-settings'
 
-export type FontSize = 'sm' | 'md' | 'lg'
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-
-const STORAGE_KEY = 'cannonade:settings'
-
-const DEFAULTS = {
-  fontSize: 'md' as FontSize,
-  language: 'en',
-  lastSuiteId: null as string | null,
-  autoDeleteModels: false,
-  parallelRuns: false,
-  defaultTestTimeout: 60000
-}
-
-interface PersistedSettings {
-  isDark: boolean
-  fontSize: FontSize
-  language: string
-  lastSuiteId: string | null
-  autoDeleteModels: boolean
-  parallelRuns: boolean
-  defaultTestTimeout: number
-}
-
-function loadPersisted(): PersistedSettings {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as Partial<PersistedSettings>
-      return {
-        isDark: parsed.isDark ?? window.matchMedia('(prefers-color-scheme: dark)').matches,
-        fontSize: parsed.fontSize ?? DEFAULTS.fontSize,
-        language: parsed.language ?? DEFAULTS.language,
-        lastSuiteId: parsed.lastSuiteId ?? DEFAULTS.lastSuiteId,
-        autoDeleteModels: parsed.autoDeleteModels ?? DEFAULTS.autoDeleteModels,
-        parallelRuns: parsed.parallelRuns ?? DEFAULTS.parallelRuns,
-        defaultTestTimeout: parsed.defaultTestTimeout ?? DEFAULTS.defaultTestTimeout
-      }
-    }
-  } catch {
-    // ignore malformed data
-  }
-  return {
-    isDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
-    ...DEFAULTS
-  }
-}
+export type { FontSize }
 
 function applyTheme(dark: boolean): void {
   document.documentElement.classList.toggle('dark', dark)
@@ -57,16 +15,15 @@ function applyTheme(dark: boolean): void {
 }
 
 export const useSettingsStore = defineStore('settings', () => {
-  const saved = loadPersisted()
-
-  const isDark = ref(saved.isDark)
-  const fontSize = ref<FontSize>(saved.fontSize)
-  const language = ref(saved.language)
-  const lastSuiteId = ref<string | null>(saved.lastSuiteId)
-  const autoDeleteModels = ref(saved.autoDeleteModels)
-  const parallelRuns = ref(saved.parallelRuns)
-  const defaultTestTimeout = ref(saved.defaultTestTimeout)
-  const lmStudioPort = ref<number>(DEFAULT_LM_STUDIO_PORT)
+  const isDark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches)
+  const fontSize = ref<FontSize>(DEFAULTS.fontSize)
+  const language = ref(DEFAULTS.language)
+  const lastSuiteId = ref<string | null>(DEFAULTS.lastSuiteId)
+  const autoDeleteModels = ref(DEFAULTS.autoDeleteModels)
+  const parallelRuns = ref(DEFAULTS.parallelRuns)
+  const defaultTestTimeout = ref(DEFAULTS.defaultTestTimeout)
+  const lmStudioUrl = ref(DEFAULT_LM_STUDIO_URL)
+  const lmStudioRemote = ref(DEFAULTS.lmStudioRemote)
   const appVersion = ref('')
   const suitesDir = ref('')
 
@@ -75,26 +32,31 @@ export const useSettingsStore = defineStore('settings', () => {
   watch(isDark, (dark) => applyTheme(dark))
 
   watch(
-    [isDark, fontSize, language, lastSuiteId, autoDeleteModels, parallelRuns, defaultTestTimeout],
+    [
+      isDark,
+      fontSize,
+      language,
+      lastSuiteId,
+      autoDeleteModels,
+      parallelRuns,
+      defaultTestTimeout,
+      lmStudioUrl,
+      lmStudioRemote
+    ],
     () => {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          isDark: isDark.value,
-          fontSize: fontSize.value,
-          language: language.value,
-          lastSuiteId: lastSuiteId.value,
-          autoDeleteModels: autoDeleteModels.value,
-          parallelRuns: parallelRuns.value,
-          defaultTestTimeout: defaultTestTimeout.value
-        })
-      )
+      api.saveAppSettings({
+        isDark: isDark.value,
+        fontSize: fontSize.value,
+        language: language.value,
+        lastSuiteId: lastSuiteId.value,
+        autoDeleteModels: autoDeleteModels.value,
+        parallelRuns: parallelRuns.value,
+        defaultTestTimeout: defaultTestTimeout.value,
+        lmStudioUrl: lmStudioUrl.value,
+        lmStudioRemote: lmStudioRemote.value
+      })
     }
   )
-
-  watch(lmStudioPort, (port) => {
-    api.saveAppSettings({ lmStudioPort: port })
-  })
 
   async function init(): Promise<void> {
     const [version, dir, appSettings] = await Promise.all([
@@ -104,7 +66,15 @@ export const useSettingsStore = defineStore('settings', () => {
     ])
     appVersion.value = version
     suitesDir.value = dir
-    lmStudioPort.value = appSettings.lmStudioPort
+    isDark.value = appSettings.isDark
+    fontSize.value = appSettings.fontSize
+    language.value = appSettings.language
+    lastSuiteId.value = appSettings.lastSuiteId
+    autoDeleteModels.value = appSettings.autoDeleteModels
+    parallelRuns.value = appSettings.parallelRuns
+    defaultTestTimeout.value = appSettings.defaultTestTimeout
+    lmStudioUrl.value = appSettings.lmStudioUrl
+    lmStudioRemote.value = appSettings.lmStudioRemote
   }
 
   function toggleTheme(): void {
@@ -118,9 +88,8 @@ export const useSettingsStore = defineStore('settings', () => {
     autoDeleteModels.value = DEFAULTS.autoDeleteModels
     parallelRuns.value = DEFAULTS.parallelRuns
     defaultTestTimeout.value = DEFAULTS.defaultTestTimeout
-    lmStudioPort.value = DEFAULT_LM_STUDIO_PORT
-    api.saveAppSettings({ lmStudioPort: DEFAULT_LM_STUDIO_PORT })
-    localStorage.removeItem(STORAGE_KEY)
+    lmStudioUrl.value = DEFAULT_LM_STUDIO_URL
+    lmStudioRemote.value = DEFAULTS.lmStudioRemote
   }
 
   return {
@@ -131,7 +100,8 @@ export const useSettingsStore = defineStore('settings', () => {
     autoDeleteModels,
     parallelRuns,
     defaultTestTimeout,
-    lmStudioPort,
+    lmStudioUrl,
+    lmStudioRemote,
     appVersion,
     suitesDir,
     init,

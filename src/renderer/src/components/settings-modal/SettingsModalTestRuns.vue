@@ -12,6 +12,7 @@ const settings = useSettingsStore()
   <div class="section">
     <SettingsModalDivider label="Defaults" />
     <SettingsModalRow
+      v-if="!settings.lmStudioRemote"
       label="Auto-delete downloaded models"
       hint="Remove downloaded models after running test cases on it"
     >
