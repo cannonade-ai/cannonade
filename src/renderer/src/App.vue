@@ -6,7 +6,8 @@ import AppSidebar from '@renderer/components/AppSidebar.vue'
 import AppTitleBar from '@renderer/components/AppTitleBar.vue'
 import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
 import ContextMenu from '@renderer/components/ui/ContextMenu.vue'
-import { LocalModelsView, TestSuitesView, TestRunsView, SettingsView } from '@renderer/views'
+import SettingsModal from '@renderer/components/settings-modal/SettingsModal.vue'
+import { LocalModelsView, TestSuitesView, TestRunsView } from '@renderer/views'
 
 const nav = useNavigationStore()
 const settings = useSettingsStore()
@@ -21,8 +22,6 @@ const viewComponent = computed(() => {
       return TestSuitesView
     case 'test-runs':
       return TestRunsView
-    case 'settings':
-      return SettingsView
     default:
       return LocalModelsView
   }
@@ -39,6 +38,7 @@ const viewComponent = computed(() => {
       </main>
       <ConfirmModal />
       <ContextMenu />
+      <SettingsModal />
     </div>
   </div>
 </template>

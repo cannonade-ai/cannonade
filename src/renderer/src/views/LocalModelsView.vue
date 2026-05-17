@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
-import { IconRefresh } from '@tabler/icons-vue'
+import { IconRefresh, IconSettings } from '@tabler/icons-vue'
 import { computed, onMounted, ref } from 'vue'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import LocalModelCard from '@renderer/components/LocalModelCard.vue'
@@ -9,8 +9,10 @@ import type { LocalProviderId } from '@shared/provider/ids'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { useModelsStore } from '@renderer/stores/models'
+import { useNavigationStore } from '@renderer/stores/navigation'
 
 const store = useModelsStore()
+const nav = useNavigationStore()
 const capabilities = ref<ProviderCapabilities | null>(null)
 
 const providerOptions: SelectOption<LocalProviderId>[] = [{ value: 'lmstudio', label: 'LM Studio' }]
@@ -75,6 +77,9 @@ onMounted(() => {
         <line x1="12" y1="16" x2="12.01" y2="16" />
       </svg>
       {{ store.error }}
+      <Button :icon="IconSettings" @click="nav.openSettings('providers')">
+        Configure Provider
+      </Button>
     </div>
 
     <template v-else-if="store.localModels.length > 0">
@@ -110,7 +115,10 @@ onMounted(() => {
     </template>
 
     <div v-else class="state-message">
-      No models found. Make sure {{ providerLabel }} is running.
+      No models found in {{ providerLabel }}.
+      <Button :icon="IconSettings" @click="nav.openSettings('providers')">
+        Configure Provider
+      </Button>
     </div>
   </div>
 </template>

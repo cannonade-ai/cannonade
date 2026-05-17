@@ -2,6 +2,7 @@ import { IconPlayerPlay, IconPlayerStop, IconTrash } from '@tabler/icons-vue'
 import type { ContextMenuItem } from '@renderer/stores/context-menu'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { useModelsStore } from '@renderer/stores/models'
+import { useSettingsStore } from '@renderer/stores/settings'
 import { api } from '@renderer/api'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
@@ -14,6 +15,7 @@ export function useModelMenus(): {
 } {
   const confirmStore = useConfirmStore()
   const modelsStore = useModelsStore()
+  const settingsStore = useSettingsStore()
 
   function modelMenuItems(
     model: LocalModel,
@@ -50,7 +52,11 @@ export function useModelMenus(): {
       }
     }
 
-    if (capabilities?.deleteModel) {
+    const canDelete =
+      capabilities?.deleteModel &&
+      !(model.providerId === 'lmstudio' && settingsStore.lmStudioRemote)
+
+    if (canDelete) {
       items.push({
         label: 'Delete',
         icon: IconTrash,

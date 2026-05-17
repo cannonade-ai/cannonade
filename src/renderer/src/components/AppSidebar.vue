@@ -38,9 +38,9 @@ const collapsed = ref(false)
       <SidebarNavItem
         :icon="IconSettings"
         label="Settings"
-        :active="nav.current === 'settings'"
+        :active="nav.settingsOpen"
         :collapsed="collapsed"
-        @click="nav.navigate('settings')"
+        @click="nav.openSettings"
       />
     </div>
 

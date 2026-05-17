@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 const model = defineModel<string>({ required: true })
 
 withDefaults(
@@ -6,7 +8,8 @@ withDefaults(
     placeholder?: string
     disabled?: boolean
     error?: boolean
-    type?: 'text' | 'password' | 'email' | 'search'
+    type?: 'text' | 'password' | 'email' | 'search' | 'url'
+    alignRight?: boolean
   }>(),
   {
     type: 'text',
@@ -14,16 +17,25 @@ withDefaults(
     error: false
   }
 )
+
+const inputRef = ref<HTMLInputElement | null>(null)
+const validationError = ref(false)
+
+function onInput(): void {
+  validationError.value = inputRef.value ? !inputRef.value.checkValidity() : false
+}
 </script>
 
 <template>
   <input
+    ref="inputRef"
     v-model="model"
     class="input"
-    :class="{ 'input--error': error }"
+    :class="{ 'input--error': error || validationError, 'input--right': alignRight }"
     :type="type"
     :placeholder="placeholder"
     :disabled="disabled"
+    @input="onInput"
   />
 </template>
 
@@ -62,6 +74,10 @@ withDefaults(
     &:focus {
       border-color: var(--error);
     }
+  }
+
+  &--right {
+    text-align: right;
   }
 }
 </style>

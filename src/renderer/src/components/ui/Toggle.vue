@@ -7,10 +7,10 @@ const props = defineProps<{
 </script>
 
 <template>
-  <span class="toggle" :class="{ 'toggle--disabled': props.disabled }">
+  <label class="toggle" :class="{ 'toggle--disabled': props.disabled }">
     <input v-model="model" type="checkbox" class="toggle__input" :disabled="props.disabled" />
     <span class="toggle__track" />
-  </span>
+  </label>
 </template>
 
 <style scoped lang="scss">

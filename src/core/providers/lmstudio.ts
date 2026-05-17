@@ -2,7 +2,7 @@ import { readFile, rm } from 'fs/promises'
 import { join } from 'path'
 import { homedir } from 'os'
 import { exec } from 'child_process'
-import { loadAppSettings } from '../../main/ipc/settings-handlers'
+import { getAppSettings } from '../../main/ipc/settings-handlers'
 import type { LLMProvider } from './base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type {
@@ -13,13 +13,12 @@ import type {
 } from '@shared/lm-studio/ipc-contracts'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 
-async function apiBase(): Promise<string> {
-  const settings = await loadAppSettings()
-  return `http://localhost:${settings.lmStudioPort}`
+function apiBase(): string {
+  return getAppSettings().lmStudioUrl
 }
 
 async function fetchRawModels(): Promise<Model[]> {
-  const base = await apiBase()
+  const base = apiBase()
   const res = await fetch(`${base}/api/v1/models`)
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
   const data = (await res.json()) as { models: Model[] }
@@ -78,8 +77,7 @@ export const lmStudioProvider: LLMProvider = {
   },
 
   async chat(modelId: string, request: ChatRequest): Promise<ChatResponse> {
-    const base = await apiBase()
-    const res = await fetch(`${base}/api/v1/chat`, {
+    const res = await fetch(`${apiBase()}/api/v1/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...request, model: modelId })
@@ -89,8 +87,7 @@ export const lmStudioProvider: LLMProvider = {
   },
 
   async downloadModel(url: string): Promise<DownloadModelResponse> {
-    const base = await apiBase()
-    const res = await fetch(`${base}/api/v1/models/download`, {
+    const res = await fetch(`${apiBase()}/api/v1/models/download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: url })
@@ -100,21 +97,21 @@ export const lmStudioProvider: LLMProvider = {
   },
 
   async getDownloadStatus(jobId: string): Promise<DownloadStatusResponse> {
-    const base = await apiBase()
-    const res = await fetch(`${base}/api/v1/models/download/status/${jobId}`)
+    const res = await fetch(`${apiBase()}/api/v1/models/download/status/${jobId}`)
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     return res.json() as Promise<DownloadStatusResponse>
   },
 
   async deleteModel(modelId: string): Promise<void> {
+    if (getAppSettings().lmStudioRemote) throw new Error('Cannot delete models on a remote server')
     const models = await fetchRawModels()
     const model = models.find((m) => m.key === modelId)
     if (!model) throw new Error(`Model not found: ${modelId}`)
-    const settingsPath = join(homedir(), '.lmstudio', 'settings.json')
-    const raw = await readFile(settingsPath, 'utf-8')
-    const settings = JSON.parse(raw) as { downloadsFolder: string }
+    const lmSettingsPath = join(homedir(), '.lmstudio', 'settings.json')
+    const raw = await readFile(lmSettingsPath, 'utf-8')
+    const lmSettings = JSON.parse(raw) as { downloadsFolder: string }
     const folderName = `${model.key}-${(model.format ?? '').toUpperCase()}`
-    const modelPath = join(settings.downloadsFolder, model.publisher, folderName)
+    const modelPath = join(lmSettings.downloadsFolder, model.publisher, folderName)
     await rm(modelPath, { recursive: true, force: true })
   },
 
@@ -131,8 +128,7 @@ export const lmStudioProvider: LLMProvider = {
   },
 
   async loadModel(modelId: string): Promise<void> {
-    const base = await apiBase()
-    const res = await fetch(`${base}/api/v1/models/load`, {
+    const res = await fetch(`${apiBase()}/api/v1/models/load`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ model: modelId })
@@ -141,8 +137,7 @@ export const lmStudioProvider: LLMProvider = {
   },
 
   async unloadModel(instanceId: string): Promise<void> {
-    const base = await apiBase()
-    const res = await fetch(`${base}/api/v1/models/unload`, {
+    const res = await fetch(`${apiBase()}/api/v1/models/unload`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ instance_id: instanceId })

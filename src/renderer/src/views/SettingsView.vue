@@ -92,11 +92,9 @@ onMounted(async () => {
           </div>
           <input
             class="port-input"
-            type="number"
-            :value="settings.lmStudioPort"
-            min="1"
-            max="65535"
-            @change="settings.lmStudioPort = Number(($event.target as HTMLInputElement).value)"
+            type="text"
+            :value="settings.lmStudioUrl"
+            @change="settings.lmStudioUrl = ($event.target as HTMLInputElement).value"
           />
         </div>
         <template v-if="capabilities?.serverControl">
