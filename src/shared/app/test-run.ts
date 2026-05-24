@@ -17,9 +17,9 @@ export interface TestRunConfig {
   suiteId: string
   provider: ProviderId
   models: ModelRef[]
-  deleteAutoDownloadedModels?: boolean // for LM Studio only
-  unloadModelsAfterRun?: boolean // for LM Studio only
-  parallelRun?: boolean // for OpenRouter only
+  deleteAutoDownloadedModels?: boolean
+  unloadModelsAfterRun?: boolean
+  parallelRun?: boolean
 }
 
 export type RunStatus = 'pending' | 'downloading' | 'running' | 'completed' | 'failed' | 'cancelled'

@@ -8,8 +8,9 @@ import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ProviderId, LocalProviderId } from '@shared/provider/ids'
 import { LOCAL_PROVIDERS } from '@shared/provider/ids'
+import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { IconPlayerPlay, IconX } from '@tabler/icons-vue'
-import { computed, onMounted, reactive, watch } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 const props = defineProps<{
   suites: TestSuite[]
@@ -22,6 +23,8 @@ const emit = defineEmits<{
 
 const modelsStore = useModelsStore()
 const settingsStore = useSettingsStore()
+
+const capabilities = ref<ProviderCapabilities | null>(null)
 
 const form = reactive<{
   suiteId: string
@@ -51,9 +54,10 @@ onMounted(() => {
 
 watch(
   () => form.provider,
-  (next) => {
+  async (next) => {
     form.models = []
-    if (next in LOCAL_PROVIDERS) form.parallelRun = false
+    capabilities.value = await modelsStore.getCapabilities(next)
+    if (!capabilities.value.localModels) form.parallelRun = false
     if (next in LOCAL_PROVIDERS) {
       modelsStore.localProvider = next as LocalProviderId
       modelsStore.loadLocalModels()
@@ -117,8 +121,9 @@ function onSubmit(): void {
       provider: form.provider,
       models: form.models,
       deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
-      unloadModelsAfterRun: form.provider === 'lmstudio' ? form.unloadModelsAfterRun : undefined,
-      parallelRun: form.provider === 'openrouter' ? form.parallelRun : undefined
+      unloadModelsAfterRun: capabilities.value?.loadModel ? form.unloadModelsAfterRun : undefined,
+      parallelRun:
+        capabilities.value && !capabilities.value.localModels ? form.parallelRun : undefined
     },
     suite
   )
@@ -160,16 +165,16 @@ function onSubmit(): void {
 
     <Field label="Options">
       <div class="options-list">
-        <label v-if="form.provider === 'lmstudio'" class="toggle-row">
+        <label v-if="capabilities?.loadModel" class="toggle-row">
           <span class="toggle-label">Unload models after run</span>
           <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
         </label>
-        <label v-if="form.provider === 'lmstudio'" class="toggle-row">
+        <label v-if="capabilities?.downloadModel" class="toggle-row">
           <span class="toggle-label">Delete auto-downloaded models after run</span>
           <Toggle v-model="form.deleteAutoDownloadedModels" />
         </label>
 
-        <label v-if="form.provider === 'openrouter'" class="toggle-row">
+        <label v-if="capabilities && !capabilities.localModels" class="toggle-row">
           <span class="toggle-label">Parallel run</span>
           <Toggle v-model="form.parallelRun" />
         </label>
