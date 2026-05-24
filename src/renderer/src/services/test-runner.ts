@@ -177,10 +177,16 @@ export async function executeTestRun(
 
     callbacks.onModelRunStart(modelRun.id, autoDownloaded)
 
-    const modelKey =
-      modelRun.modelRef.source === 'installed'
-        ? modelRun.modelRef.modelKey
-        : modelRun.modelRef.modelId
+    let modelKey: string
+    if (modelRun.modelRef.source === 'installed') {
+      modelKey = modelRun.modelRef.modelKey
+    } else {
+      const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
+      const localModels = await api.fetchLocalModels(providerId)
+      const match = localModels.find((m) => m.id.toLowerCase().includes(hfModelId.toLowerCase()))
+      if (!match) throw new Error(`Downloaded model not found in provider: ${hfModelId}`)
+      modelKey = match.id
+    }
 
     console.log('[test-runner] Starting model run:', modelRun)
 

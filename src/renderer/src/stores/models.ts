@@ -1,13 +1,24 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api } from '../api'
-import type { LocalProviderId, ExternalProviderId, ProviderId } from '@shared/provider/ids'
+import {
+  LOCAL_PROVIDERS,
+  type LocalProviderId,
+  type ExternalProviderId,
+  type ProviderId
+} from '@shared/provider/ids'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import { useSettingsStore } from './settings'
 
 export const useModelsStore = defineStore('models', () => {
-  const localProvider = ref<LocalProviderId>('lmstudio')
+  const settings = useSettingsStore()
+  const localProvider = ref<LocalProviderId>(
+    settings.lastProvider in LOCAL_PROVIDERS
+      ? (settings.lastProvider as LocalProviderId)
+      : 'lmstudio'
+  )
   const externalProvider = ref<ExternalProviderId>('openrouter')
   const localModels = ref<LocalModel[]>([])
   const externalModels = ref<ExternalModel[]>([])
@@ -21,10 +32,10 @@ export const useModelsStore = defineStore('models', () => {
     try {
       localModels.value = await api.fetchLocalModels(localProvider.value)
     } catch (e) {
+      localModels.value = []
       if (e instanceof Error) {
         if (e.message.includes('fetch failed')) {
-          error.value =
-            'Cannot connect to LM Studio. Make sure LM Studio is running and the local server is started.'
+          error.value = `Cannot connect to ${localProvider.value}. Make sure the service is running and the server URL is correct.`
         } else {
           error.value = e.message
         }
@@ -43,6 +54,7 @@ export const useModelsStore = defineStore('models', () => {
     try {
       externalModels.value = await api.fetchExternalModels(externalProvider.value)
     } catch (e) {
+      externalModels.value = []
       if (e instanceof Error) {
         error.value = e.message
       } else {

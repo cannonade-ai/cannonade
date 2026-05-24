@@ -4,8 +4,10 @@ import { api } from '../api'
 import {
   DEFAULT_APP_SETTINGS as DEFAULTS,
   DEFAULT_LM_STUDIO_URL,
+  DEFAULT_OLLAMA_URL,
   type FontSize
 } from '@shared/app/app-settings'
+import type { ProviderId } from '@shared/provider/ids'
 
 export type { FontSize }
 
@@ -19,11 +21,13 @@ export const useSettingsStore = defineStore('settings', () => {
   const fontSize = ref<FontSize>(DEFAULTS.fontSize)
   const language = ref(DEFAULTS.language)
   const lastSuiteId = ref<string | null>(DEFAULTS.lastSuiteId)
+  const lastProvider = ref<ProviderId>(DEFAULTS.lastProvider)
   const autoDeleteModels = ref(DEFAULTS.autoDeleteModels)
   const parallelRuns = ref(DEFAULTS.parallelRuns)
   const defaultTestTimeout = ref(DEFAULTS.defaultTestTimeout)
   const lmStudioUrl = ref(DEFAULT_LM_STUDIO_URL)
   const lmStudioRemote = ref(DEFAULTS.lmStudioRemote)
+  const ollamaUrl = ref(DEFAULT_OLLAMA_URL)
   const appVersion = ref('')
   const suitesDir = ref('')
 
@@ -37,11 +41,13 @@ export const useSettingsStore = defineStore('settings', () => {
       fontSize,
       language,
       lastSuiteId,
+      lastProvider,
       autoDeleteModels,
       parallelRuns,
       defaultTestTimeout,
       lmStudioUrl,
-      lmStudioRemote
+      lmStudioRemote,
+      ollamaUrl
     ],
     () => {
       api.saveAppSettings({
@@ -49,11 +55,13 @@ export const useSettingsStore = defineStore('settings', () => {
         fontSize: fontSize.value,
         language: language.value,
         lastSuiteId: lastSuiteId.value,
+        lastProvider: lastProvider.value,
         autoDeleteModels: autoDeleteModels.value,
         parallelRuns: parallelRuns.value,
         defaultTestTimeout: defaultTestTimeout.value,
         lmStudioUrl: lmStudioUrl.value,
-        lmStudioRemote: lmStudioRemote.value
+        lmStudioRemote: lmStudioRemote.value,
+        ollamaUrl: ollamaUrl.value
       })
     }
   )
@@ -70,11 +78,13 @@ export const useSettingsStore = defineStore('settings', () => {
     fontSize.value = appSettings.fontSize
     language.value = appSettings.language
     lastSuiteId.value = appSettings.lastSuiteId
+    lastProvider.value = appSettings.lastProvider ?? DEFAULTS.lastProvider
     autoDeleteModels.value = appSettings.autoDeleteModels
     parallelRuns.value = appSettings.parallelRuns
     defaultTestTimeout.value = appSettings.defaultTestTimeout
     lmStudioUrl.value = appSettings.lmStudioUrl
     lmStudioRemote.value = appSettings.lmStudioRemote
+    ollamaUrl.value = appSettings.ollamaUrl
   }
 
   function toggleTheme(): void {
@@ -90,6 +100,7 @@ export const useSettingsStore = defineStore('settings', () => {
     defaultTestTimeout.value = DEFAULTS.defaultTestTimeout
     lmStudioUrl.value = DEFAULT_LM_STUDIO_URL
     lmStudioRemote.value = DEFAULTS.lmStudioRemote
+    ollamaUrl.value = DEFAULT_OLLAMA_URL
   }
 
   return {
@@ -97,11 +108,13 @@ export const useSettingsStore = defineStore('settings', () => {
     fontSize,
     language,
     lastSuiteId,
+    lastProvider,
     autoDeleteModels,
     parallelRuns,
     defaultTestTimeout,
     lmStudioUrl,
     lmStudioRemote,
+    ollamaUrl,
     appVersion,
     suitesDir,
     init,

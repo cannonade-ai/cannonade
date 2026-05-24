@@ -1,5 +1,6 @@
 export const LOCAL_PROVIDERS = {
-  lmstudio: 'lmstudio'
+  lmstudio: 'lmstudio',
+  ollama: 'ollama'
 } as const
 
 export const EXTERNAL_PROVIDERS = {

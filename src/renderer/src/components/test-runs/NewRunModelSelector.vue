@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Badge, Input } from '@renderer/components/ui'
 import type { ModelRef } from '@shared/app/test-run'
-import { IconPlus, IconX } from '@tabler/icons-vue'
+import { IconLoader2, IconPlus, IconX } from '@tabler/icons-vue'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -71,12 +71,14 @@ function onHfKeydown(e: KeyboardEvent): void {
     </div>
 
     <div class="sub-section">
-      <span class="sub-label">Installed Models</span>
-      <div v-if="loadingModels" class="loading-hint">Loading…</div>
-      <div v-else-if="installedModels.length === 0" class="empty-hint">
+      <div class="sub-label-row">
+        <span class="sub-label">Installed Models</span>
+        <IconLoader2 v-if="loadingModels" class="spinner" :size="12" :stroke-width="2" />
+      </div>
+      <div v-if="!loadingModels && installedModels.length === 0" class="empty-hint">
         No installed models found.
       </div>
-      <ul v-else class="installed-list">
+      <ul v-else-if="installedModels.length > 0" class="installed-list">
         <li
           v-for="m in installedModels"
           :key="m.key"
@@ -180,6 +182,12 @@ function onHfKeydown(e: KeyboardEvent): void {
   gap: 6px;
 }
 
+.sub-label-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .sub-label {
   font-size: var(--text-xs);
   font-weight: 600;
@@ -188,7 +196,11 @@ function onHfKeydown(e: KeyboardEvent): void {
   color: var(--text-muted);
 }
 
-.loading-hint,
+.spinner {
+  color: var(--text-muted);
+  animation: spin 1s linear infinite;
+}
+
 .empty-hint {
   font-size: var(--text-xs);
   color: var(--text-muted);

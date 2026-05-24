@@ -2,10 +2,12 @@ import type { LLMProvider } from './base'
 import type { ProviderId } from '@shared/provider/ids'
 import { lmStudioProvider } from './lmstudio'
 import { openRouterProvider } from './openrouter'
+import { ollamaProvider } from './ollama'
 
 const providerRegistry: Record<ProviderId, LLMProvider> = {
   lmstudio: lmStudioProvider,
-  openrouter: openRouterProvider
+  openrouter: openRouterProvider,
+  ollama: ollamaProvider
 }
 
 function validateProvider(id: string, p: LLMProvider): void {

@@ -51,6 +51,10 @@ function onMenuButton(event: MouseEvent): void {
     </div>
 
     <div class="card-stats">
+      <span v-if="model.meta.family" class="stat">
+        <span class="stat-label">Family</span>
+        <span class="stat-value">{{ model.meta.family }}</span>
+      </span>
       <span v-if="model.meta.params_string" class="stat">
         <span class="stat-label">Params</span>
         <span class="stat-value">{{ model.meta.params_string }}</span>
@@ -78,14 +82,14 @@ function onMenuButton(event: MouseEvent): void {
       <Badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
         Tool use
       </Badge>
+    </div>
 
-      <div v-if="isLoaded" class="loaded-instances">
-        <div v-for="(instance, i) in loadedInstances" :key="instance.id ?? i" class="instance">
-          <span class="instance-dot" />
-          <span v-if="instance.config?.context_length" class="instance-label">
-            {{ formatContext(instance.config.context_length) }} ctx
-          </span>
-        </div>
+    <div v-if="isLoaded" class="loaded-instances">
+      <div v-for="(instance, i) in loadedInstances" :key="instance.id ?? i" class="instance">
+        <span class="instance-dot" />
+        <span v-if="instance.config?.context_length" class="instance-label">
+          {{ formatContext(instance.config.context_length) }} ctx
+        </span>
       </div>
     </div>
   </div>
@@ -152,7 +156,7 @@ function onMenuButton(event: MouseEvent): void {
 .card-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 10px;
+  gap: 8px 10px;
   margin-top: 0.5rem;
 }
 
@@ -184,10 +188,9 @@ function onMenuButton(event: MouseEvent): void {
 .loaded-instances {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
   align-items: end;
   gap: 4px;
-  padding-top: 4px;
+  margin-top: 0.5rem;
 }
 
 .instance {

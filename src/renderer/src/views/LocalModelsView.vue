@@ -15,7 +15,10 @@ const store = useModelsStore()
 const nav = useNavigationStore()
 const capabilities = ref<ProviderCapabilities | null>(null)
 
-const providerOptions: SelectOption<LocalProviderId>[] = [{ value: 'lmstudio', label: 'LM Studio' }]
+const providerOptions: SelectOption<LocalProviderId>[] = [
+  { value: 'lmstudio', label: 'LM Studio' },
+  { value: 'ollama', label: 'Ollama' }
+]
 
 const byLoaded = (a: LocalModel, b: LocalModel): number =>
   b.loadedInstances.length - a.loadedInstances.length
@@ -25,8 +28,8 @@ const embeddings = computed(() =>
   store.localModels.filter((m) => m.type === 'embedding').sort(byLoaded)
 )
 
-const providerLabel = computed(() =>
-  store.localProvider === 'lmstudio' ? 'LM Studio' : store.localProvider
+const providerLabel = computed(
+  () => providerOptions.find((o) => o.value === store.localProvider)?.label ?? store.localProvider
 )
 
 const provider = computed<LocalProviderId>({
