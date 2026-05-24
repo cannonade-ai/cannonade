@@ -6,7 +6,7 @@ import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { ProviderId } from '@shared/provider/ids'
+import type { ProviderId, LocalProviderId } from '@shared/provider/ids'
 import { LOCAL_PROVIDERS } from '@shared/provider/ids'
 import { IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, watch } from 'vue'
@@ -32,7 +32,7 @@ const form = reactive<{
   parallelRun: boolean
 }>({
   suiteId: '',
-  provider: 'lmstudio',
+  provider: settingsStore.lastProvider,
   models: [],
   deleteAutoDownloadedModels: false,
   unloadModelsAfterRun: false,
@@ -53,9 +53,9 @@ watch(
   () => form.provider,
   (next) => {
     form.models = []
-    if (next === 'lmstudio') form.parallelRun = false
+    if (next in LOCAL_PROVIDERS) form.parallelRun = false
     if (next in LOCAL_PROVIDERS) {
-      modelsStore.localProvider = next as 'lmstudio'
+      modelsStore.localProvider = next as LocalProviderId
       modelsStore.loadLocalModels()
     } else {
       modelsStore.externalProvider = next as 'openrouter'
@@ -75,7 +75,7 @@ watch(
 watch(
   () => modelsStore.loading,
   (loading) => {
-    if (loading || form.provider !== 'lmstudio' || form.models.length > 0) return
+    if (loading || !(form.provider in LOCAL_PROVIDERS) || form.models.length > 0) return
     const loaded = installedModels.value.find((m) => m.loaded)
     if (loaded) form.models = [{ source: 'installed', modelKey: loaded.key }]
   }
@@ -109,6 +109,7 @@ function onSubmit(): void {
     return
   }
   settingsStore.lastSuiteId = form.suiteId
+  settingsStore.lastProvider = form.provider
   emit(
     'submit',
     {
@@ -141,6 +142,7 @@ function onSubmit(): void {
         v-model="form.provider"
         :options="[
           { value: 'lmstudio', label: 'LM Studio' },
+          { value: 'ollama', label: 'Ollama' },
           { value: 'openrouter', label: 'OpenRouter' }
         ]"
       />

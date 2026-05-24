@@ -15,7 +15,7 @@ defineProps<{
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--text-muted);
-  padding: 20px 0 8px;
+  padding: 8px 0 4px;
 
   &:first-child {
     padding-top: 0;

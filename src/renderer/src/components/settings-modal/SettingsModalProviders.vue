@@ -11,6 +11,7 @@ import Input from '@renderer/components/ui/Input.vue'
 import Button from '@renderer/components/ui/Button.vue'
 import SettingsModalRow from './SettingsModalRow.vue'
 import SettingsModalDivider from './SettingsModalDivider.vue'
+import SettingsModalOllama from './SettingsModalOllama.vue'
 
 const settings = useSettingsStore()
 const modelsStore = useModelsStore()
@@ -109,12 +110,14 @@ onMounted(async () => {
       </SettingsModalRow>
     </template>
   </div>
+  <SettingsModalOllama />
 </template>
 
 <style scoped lang="scss">
 .section {
   display: flex;
   flex-direction: column;
+  margin-bottom: 1rem;
 }
 
 .input-url {
