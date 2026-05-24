@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
-import { useSettingsStore } from '@renderer/stores/settings'
 import AppSidebar from '@renderer/components/AppSidebar.vue'
 import AppTitleBar from '@renderer/components/AppTitleBar.vue'
 import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
@@ -10,11 +9,6 @@ import SettingsModal from '@renderer/components/settings-modal/SettingsModal.vue
 import { LocalModelsView, TestSuitesView, TestRunsView } from '@renderer/views'
 
 const nav = useNavigationStore()
-const settings = useSettingsStore()
-
-onMounted(() => {
-  settings.init()
-})
 
 const viewComponent = computed(() => {
   switch (nav.current) {

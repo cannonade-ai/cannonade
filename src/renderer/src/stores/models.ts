@@ -1,13 +1,24 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api } from '../api'
-import type { LocalProviderId, ExternalProviderId, ProviderId } from '@shared/provider/ids'
+import {
+  LOCAL_PROVIDERS,
+  type LocalProviderId,
+  type ExternalProviderId,
+  type ProviderId
+} from '@shared/provider/ids'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import { useSettingsStore } from './settings'
 
 export const useModelsStore = defineStore('models', () => {
-  const localProvider = ref<LocalProviderId>('lmstudio')
+  const settings = useSettingsStore()
+  const localProvider = ref<LocalProviderId>(
+    settings.lastProvider in LOCAL_PROVIDERS
+      ? (settings.lastProvider as LocalProviderId)
+      : 'lmstudio'
+  )
   const externalProvider = ref<ExternalProviderId>('openrouter')
   const localModels = ref<LocalModel[]>([])
   const externalModels = ref<ExternalModel[]>([])
