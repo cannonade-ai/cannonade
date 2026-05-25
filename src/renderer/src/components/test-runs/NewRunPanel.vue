@@ -35,7 +35,7 @@ const form = reactive<{
   parallelRun: boolean
 }>({
   suiteId: '',
-  provider: settingsStore.lastProvider,
+  provider: 'lmstudio',
   models: [],
   deleteAutoDownloadedModels: false,
   unloadModelsAfterRun: false,
@@ -113,7 +113,6 @@ function onSubmit(): void {
     return
   }
   settingsStore.lastSuiteId = form.suiteId
-  settingsStore.lastProvider = form.provider
   emit(
     'submit',
     {
