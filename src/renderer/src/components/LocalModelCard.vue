@@ -20,15 +20,15 @@ const isLoaded = computed(() => loadedInstances.value.length > 0)
 const contextMenuStore = useContextMenuStore()
 const { modelMenuItems } = useModelMenus()
 
+const menuItems = computed(() => modelMenuItems(props.model, props.capabilities))
+
 function onContextMenu(event: MouseEvent): void {
-  contextMenuStore.open(modelMenuItems(props.model, props.capabilities), event)
+  if (!menuItems.value.length) return
+  contextMenuStore.open(menuItems.value, event)
 }
 
 function onMenuButton(event: MouseEvent): void {
-  contextMenuStore.openAt(
-    modelMenuItems(props.model, props.capabilities),
-    event.currentTarget as Element
-  )
+  contextMenuStore.openAt(menuItems.value, event.currentTarget as Element)
 }
 </script>
 
@@ -38,7 +38,12 @@ function onMenuButton(event: MouseEvent): void {
       <h3 class="model-name">{{ model.name }}</h3>
       <div class="card-header-actions">
         <Badge v-if="isLoaded" type="success">Loaded</Badge>
-        <Button type="icon" :icon="IconDotsVertical" @click.stop="onMenuButton" />
+        <Button
+          v-if="menuItems.length"
+          type="icon"
+          :icon="IconDotsVertical"
+          @click.stop="onMenuButton"
+        />
       </div>
     </div>
 

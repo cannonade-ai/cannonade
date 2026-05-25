@@ -1,5 +1,39 @@
-export type KnownProviderType = 'lmstudio' | 'ollama'
-export type ProviderType = KnownProviderType | 'custom'
+export const KNOWN_PROVIDER_DEFAULTS = {
+  lmstudio: {
+    displayName: 'LM Studio',
+    description: 'Local or remote LM Studio server',
+    defaultUrl: 'http://localhost:1234',
+    singleton: true,
+    supportsRemote: true,
+    isExternal: false
+  },
+  ollama: {
+    displayName: 'Ollama',
+    description: 'Local or remote Ollama server',
+    defaultUrl: 'http://localhost:11434',
+    singleton: true,
+    supportsRemote: true,
+    isExternal: false
+  },
+  custom: {
+    displayName: 'Custom',
+    description: 'Any OpenAI-compatible API endpoint',
+    defaultUrl: '',
+    singleton: false,
+    supportsRemote: false,
+    isExternal: false
+  },
+  openrouter: {
+    displayName: 'OpenRouter',
+    description: 'Access hundreds of models via OpenRouter',
+    defaultUrl: 'https://openrouter.ai/api/v1',
+    singleton: true,
+    supportsRemote: false,
+    isExternal: true
+  }
+} as const
+
+export type ProviderType = keyof typeof KNOWN_PROVIDER_DEFAULTS
 
 export interface ConfiguredProvider {
   instanceId: string
@@ -7,10 +41,5 @@ export interface ConfiguredProvider {
   displayName: string
   url: string
   isDefault: boolean
-  lmStudioRemote?: boolean
-}
-
-export const KNOWN_PROVIDER_DEFAULTS: Record<KnownProviderType, { displayName: string; url: string }> = {
-  lmstudio: { displayName: 'LM Studio', url: 'http://localhost:1234' },
-  ollama: { displayName: 'Ollama', url: 'http://127.0.0.1:11434' }
+  isRemote?: boolean
 }

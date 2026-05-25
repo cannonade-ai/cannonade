@@ -1,4 +1,3 @@
-import type { ProviderId } from '../provider/ids'
 import type { TestCaseResult, AggregateMetrics } from './test-suite'
 
 export interface InstalledModelRef {
@@ -15,7 +14,7 @@ export type ModelRef = InstalledModelRef | HuggingFaceModelRef
 
 export interface TestRunConfig {
   suiteId: string
-  provider: ProviderId
+  provider: string
   models: ModelRef[]
   deleteAutoDownloadedModels?: boolean
   unloadModelsAfterRun?: boolean

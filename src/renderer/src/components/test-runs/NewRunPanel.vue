@@ -6,9 +6,8 @@ import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { ProviderId, LocalProviderId } from '@shared/provider/ids'
-import { LOCAL_PROVIDERS } from '@shared/provider/ids'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import { KNOWN_PROVIDER_DEFAULTS } from '@shared/provider/configured-provider'
 import { IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 
@@ -26,16 +25,43 @@ const settingsStore = useSettingsStore()
 
 const capabilities = ref<ProviderCapabilities | null>(null)
 
+const localProviderOptions = computed<{ value: string; label: string }[]>(() =>
+  settingsStore.configuredProviders
+    .filter((p) => !KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
+    .map((p) => ({ value: p.instanceId, label: p.displayName }))
+)
+
+const externalProviderOptions = computed<{ value: string; label: string }[]>(() =>
+  settingsStore.configuredProviders
+    .filter((p) => KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
+    .map((p) => ({ value: p.instanceId, label: p.displayName }))
+)
+
+const allProviderOptions = computed(() => [
+  ...localProviderOptions.value,
+  ...externalProviderOptions.value
+])
+
+function isLocalProvider(instanceId: string): boolean {
+  const provider = settingsStore.configuredProviders.find((p) => p.instanceId === instanceId)
+  return provider ? !KNOWN_PROVIDER_DEFAULTS[provider.type].isExternal : false
+}
+
+const initialProvider =
+  settingsStore.configuredProviders.find((p) => p.isDefault)?.instanceId ??
+  settingsStore.configuredProviders[0]?.instanceId ??
+  'openrouter'
+
 const form = reactive<{
   suiteId: string
-  provider: ProviderId
+  provider: string
   models: ModelRef[]
   deleteAutoDownloadedModels: boolean
   unloadModelsAfterRun: boolean
   parallelRun: boolean
 }>({
   suiteId: '',
-  provider: 'lmstudio',
+  provider: initialProvider,
   models: [],
   deleteAutoDownloadedModels: false,
   unloadModelsAfterRun: false,
@@ -55,14 +81,15 @@ onMounted(() => {
 watch(
   () => form.provider,
   async (next) => {
+    if (!next) return
     form.models = []
     capabilities.value = await modelsStore.getCapabilities(next)
     if (!capabilities.value.localModels) form.parallelRun = false
-    if (next in LOCAL_PROVIDERS) {
-      modelsStore.localProvider = next as LocalProviderId
+    if (isLocalProvider(next)) {
+      modelsStore.setLocalProvider(next)
       modelsStore.loadLocalModels()
     } else {
-      modelsStore.externalProvider = next as 'openrouter'
+      modelsStore.externalProvider = next
       modelsStore.loadExternalModels()
     }
   },
@@ -79,14 +106,14 @@ watch(
 watch(
   () => modelsStore.loading,
   (loading) => {
-    if (loading || !(form.provider in LOCAL_PROVIDERS) || form.models.length > 0) return
+    if (loading || !isLocalProvider(form.provider) || form.models.length > 0) return
     const loaded = installedModels.value.find((m) => m.loaded)
     if (loaded) form.models = [{ source: 'installed', modelKey: loaded.key }]
   }
 )
 
 const installedModels = computed(() => {
-  if (form.provider in LOCAL_PROVIDERS) {
+  if (isLocalProvider(form.provider)) {
     return modelsStore.localModels.map((m) => ({
       key: m.id,
       label: m.name,
@@ -141,15 +168,17 @@ function onSubmit(): void {
       <Select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
     </Field>
 
-    <Field label="Provider">
-      <RadioGroup
-        v-model="form.provider"
-        :options="[
-          { value: 'lmstudio', label: 'LM Studio' },
-          { value: 'ollama', label: 'Ollama' },
-          { value: 'openrouter', label: 'OpenRouter' }
-        ]"
-      />
+    <Field v-if="allProviderOptions.length > 1" label="Provider">
+      <div class="provider-groups">
+        <div v-if="localProviderOptions.length > 0" class="provider-group">
+          <span class="group-label">Local</span>
+          <RadioGroup v-model="form.provider" :options="localProviderOptions" />
+        </div>
+        <div v-if="externalProviderOptions.length > 0" class="provider-group">
+          <span class="group-label">External</span>
+          <RadioGroup v-model="form.provider" :options="externalProviderOptions" />
+        </div>
+      </div>
     </Field>
 
     <Field label="Models">
@@ -212,6 +241,26 @@ function onSubmit(): void {
 .divider {
   border-top: 1px solid var(--border);
   margin: 0 -0.875rem;
+}
+
+.provider-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.provider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 52px;
+  flex-shrink: 0;
 }
 
 .options-list {

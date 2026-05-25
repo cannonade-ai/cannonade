@@ -1,13 +1,19 @@
 import type { LLMProvider } from './base'
-import type { ProviderId } from '@shared/provider/ids'
-import { lmStudioProvider } from './lmstudio'
-import { openRouterProvider } from './openrouter'
-import { ollamaProvider } from './ollama'
+import type { ConfiguredProvider } from '@shared/provider/configured-provider'
 
-const providerRegistry: Record<ProviderId, LLMProvider> = {
-  lmstudio: lmStudioProvider,
-  openrouter: openRouterProvider,
-  ollama: ollamaProvider
+type ProviderFactory = (instanceId: string, url: string, remote: boolean) => LLMProvider
+
+const registry = new Map<string, LLMProvider>()
+const factories = new Map<string, ProviderFactory>()
+
+export function registerProviderFactory(type: string, factory: ProviderFactory): void {
+  factories.set(type, factory)
+}
+
+export function createProbeProvider(type: string, url: string): LLMProvider {
+  const factory = factories.get(type) ?? factories.get('custom')
+  if (!factory) throw new Error(`No factory registered for provider type: ${type}`)
+  return factory('__probe__', url, false)
 }
 
 function validateProvider(id: string, p: LLMProvider): void {
@@ -27,12 +33,24 @@ function validateProvider(id: string, p: LLMProvider): void {
   if (c.serverControl && !p.stopServer) miss('stopServer')
 }
 
-for (const [id, provider] of Object.entries(providerRegistry)) {
-  validateProvider(id, provider)
+export function buildRegistry(configuredProviders: ConfiguredProvider[]): void {
+  registry.clear()
+
+  for (const providerConfig of configuredProviders) {
+    const factory = factories.get(providerConfig.type) ?? factories.get('custom')
+    if (!factory) throw new Error(`No factory registered for provider type: ${providerConfig.type}`)
+    const provider = factory(
+      providerConfig.instanceId,
+      providerConfig.url,
+      providerConfig.isRemote ?? false
+    )
+    validateProvider(providerConfig.instanceId, provider)
+    registry.set(providerConfig.instanceId, provider)
+  }
 }
 
-export function getProvider(id: ProviderId): LLMProvider {
-  const provider = providerRegistry[id]
-  if (!provider) throw new Error(`Unknown provider: ${id}`)
+export function getProvider(instanceId: string): LLMProvider {
+  const provider = registry.get(instanceId)
+  if (!provider) throw new Error(`Unknown provider: ${instanceId}`)
   return provider
 }

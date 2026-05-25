@@ -1,5 +1,3 @@
-import type { LocalProviderId } from './ids'
-
 export interface LoadedInstance {
   id: string
   config?: { context_length?: number }
@@ -8,7 +6,7 @@ export interface LoadedInstance {
 export interface LocalModel {
   id: string
   name: string
-  providerId: LocalProviderId
+  providerId: string
   sizeBytes: number
   type: 'llm' | 'embedding'
   loadedInstances: LoadedInstance[]

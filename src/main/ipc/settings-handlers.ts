@@ -3,6 +3,7 @@ import { promises as fs } from 'fs'
 import { join } from 'path'
 import { SETTINGS } from '@shared/app/ipc-channels'
 import { DEFAULT_APP_SETTINGS, type AppSettings } from '@shared/app/app-settings'
+import { buildRegistry } from '../../core/providers/registry'
 
 function settingsPath(): string {
   return join(app.getPath('userData'), 'settings.json')
@@ -17,6 +18,7 @@ export async function initAppSettings(): Promise<void> {
   } catch {
     cache = { ...DEFAULT_APP_SETTINGS }
   }
+  buildRegistry(cache.configuredProviders)
 }
 
 export function getAppSettings(): AppSettings {
@@ -28,6 +30,7 @@ export function registerSettingsHandlers(): void {
 
   ipcMain.handle(SETTINGS.SAVE, async (_event, settings: AppSettings): Promise<void> => {
     cache = settings
+    buildRegistry(cache.configuredProviders)
     await fs.writeFile(settingsPath(), JSON.stringify(settings, null, 2), 'utf-8')
   })
 }

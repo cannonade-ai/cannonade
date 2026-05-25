@@ -2,7 +2,6 @@ import { api } from '../api'
 import type { TestRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import type { ProviderId } from '@shared/provider/ids'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { evaluateAll } from './evaluator'
 
@@ -43,7 +42,7 @@ function extractHfModelId(modelId: string): string {
 }
 
 async function downloadAndPoll(
-  providerId: ProviderId,
+  providerId: string,
   modelRunId: string,
   hfModelId: string,
   callbacks: RunnerCallbacks,

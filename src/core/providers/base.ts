@@ -1,4 +1,3 @@
-import type { ProviderId } from '@shared/provider/ids'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
@@ -10,7 +9,7 @@ import type {
 } from '@shared/lm-studio/ipc-contracts'
 
 export interface LLMProvider {
-  readonly id: ProviderId
+  readonly id: string
   readonly capabilities: ProviderCapabilities
   fetchLocalModels?(): Promise<LocalModel[]>
   fetchExternalModels?(): Promise<ExternalModel[]>

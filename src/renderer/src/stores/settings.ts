@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { api } from '../api'
-import {
-  DEFAULT_APP_SETTINGS as DEFAULTS,
-  DEFAULT_LM_STUDIO_URL,
-  DEFAULT_OLLAMA_URL,
-  type FontSize
-} from '@shared/app/app-settings'
+import { DEFAULT_APP_SETTINGS as DEFAULTS, type FontSize } from '@shared/app/app-settings'
 import type { ConfiguredProvider } from '@shared/provider/configured-provider'
 
 export type { FontSize }
@@ -24,9 +19,6 @@ export const useSettingsStore = defineStore('settings', () => {
   const autoDeleteModels = ref(DEFAULTS.autoDeleteModels)
   const parallelRuns = ref(DEFAULTS.parallelRuns)
   const defaultTestTimeout = ref(DEFAULTS.defaultTestTimeout)
-  const lmStudioUrl = ref(DEFAULT_LM_STUDIO_URL)
-  const lmStudioRemote = ref(DEFAULTS.lmStudioRemote)
-  const ollamaUrl = ref(DEFAULT_OLLAMA_URL)
   const configuredProviders = ref<ConfiguredProvider[]>(DEFAULTS.configuredProviders)
   const appVersion = ref('')
   const suitesDir = ref('')
@@ -44,9 +36,6 @@ export const useSettingsStore = defineStore('settings', () => {
       autoDeleteModels,
       parallelRuns,
       defaultTestTimeout,
-      lmStudioUrl,
-      lmStudioRemote,
-      ollamaUrl,
       configuredProviders
     ],
     () => {
@@ -58,10 +47,7 @@ export const useSettingsStore = defineStore('settings', () => {
         autoDeleteModels: autoDeleteModels.value,
         parallelRuns: parallelRuns.value,
         defaultTestTimeout: defaultTestTimeout.value,
-        lmStudioUrl: lmStudioUrl.value,
-        lmStudioRemote: lmStudioRemote.value,
-        ollamaUrl: ollamaUrl.value,
-        configuredProviders: configuredProviders.value
+        configuredProviders: configuredProviders.value.map((p) => ({ ...p }))
       })
     }
   )
@@ -81,9 +67,6 @@ export const useSettingsStore = defineStore('settings', () => {
     autoDeleteModels.value = appSettings.autoDeleteModels
     parallelRuns.value = appSettings.parallelRuns
     defaultTestTimeout.value = appSettings.defaultTestTimeout
-    lmStudioUrl.value = appSettings.lmStudioUrl
-    lmStudioRemote.value = appSettings.lmStudioRemote
-    ollamaUrl.value = appSettings.ollamaUrl
     configuredProviders.value = appSettings.configuredProviders ?? []
   }
 
@@ -98,10 +81,31 @@ export const useSettingsStore = defineStore('settings', () => {
     autoDeleteModels.value = DEFAULTS.autoDeleteModels
     parallelRuns.value = DEFAULTS.parallelRuns
     defaultTestTimeout.value = DEFAULTS.defaultTestTimeout
-    lmStudioUrl.value = DEFAULT_LM_STUDIO_URL
-    lmStudioRemote.value = DEFAULTS.lmStudioRemote
-    ollamaUrl.value = DEFAULT_OLLAMA_URL
     configuredProviders.value = []
+  }
+
+  function addProvider(provider: ConfiguredProvider): void {
+    if (configuredProviders.value.length === 0) {
+      configuredProviders.value = [{ ...provider, isDefault: true }]
+    } else {
+      configuredProviders.value = [...configuredProviders.value, provider]
+    }
+  }
+
+  function removeProvider(instanceId: string): void {
+    const remaining = configuredProviders.value.filter((p) => p.instanceId !== instanceId)
+    const hadDefault = configuredProviders.value.find((p) => p.instanceId === instanceId)?.isDefault
+    if (hadDefault && remaining.length > 0) {
+      remaining[0] = { ...remaining[0], isDefault: true }
+    }
+    configuredProviders.value = remaining
+  }
+
+  function setDefault(instanceId: string): void {
+    configuredProviders.value = configuredProviders.value.map((p) => ({
+      ...p,
+      isDefault: p.instanceId === instanceId
+    }))
   }
 
   return {
@@ -112,14 +116,14 @@ export const useSettingsStore = defineStore('settings', () => {
     autoDeleteModels,
     parallelRuns,
     defaultTestTimeout,
-    lmStudioUrl,
-    lmStudioRemote,
-    ollamaUrl,
     configuredProviders,
     appVersion,
     suitesDir,
     init,
     toggleTheme,
-    reset
+    reset,
+    addProvider,
+    removeProvider,
+    setDefault
   }
 })

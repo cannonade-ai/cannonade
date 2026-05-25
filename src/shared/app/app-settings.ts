@@ -2,9 +2,6 @@ import type { ConfiguredProvider } from '../provider/configured-provider'
 
 export type FontSize = 'sm' | 'md' | 'lg'
 
-export const DEFAULT_LM_STUDIO_URL = 'http://localhost:1234'
-export const DEFAULT_OLLAMA_URL = 'http://127.0.0.1:11434'
-
 export interface AppSettings {
   isDark: boolean
   fontSize: FontSize
@@ -13,9 +10,6 @@ export interface AppSettings {
   autoDeleteModels: boolean
   parallelRuns: boolean
   defaultTestTimeout: number
-  lmStudioUrl: string
-  lmStudioRemote: boolean
-  ollamaUrl: string
   configuredProviders: ConfiguredProvider[]
 }
 
@@ -27,8 +21,5 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   autoDeleteModels: false,
   parallelRuns: false,
   defaultTestTimeout: 42000,
-  lmStudioUrl: DEFAULT_LM_STUDIO_URL,
-  lmStudioRemote: false,
-  ollamaUrl: DEFAULT_OLLAMA_URL,
   configuredProviders: []
 }
