@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
-import { IconRefresh, IconSettings } from '@tabler/icons-vue'
+import { IconRefresh, IconSettings, IconAlertCircle } from '@tabler/icons-vue'
 import { computed, onMounted, ref } from 'vue'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import LocalModelCard from '@renderer/components/LocalModelCard.vue'
@@ -12,19 +12,18 @@ import { useNavigationStore } from '@renderer/stores/navigation'
 import { useSettingsStore } from '@renderer/stores/settings'
 
 const store = useModelsStore()
-const nav = useNavigationStore()
+const navStore = useNavigationStore()
 const settingsStore = useSettingsStore()
 const capabilities = ref<ProviderCapabilities | null>(null)
 
-const localProviders = computed(() => settingsStore.configuredProviders)
+const providers = computed(() => settingsStore.configuredProviders)
 
 const providerOptions = computed<SelectOption<string>[]>(() =>
-  localProviders.value.map((p) => ({ value: p.instanceId, label: p.displayName }))
+  providers.value.map((p) => ({ value: p.instanceId, label: p.displayName }))
 )
 
 const providerLabel = computed(
-  () =>
-    localProviders.value.find((p) => p.instanceId === store.activeLocalProvider)?.displayName ?? ''
+  () => providers.value.find((p) => p.instanceId === store.activeLocalProvider)?.displayName ?? ''
 )
 
 const byLoaded = (a: LocalModel, b: LocalModel): number =>
@@ -47,7 +46,7 @@ const provider = computed<string>({
 })
 
 onMounted(() => {
-  if (localProviders.value.length === 0) return
+  if (providers.value.length === 0) return
   store.loadLocalModels()
   store.getCapabilities(store.activeLocalProvider).then((caps) => {
     capabilities.value = caps
@@ -57,43 +56,32 @@ onMounted(() => {
 
 <template>
   <div class="models">
-    <template v-if="localProviders.length === 0">
-      <div class="state-message">
-        No providers configured.
-        <Button :icon="IconSettings" @click="nav.openSettings('providers')"> Add Provider </Button>
-      </div>
-    </template>
+    <div v-if="providers.length === 0" class="no-providers">
+      <IconSettings :size="24" :stroke-width="1.5" class="empty-icon" color="#ffffff30" />
+      <span>No providers configured</span>
+      <Button :icon="IconSettings" @click="navStore.openSettings('providers')">
+        Configure Provider
+      </Button>
+    </div>
 
     <template v-else>
       <SectionHeader>
-        <span v-if="localProviders.length === 1" class="provider-label">{{ providerLabel }}</span>
+        <span v-if="providers.length === 1" class="provider-label">
+          {{ providerLabel }}
+        </span>
         <Select v-else v-model="provider" :options="providerOptions" class="provider-select" />
         <Button :icon="IconRefresh" @click="store.loadLocalModels()">Refresh</Button>
       </SectionHeader>
 
       <div v-if="store.loading" class="state-message">
         <span class="spinner" />
-        Connecting to {{ providerLabel }}…
+        Connecting to {{ providerLabel }}...
       </div>
 
       <div v-else-if="store.error" class="state-message error">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="8" x2="12" y2="12" />
-          <line x1="12" y1="16" x2="12.01" y2="16" />
-        </svg>
+        <IconAlertCircle :size="16" />
         {{ store.error }}
-        <Button :icon="IconSettings" @click="nav.openSettings('providers')">
+        <Button :icon="IconSettings" @click="navStore.openSettings('providers')">
           Configure Provider
         </Button>
       </div>
@@ -132,7 +120,7 @@ onMounted(() => {
 
       <div v-else class="state-message">
         No models found in {{ providerLabel }}.
-        <Button :icon="IconSettings" @click="nav.openSettings('providers')">
+        <Button :icon="IconSettings" @click="navStore.openSettings('providers')">
           Configure Provider
         </Button>
       </div>
@@ -141,6 +129,22 @@ onMounted(() => {
 </template>
 
 <style scoped lang="scss">
+.models {
+  height: 100%;
+}
+
+.no-providers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  flex: 1;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
 .provider-label {
   font-size: var(--text-xs);
   font-weight: 600;
