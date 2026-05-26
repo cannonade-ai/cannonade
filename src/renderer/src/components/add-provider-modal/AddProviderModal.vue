@@ -73,10 +73,8 @@ async function testConnection(): Promise<void> {
 }
 
 function addProvider(): void {
-  const instanceId = selectedType.value === 'custom' ? crypto.randomUUID() : selectedType.value
-
   const provider: ConfiguredProvider = {
-    instanceId,
+    instanceId: crypto.randomUUID(),
     type: selectedType.value,
     displayName: displayName.value.trim(),
     url: url.value.trim(),

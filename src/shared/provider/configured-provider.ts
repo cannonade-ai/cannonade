@@ -3,7 +3,7 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     displayName: 'LM Studio',
     description: 'Local or remote LM Studio server',
     defaultUrl: 'http://localhost:1234',
-    singleton: true,
+    singleton: false,
     supportsRemote: true,
     isExternal: false
   },
@@ -11,7 +11,7 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     displayName: 'Ollama',
     description: 'Local or remote Ollama server',
     defaultUrl: 'http://localhost:11434',
-    singleton: true,
+    singleton: false,
     supportsRemote: true,
     isExternal: false
   },
