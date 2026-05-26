@@ -3,7 +3,7 @@ import { computed, onMounted } from 'vue'
 import { IconPlayerPlay, IconSettings } from '@tabler/icons-vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
-import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import type { TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
@@ -13,10 +13,10 @@ import { TestRunList, TestRunDetail, NewRunPanel } from '@renderer/components/te
 
 const store = useTestRunsStore()
 const suitesStore = useTestSuitesStore()
-const settings = useSettingsStore()
+const providers = useProvidersStore()
 const nav = useNavigationStore()
 
-const hasProviders = computed(() => settings.configuredProviders.length > 0)
+const hasProviders = computed(() => providers.configuredProviders.length > 0)
 
 onMounted(() => {
   if (suitesStore.suites.length === 0) suitesStore.load()

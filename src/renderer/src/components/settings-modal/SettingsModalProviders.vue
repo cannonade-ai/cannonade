@@ -2,12 +2,13 @@
 import { ref } from 'vue'
 import { IconPlus } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
-import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
+
 import SettingsModalProviderCard from './SettingsModalProviderCard.vue'
 import AddProviderModal from '@renderer/components/add-provider-modal/AddProviderModal.vue'
 import type { ConfiguredProvider } from '@shared/provider/configured-provider'
 
-const settings = useSettingsStore()
+const providers = useProvidersStore()
 const addProviderOpen = ref(false)
 const editingProvider = ref<ConfiguredProvider | undefined>(undefined)
 
@@ -29,17 +30,17 @@ function onModalClose(open: boolean): void {
       </Button>
     </div>
 
-    <div v-if="settings.configuredProviders.length === 0" class="providers__empty">
+    <div v-if="providers.configuredProviders.length === 0" class="providers__empty">
       <p class="providers__empty-text">No providers configured.</p>
       <p class="providers__empty-hint">Add a provider to start running tests.</p>
     </div>
 
     <div v-else class="providers__list">
       <SettingsModalProviderCard
-        v-for="provider in settings.configuredProviders"
+        v-for="provider in providers.configuredProviders"
         :key="provider.instanceId"
         :provider="provider"
-        :show-set-default="settings.configuredProviders.length > 1"
+        :show-set-default="providers.configuredProviders.length > 1"
         @edit="openEdit"
       />
     </div>

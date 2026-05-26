@@ -15,6 +15,7 @@ export type ModelRef = InstalledModelRef | HuggingFaceModelRef
 export interface TestRunConfig {
   suiteId: string
   provider: string
+  providerName: string
   models: ModelRef[]
   deleteAutoDownloadedModels?: boolean
   unloadModelsAfterRun?: boolean

@@ -4,13 +4,15 @@ import { IconTank, IconPlus } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
 import AddProviderModal from '@renderer/components/add-provider-modal/AddProviderModal.vue'
 import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
 
 const settings = useSettingsStore()
+const providers = useProvidersStore()
 
 const showModal = ref(false)
 
 watch(showModal, (open) => {
-  if (!open && settings.configuredProviders.length > 0) {
+  if (!open && providers.configuredProviders.length > 0) {
     settings.completeOnboarding()
   }
 })

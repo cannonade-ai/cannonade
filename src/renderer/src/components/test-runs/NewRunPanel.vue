@@ -4,6 +4,7 @@ import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import NewRunModelSelector from '@renderer/components/test-runs/NewRunModelSelector.vue'
 import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
@@ -22,17 +23,18 @@ const emit = defineEmits<{
 
 const modelsStore = useModelsStore()
 const settingsStore = useSettingsStore()
+const providersStore = useProvidersStore()
 
 const capabilities = ref<ProviderCapabilities | null>(null)
 
 const localProviderOptions = computed<{ value: string; label: string }[]>(() =>
-  settingsStore.configuredProviders
+  providersStore.configuredProviders
     .filter((p) => !KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
     .map((p) => ({ value: p.instanceId, label: p.displayName }))
 )
 
 const externalProviderOptions = computed<{ value: string; label: string }[]>(() =>
-  settingsStore.configuredProviders
+  providersStore.configuredProviders
     .filter((p) => KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
     .map((p) => ({ value: p.instanceId, label: p.displayName }))
 )
@@ -43,13 +45,13 @@ const allProviderOptions = computed(() => [
 ])
 
 function isLocalProvider(instanceId: string): boolean {
-  const provider = settingsStore.configuredProviders.find((p) => p.instanceId === instanceId)
+  const provider = providersStore.getProvider(instanceId)
   return provider ? !KNOWN_PROVIDER_DEFAULTS[provider.type].isExternal : false
 }
 
 const initialProvider =
-  settingsStore.configuredProviders.find((p) => p.isDefault)?.instanceId ??
-  settingsStore.configuredProviders[0]?.instanceId ??
+  providersStore.configuredProviders.find((p) => p.isDefault)?.instanceId ??
+  providersStore.configuredProviders[0]?.instanceId ??
   'openrouter'
 
 const form = reactive<{
@@ -83,10 +85,10 @@ watch(
   async (next) => {
     if (!next) return
     form.models = []
-    capabilities.value = await modelsStore.getCapabilities(next)
+    capabilities.value = await providersStore.getCapabilities(next)
     if (!capabilities.value.localModels) form.parallelRun = false
     if (isLocalProvider(next)) {
-      modelsStore.setLocalProvider(next)
+      providersStore.setLocalProvider(next)
       modelsStore.loadLocalModels()
     } else {
       modelsStore.externalProvider = next
@@ -97,10 +99,10 @@ watch(
 )
 
 watch(
-  () => settingsStore.configuredProviders.find((p) => p.instanceId === form.provider),
+  () => providersStore.getProvider(form.provider),
   async (provider) => {
     if (!provider) return
-    capabilities.value = await modelsStore.getCapabilities(form.provider)
+    capabilities.value = await providersStore.getCapabilities(form.provider)
   }
 )
 
@@ -148,11 +150,13 @@ function onSubmit(): void {
     return
   }
   settingsStore.lastSuiteId = form.suiteId
+  const providerName = providersStore.getProvider(form.provider)?.displayName ?? form.provider
   emit(
     'submit',
     {
       suiteId: form.suiteId,
       provider: form.provider,
+      providerName,
       models: form.models,
       deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
       unloadModelsAfterRun: capabilities.value?.loadModel ? form.unloadModelsAfterRun : undefined,

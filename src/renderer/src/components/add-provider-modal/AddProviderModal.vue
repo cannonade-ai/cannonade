@@ -8,7 +8,7 @@ import Field from '@renderer/components/ui/Field.vue'
 import Input from '@renderer/components/ui/Input.vue'
 import Toggle from '@renderer/components/ui/Toggle.vue'
 import AddProviderModalTypeCard from './AddProviderModalTypeCard.vue'
-import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
 import { api } from '@renderer/api'
 import {
   KNOWN_PROVIDER_DEFAULTS,
@@ -32,7 +32,7 @@ const props = defineProps<{
   editProvider?: ConfiguredProvider
 }>()
 
-const settings = useSettingsStore()
+const providers = useProvidersStore()
 
 const step = ref<1 | 2>(1)
 const selectedType = ref<ProviderType>('lmstudio')
@@ -43,7 +43,7 @@ const connectionStatus = ref<'idle' | 'testing' | 'ok' | 'error'>('idle')
 
 const isEditMode = computed(() => !!props.editProvider)
 
-const existingTypes = computed(() => new Set(settings.configuredProviders.map((p) => p.type)))
+const existingTypes = computed(() => new Set(providers.configuredProviders.map((p) => p.type)))
 
 const canAdd = computed(() => displayName.value.trim().length > 0 && url.value.trim().length > 0)
 
@@ -110,14 +110,14 @@ function addProvider(): void {
     ...(selectedDefinition.value.supportsRemote && { isRemote: isRemote.value })
   }
 
-  settings.addProvider(provider)
+  providers.addProvider(provider)
   model.value = false
   reset()
 }
 
 function saveProvider(): void {
   if (!props.editProvider) return
-  settings.updateProvider({
+  providers.updateProvider({
     ...props.editProvider,
     displayName: displayName.value.trim(),
     url: url.value.trim(),

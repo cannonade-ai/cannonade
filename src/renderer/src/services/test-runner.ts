@@ -3,6 +3,7 @@ import type { TestRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import type { LocalModel } from '@shared/provider/local-model'
 import { evaluateAll } from './evaluator'
 
 export interface RunnerCallbacks {
@@ -39,6 +40,31 @@ function toHuggingFaceUrl(modelId: string): string {
 
 function extractHfModelId(modelId: string): string {
   return modelId.startsWith(HF_BASE_URL) ? modelId.slice(HF_BASE_URL.length) : modelId
+}
+
+async function resolveModelKey(providerId: string, hfModelId: string): Promise<string> {
+  const hfParts = hfModelId.split('/')
+  const normalizedKey =
+    hfParts.length >= 2 ? hfParts[hfParts.length - 1].toLowerCase().replace(/-gguf$/i, '') : null
+
+  const findMatch = (models: LocalModel[]): LocalModel | undefined =>
+    models.find(
+      (m) =>
+        m.id.toLowerCase().includes(hfModelId.toLowerCase()) ||
+        (normalizedKey !== null && m.id.toLowerCase() === normalizedKey) ||
+        (normalizedKey !== null && m.id.toLowerCase().endsWith('/' + normalizedKey))
+    )
+
+  let match = findMatch(await api.fetchLocalModels(providerId))
+  if (!match) {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      match = findMatch(await api.fetchLocalModels(providerId))
+      if (match) break
+    }
+  }
+  if (!match) throw new Error(`Downloaded model not found in provider: ${hfModelId}`)
+  return match.id
 }
 
 async function downloadAndPoll(
@@ -181,10 +207,7 @@ export async function executeTestRun(
       modelKey = modelRun.modelRef.modelKey
     } else {
       const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
-      const localModels = await api.fetchLocalModels(providerId)
-      const match = localModels.find((m) => m.id.toLowerCase().includes(hfModelId.toLowerCase()))
-      if (!match) throw new Error(`Downloaded model not found in provider: ${hfModelId}`)
-      modelKey = match.id
+      modelKey = await resolveModelKey(providerId, hfModelId)
     }
 
     console.log('[test-runner] Starting model run:', modelRun)

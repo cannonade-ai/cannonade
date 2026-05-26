@@ -3,7 +3,7 @@ import { onMounted, ref } from 'vue'
 import { IconStar, IconStarFilled, IconTrash, IconPencil } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
 import SettingsModalProviderCardServerStatus from './SettingsModalProviderCardServerStatus.vue'
-import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { api } from '@renderer/api'
 import type { ConfiguredProvider } from '@shared/provider/configured-provider'
@@ -17,7 +17,7 @@ const emit = defineEmits<{
   edit: [provider: ConfiguredProvider]
 }>()
 
-const settings = useSettingsStore()
+const providers = useProvidersStore()
 const confirm = useConfirmStore()
 
 const serverControl = ref(false)
@@ -29,11 +29,11 @@ async function remove(): Promise<void> {
     confirmText: 'Remove',
     danger: true
   })
-  if (ok) settings.removeProvider(props.provider.instanceId)
+  if (ok) providers.removeProvider(props.provider.instanceId)
 }
 
 function setDefault(): void {
-  settings.setDefault(props.provider.instanceId)
+  providers.setDefault(props.provider.instanceId)
 }
 
 onMounted(async () => {

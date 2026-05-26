@@ -8,20 +8,22 @@ import SectionHeader from '@renderer/components/SectionHeader.vue'
 import type { LocalModel } from '@shared/provider/local-model'
 import { useModelsStore } from '@renderer/stores/models'
 import { useNavigationStore } from '@renderer/stores/navigation'
-import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
 
 const store = useModelsStore()
 const navStore = useNavigationStore()
-const settingsStore = useSettingsStore()
+const providersStore = useProvidersStore()
 
-const providers = computed(() => settingsStore.configuredProviders)
+const providers = computed(() => providersStore.configuredProviders)
 
 const providerOptions = computed<SelectOption<string>[]>(() =>
   providers.value.map((p) => ({ value: p.instanceId, label: p.displayName }))
 )
 
 const providerLabel = computed(
-  () => providers.value.find((p) => p.instanceId === store.activeLocalProvider)?.displayName ?? ''
+  () =>
+    providers.value.find((p) => p.instanceId === providersStore.activeLocalProvider)?.displayName ??
+    ''
 )
 
 const byLoaded = (a: LocalModel, b: LocalModel): number =>
@@ -33,9 +35,9 @@ const embeddings = computed(() =>
 )
 
 const provider = computed<string>({
-  get: () => store.activeLocalProvider,
+  get: () => providersStore.activeLocalProvider,
   set: (v) => {
-    store.setLocalProvider(v)
+    providersStore.setLocalProvider(v)
     store.loadLocalModels()
   }
 })
@@ -89,7 +91,7 @@ onMounted(() => {
               v-for="model in llms"
               :key="model.id"
               :model="model"
-              :capabilities="store.activeCapabilities"
+              :capabilities="providersStore.activeCapabilities"
             />
           </div>
         </section>
@@ -104,7 +106,7 @@ onMounted(() => {
               v-for="model in embeddings"
               :key="model.id"
               :model="model"
-              :capabilities="store.activeCapabilities"
+              :capabilities="providersStore.activeCapabilities"
             />
           </div>
         </section>
