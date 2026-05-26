@@ -2,36 +2,39 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, SUITES, SETTINGS, TEST_RUNS, EVAL } from '@shared/app/ipc-channels'
-import type { ProviderId } from '@shared/provider/ids'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest } from '@shared/lm-studio/chat'
+import type { ProviderType } from '@shared/provider/configured-provider'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
 
 const api = {
-  fetchLocalModels: (providerId: ProviderId) =>
-    ipcRenderer.invoke(PROVIDER.FETCH_LOCAL_MODELS, providerId),
-  fetchExternalModels: (providerId: ProviderId) =>
-    ipcRenderer.invoke(PROVIDER.FETCH_EXTERNAL_MODELS, providerId),
-  chat: (providerId: ProviderId, modelId: string, request: ChatRequest) =>
-    ipcRenderer.invoke(PROVIDER.CHAT, providerId, modelId, request),
-  getCapabilities: (providerId: ProviderId) =>
-    ipcRenderer.invoke(PROVIDER.GET_CAPABILITIES, providerId),
-  downloadModel: (providerId: ProviderId, url: string) =>
-    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL, providerId, url),
-  getDownloadStatus: (providerId: ProviderId, jobId: string) =>
-    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL_STATUS, providerId, jobId),
-  deleteModel: (providerId: ProviderId, modelId: string) =>
-    ipcRenderer.invoke(PROVIDER.DELETE_MODEL, providerId, modelId),
-  deleteModelByHfId: (providerId: ProviderId, hfModelId: string) =>
-    ipcRenderer.invoke(PROVIDER.DELETE_MODEL_BY_HF_ID, providerId, hfModelId),
-  loadModel: (providerId: ProviderId, modelId: string) =>
-    ipcRenderer.invoke(PROVIDER.LOAD_MODEL, providerId, modelId),
-  unloadModel: (providerId: ProviderId, instanceId: string) =>
-    ipcRenderer.invoke(PROVIDER.UNLOAD_MODEL, providerId, instanceId),
-  serverStatus: (providerId: ProviderId) => ipcRenderer.invoke(PROVIDER.SERVER_STATUS, providerId),
-  serverStart: (providerId: ProviderId) => ipcRenderer.invoke(PROVIDER.SERVER_START, providerId),
-  serverStop: (providerId: ProviderId) => ipcRenderer.invoke(PROVIDER.SERVER_STOP, providerId),
+  fetchLocalModels: (instanceId: string) =>
+    ipcRenderer.invoke(PROVIDER.FETCH_LOCAL_MODELS, instanceId),
+  fetchExternalModels: (instanceId: string) =>
+    ipcRenderer.invoke(PROVIDER.FETCH_EXTERNAL_MODELS, instanceId),
+  chat: (instanceId: string, modelId: string, request: ChatRequest) =>
+    ipcRenderer.invoke(PROVIDER.CHAT, instanceId, modelId, request),
+  getCapabilities: (instanceId: string) =>
+    ipcRenderer.invoke(PROVIDER.GET_CAPABILITIES, instanceId),
+  downloadModel: (instanceId: string, url: string) =>
+    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL, instanceId, url),
+  getDownloadStatus: (instanceId: string, jobId: string) =>
+    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL_STATUS, instanceId, jobId),
+  deleteModel: (instanceId: string, modelId: string) =>
+    ipcRenderer.invoke(PROVIDER.DELETE_MODEL, instanceId, modelId),
+  deleteModelByHfId: (instanceId: string, hfModelId: string) =>
+    ipcRenderer.invoke(PROVIDER.DELETE_MODEL_BY_HF_ID, instanceId, hfModelId),
+  loadModel: (instanceId: string, modelId: string) =>
+    ipcRenderer.invoke(PROVIDER.LOAD_MODEL, instanceId, modelId),
+  unloadModel: (instanceId: string, loadedInstanceId: string) =>
+    ipcRenderer.invoke(PROVIDER.UNLOAD_MODEL, instanceId, loadedInstanceId),
+  serverStatus: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_STATUS, instanceId),
+  serverStart: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_START, instanceId),
+  serverStop: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_STOP, instanceId),
+  testConnection: (instanceId: string) => ipcRenderer.invoke(PROVIDER.TEST_CONNECTION, instanceId),
+  testConnectionUrl: (type: ProviderType, url: string) =>
+    ipcRenderer.invoke(PROVIDER.TEST_CONNECTION_URL, type, url),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),

@@ -1,5 +1,4 @@
 import { ElectronAPI } from '@electron-toolkit/preload'
-import type { ProviderId } from '@shared/provider/ids'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
@@ -11,22 +10,25 @@ import type {
   ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
+import type { ProviderType } from '@shared/provider/configured-provider'
 import type { TestRun } from '@shared/app/test-run'
 
 export interface AppAPI {
-  fetchLocalModels(providerId: ProviderId): Promise<LocalModel[]>
-  fetchExternalModels(providerId: ProviderId): Promise<ExternalModel[]>
-  chat(providerId: ProviderId, modelId: string, request: ChatRequest): Promise<ChatResponse>
-  getCapabilities(providerId: ProviderId): Promise<ProviderCapabilities>
-  downloadModel(providerId: ProviderId, url: string): Promise<DownloadModelResponse>
-  getDownloadStatus(providerId: ProviderId, jobId: string): Promise<DownloadStatusResponse>
-  deleteModel(providerId: ProviderId, modelId: string): Promise<void>
-  deleteModelByHfId(providerId: ProviderId, hfModelId: string): Promise<void>
-  loadModel(providerId: ProviderId, modelId: string): Promise<void>
-  unloadModel(providerId: ProviderId, instanceId: string): Promise<void>
-  serverStatus(providerId: ProviderId): Promise<ServerStatusResponse>
-  serverStart(providerId: ProviderId): Promise<ServerStatusResponse>
-  serverStop(providerId: ProviderId): Promise<ServerStatusResponse>
+  fetchLocalModels(instanceId: string): Promise<LocalModel[]>
+  fetchExternalModels(instanceId: string): Promise<ExternalModel[]>
+  chat(instanceId: string, modelId: string, request: ChatRequest): Promise<ChatResponse>
+  getCapabilities(instanceId: string): Promise<ProviderCapabilities>
+  downloadModel(instanceId: string, url: string): Promise<DownloadModelResponse>
+  getDownloadStatus(instanceId: string, jobId: string): Promise<DownloadStatusResponse>
+  deleteModel(instanceId: string, modelId: string): Promise<void>
+  deleteModelByHfId(instanceId: string, hfModelId: string): Promise<void>
+  loadModel(instanceId: string, modelId: string): Promise<void>
+  unloadModel(instanceId: string, loadedInstanceId: string): Promise<void>
+  serverStatus(instanceId: string): Promise<ServerStatusResponse>
+  serverStart(instanceId: string): Promise<ServerStatusResponse>
+  serverStop(instanceId: string): Promise<ServerStatusResponse>
+  testConnection(instanceId: string): Promise<boolean>
+  testConnectionUrl(type: ProviderType, url: string): Promise<boolean>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>

@@ -1,154 +1,98 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
-import { IconRefresh, IconPlayerPlay, IconPlayerStop } from '@tabler/icons-vue'
-import { useSettingsStore } from '@renderer/stores/settings'
-import { useModelsStore } from '@renderer/stores/models'
-import { api } from '@renderer/api'
-import type { ProviderCapabilities } from '@shared/provider/capabilities'
-import type { ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
-import Toggle from '@renderer/components/ui/Toggle.vue'
-import Input from '@renderer/components/ui/Input.vue'
+import { ref } from 'vue'
+import { IconPlus } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
-import SettingsModalRow from './SettingsModalRow.vue'
-import SettingsModalDivider from './SettingsModalDivider.vue'
-import SettingsModalOllama from './SettingsModalOllama.vue'
+import { useProvidersStore } from '@renderer/stores/providers'
 
-const settings = useSettingsStore()
-const modelsStore = useModelsStore()
+import SettingsModalProviderCard from './SettingsModalProviderCard.vue'
+import AddProviderModal from '@renderer/components/add-provider-modal/AddProviderModal.vue'
+import type { ConfiguredProvider } from '@shared/provider/configured-provider'
 
-const capabilities = ref<ProviderCapabilities | null>(null)
-const serverStatus = ref<ServerStatusResponse | null>(null)
-const serverLoading = ref(false)
-const lmStudioUrlInput = ref(settings.lmStudioUrl)
+const providers = useProvidersStore()
+const addProviderOpen = ref(false)
+const editingProvider = ref<ConfiguredProvider | undefined>(undefined)
 
-watch(lmStudioUrlInput, (value) => {
-  try {
-    new URL(value)
-    settings.lmStudioUrl = value
-  } catch {
-    /* invalid url */
-  }
-})
-
-async function withLoading(fn: () => Promise<ServerStatusResponse>): Promise<void> {
-  serverLoading.value = true
-  serverStatus.value = await fn()
-  serverLoading.value = false
+function openEdit(provider: ConfiguredProvider): void {
+  editingProvider.value = provider
+  addProviderOpen.value = true
 }
 
-const refreshServerStatus = (): Promise<void> => withLoading(() => api.serverStatus('lmstudio'))
-const startServer = (): Promise<void> => withLoading(() => api.serverStart('lmstudio'))
-const stopServer = (): Promise<void> => withLoading(() => api.serverStop('lmstudio'))
-
-watch(
-  () => settings.lmStudioRemote,
-  (remote) => {
-    if (!remote) refreshServerStatus()
-  }
-)
-
-onMounted(async () => {
-  capabilities.value = await modelsStore.getCapabilities('lmstudio')
-  if (!settings.lmStudioRemote) refreshServerStatus()
-})
+function onModalClose(open: boolean): void {
+  if (!open) editingProvider.value = undefined
+}
 </script>
 
 <template>
-  <div class="section">
-    <SettingsModalDivider label="LM Studio" />
-    <SettingsModalRow label="API URL" hint="LM Studio server URL">
-      <Input
-        v-model="lmStudioUrlInput"
-        type="url"
-        placeholder="http://localhost:1234"
-        class="input-url"
+  <div class="providers">
+    <div class="providers__toolbar">
+      <Button type="primary" :icon="IconPlus" :icon-size="14" @click="addProviderOpen = true">
+        Add Provider
+      </Button>
+    </div>
+
+    <div v-if="providers.configuredProviders.length === 0" class="providers__empty">
+      <p class="providers__empty-text">No providers configured.</p>
+      <p class="providers__empty-hint">Add a provider to start running tests.</p>
+    </div>
+
+    <div v-else class="providers__list">
+      <SettingsModalProviderCard
+        v-for="provider in providers.configuredProviders"
+        :key="provider.instanceId"
+        :provider="provider"
+        :show-set-default="providers.configuredProviders.length > 1"
+        @edit="openEdit"
       />
-    </SettingsModalRow>
-    <SettingsModalRow label="Remote server" hint="Connect to LM Studio on another device">
-      <Toggle v-model="settings.lmStudioRemote" />
-    </SettingsModalRow>
-    <template v-if="capabilities?.serverControl && !settings.lmStudioRemote">
-      <SettingsModalRow label="Server">
-        <div class="server-controls">
-          <span
-            class="status-dot"
-            :class="{
-              running: serverStatus?.running === true,
-              stopped: serverStatus?.running === false
-            }"
-          />
-          <span class="status-label">
-            <template v-if="serverStatus === null">Checking…</template>
-            <template v-else-if="serverStatus.running">
-              Running on port {{ serverStatus.port }}
-            </template>
-            <template v-else>Not running</template>
-          </span>
-          <Button
-            v-if="serverStatus?.running === false"
-            :icon="IconPlayerPlay"
-            :disabled="serverLoading"
-            @click="startServer"
-          >
-            Start
-          </Button>
-          <Button
-            v-if="serverStatus?.running === true"
-            :icon="IconPlayerStop"
-            :disabled="serverLoading"
-            @click="stopServer"
-          >
-            Stop
-          </Button>
-          <Button
-            type="icon"
-            :icon="IconRefresh"
-            :disabled="serverLoading"
-            @click="refreshServerStatus"
-          />
-        </div>
-      </SettingsModalRow>
-    </template>
+    </div>
+
+    <AddProviderModal
+      v-model="addProviderOpen"
+      :edit-provider="editingProvider"
+      @update:model-value="onModalClose"
+    />
   </div>
-  <SettingsModalOllama />
 </template>
 
 <style scoped lang="scss">
-.section {
+.providers {
   display: flex;
   flex-direction: column;
-  margin-bottom: 1rem;
-}
+  gap: 16px;
 
-.input-url {
-  width: 250px;
-}
-
-.server-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--text-faint);
-  flex-shrink: 0;
-
-  &.running {
-    background: var(--green);
+  &__toolbar {
+    display: flex;
+    justify-content: flex-end;
   }
 
-  &.stopped {
-    background: var(--error);
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
-}
 
-.status-label {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  white-space: nowrap;
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 48px 24px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-lg);
+    text-align: center;
+  }
+
+  &__empty-text {
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  &__empty-hint {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin: 0;
+  }
 }
 </style>

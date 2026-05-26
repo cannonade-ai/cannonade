@@ -4,11 +4,11 @@ import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import NewRunModelSelector from '@renderer/components/test-runs/NewRunModelSelector.vue'
 import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
+import { useProvidersStore } from '@renderer/stores/providers'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { ProviderId, LocalProviderId } from '@shared/provider/ids'
-import { LOCAL_PROVIDERS } from '@shared/provider/ids'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import { KNOWN_PROVIDER_DEFAULTS } from '@shared/provider/configured-provider'
 import { IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 
@@ -23,19 +23,47 @@ const emit = defineEmits<{
 
 const modelsStore = useModelsStore()
 const settingsStore = useSettingsStore()
+const providersStore = useProvidersStore()
 
 const capabilities = ref<ProviderCapabilities | null>(null)
 
+const localProviderOptions = computed<{ value: string; label: string }[]>(() =>
+  providersStore.configuredProviders
+    .filter((p) => !KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
+    .map((p) => ({ value: p.instanceId, label: p.displayName }))
+)
+
+const externalProviderOptions = computed<{ value: string; label: string }[]>(() =>
+  providersStore.configuredProviders
+    .filter((p) => KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
+    .map((p) => ({ value: p.instanceId, label: p.displayName }))
+)
+
+const allProviderOptions = computed(() => [
+  ...localProviderOptions.value,
+  ...externalProviderOptions.value
+])
+
+function isLocalProvider(instanceId: string): boolean {
+  const provider = providersStore.getProvider(instanceId)
+  return provider ? !KNOWN_PROVIDER_DEFAULTS[provider.type].isExternal : false
+}
+
+const initialProvider =
+  providersStore.configuredProviders.find((p) => p.isDefault)?.instanceId ??
+  providersStore.configuredProviders[0]?.instanceId ??
+  'openrouter'
+
 const form = reactive<{
   suiteId: string
-  provider: ProviderId
+  provider: string
   models: ModelRef[]
   deleteAutoDownloadedModels: boolean
   unloadModelsAfterRun: boolean
   parallelRun: boolean
 }>({
   suiteId: '',
-  provider: settingsStore.lastProvider,
+  provider: initialProvider,
   models: [],
   deleteAutoDownloadedModels: false,
   unloadModelsAfterRun: false,
@@ -55,18 +83,27 @@ onMounted(() => {
 watch(
   () => form.provider,
   async (next) => {
+    if (!next) return
     form.models = []
-    capabilities.value = await modelsStore.getCapabilities(next)
+    capabilities.value = await providersStore.getCapabilities(next)
     if (!capabilities.value.localModels) form.parallelRun = false
-    if (next in LOCAL_PROVIDERS) {
-      modelsStore.localProvider = next as LocalProviderId
+    if (isLocalProvider(next)) {
+      providersStore.setLocalProvider(next)
       modelsStore.loadLocalModels()
     } else {
-      modelsStore.externalProvider = next as 'openrouter'
+      modelsStore.externalProvider = next
       modelsStore.loadExternalModels()
     }
   },
   { immediate: true }
+)
+
+watch(
+  () => providersStore.getProvider(form.provider),
+  async (provider) => {
+    if (!provider) return
+    capabilities.value = await providersStore.getCapabilities(form.provider)
+  }
 )
 
 watch(
@@ -79,14 +116,14 @@ watch(
 watch(
   () => modelsStore.loading,
   (loading) => {
-    if (loading || !(form.provider in LOCAL_PROVIDERS) || form.models.length > 0) return
+    if (loading || !isLocalProvider(form.provider) || form.models.length > 0) return
     const loaded = installedModels.value.find((m) => m.loaded)
     if (loaded) form.models = [{ source: 'installed', modelKey: loaded.key }]
   }
 )
 
 const installedModels = computed(() => {
-  if (form.provider in LOCAL_PROVIDERS) {
+  if (isLocalProvider(form.provider)) {
     return modelsStore.localModels.map((m) => ({
       key: m.id,
       label: m.name,
@@ -113,12 +150,13 @@ function onSubmit(): void {
     return
   }
   settingsStore.lastSuiteId = form.suiteId
-  settingsStore.lastProvider = form.provider
+  const providerName = providersStore.getProvider(form.provider)?.displayName ?? form.provider
   emit(
     'submit',
     {
       suiteId: form.suiteId,
       provider: form.provider,
+      providerName,
       models: form.models,
       deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
       unloadModelsAfterRun: capabilities.value?.loadModel ? form.unloadModelsAfterRun : undefined,
@@ -142,15 +180,17 @@ function onSubmit(): void {
       <Select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
     </Field>
 
-    <Field label="Provider">
-      <RadioGroup
-        v-model="form.provider"
-        :options="[
-          { value: 'lmstudio', label: 'LM Studio' },
-          { value: 'ollama', label: 'Ollama' },
-          { value: 'openrouter', label: 'OpenRouter' }
-        ]"
-      />
+    <Field v-if="allProviderOptions.length > 0" label="Provider">
+      <div class="provider-groups">
+        <div v-if="localProviderOptions.length > 0" class="provider-group">
+          <span class="group-label">Local</span>
+          <RadioGroup v-model="form.provider" :options="localProviderOptions" />
+        </div>
+        <div v-if="externalProviderOptions.length > 0" class="provider-group">
+          <span class="group-label">External</span>
+          <RadioGroup v-model="form.provider" :options="externalProviderOptions" />
+        </div>
+      </div>
     </Field>
 
     <Field label="Models">
@@ -169,7 +209,7 @@ function onSubmit(): void {
           <span class="toggle-label">Unload models after run</span>
           <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
         </label>
-        <label v-if="capabilities?.downloadModel" class="toggle-row">
+        <label v-if="capabilities?.downloadModel && capabilities.deleteModel" class="toggle-row">
           <span class="toggle-label">Delete auto-downloaded models after run</span>
           <Toggle v-model="form.deleteAutoDownloadedModels" />
         </label>
@@ -213,6 +253,26 @@ function onSubmit(): void {
 .divider {
   border-top: 1px solid var(--border);
   margin: 0 -0.875rem;
+}
+
+.provider-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.provider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.group-label {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-weight: 500;
+  min-width: 52px;
+  flex-shrink: 0;
 }
 
 .options-list {

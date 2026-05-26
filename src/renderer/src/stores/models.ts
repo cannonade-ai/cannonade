@@ -1,41 +1,32 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { api } from '../api'
-import {
-  LOCAL_PROVIDERS,
-  type LocalProviderId,
-  type ExternalProviderId,
-  type ProviderId
-} from '@shared/provider/ids'
+import { useProvidersStore } from './providers'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
-import type { ProviderCapabilities } from '@shared/provider/capabilities'
-import { useSettingsStore } from './settings'
 
 export const useModelsStore = defineStore('models', () => {
-  const settings = useSettingsStore()
-  const localProvider = ref<LocalProviderId>(
-    settings.lastProvider in LOCAL_PROVIDERS
-      ? (settings.lastProvider as LocalProviderId)
-      : 'lmstudio'
-  )
-  const externalProvider = ref<ExternalProviderId>('openrouter')
+  const providersStore = useProvidersStore()
+
+  const externalProvider = ref<string>('')
   const localModels = ref<LocalModel[]>([])
   const externalModels = ref<ExternalModel[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
-  const capabilitiesCache = ref<Partial<Record<ProviderId, ProviderCapabilities>>>({})
 
   async function loadLocalModels(): Promise<void> {
+    const instanceId = providersStore.activeLocalProvider
+    if (!instanceId) return
     loading.value = true
     error.value = null
     try {
-      localModels.value = await api.fetchLocalModels(localProvider.value)
+      localModels.value = await api.fetchLocalModels(instanceId)
     } catch (e) {
       localModels.value = []
       if (e instanceof Error) {
+        const providerName = providersStore.getProvider(instanceId)?.displayName ?? instanceId
         if (e.message.includes('fetch failed')) {
-          error.value = `Cannot connect to ${localProvider.value}. Make sure the service is running and the server URL is correct.`
+          error.value = `Cannot connect to ${providerName}. Make sure the service is running and the server URL is correct.`
         } else {
           error.value = e.message
         }
@@ -66,24 +57,13 @@ export const useModelsStore = defineStore('models', () => {
     }
   }
 
-  async function getCapabilities(providerId: ProviderId): Promise<ProviderCapabilities> {
-    if (capabilitiesCache.value[providerId]) {
-      return capabilitiesCache.value[providerId]!
-    }
-    const capabilities = await api.getCapabilities(providerId)
-    capabilitiesCache.value[providerId] = capabilities
-    return capabilities
-  }
-
   return {
-    localProvider,
     externalProvider,
     localModels,
     externalModels,
     loading,
     error,
     loadLocalModels,
-    loadExternalModels,
-    getCapabilities
+    loadExternalModels
   }
 })

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { IconPlayerPlay } from '@tabler/icons-vue'
+import { computed, onMounted } from 'vue'
+import { IconPlayerPlay, IconSettings } from '@tabler/icons-vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
+import { useProvidersStore } from '@renderer/stores/providers'
+import { useNavigationStore } from '@renderer/stores/navigation'
 import type { TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import { Button } from '@renderer/components/ui'
@@ -11,6 +13,10 @@ import { TestRunList, TestRunDetail, NewRunPanel } from '@renderer/components/te
 
 const store = useTestRunsStore()
 const suitesStore = useTestSuitesStore()
+const providers = useProvidersStore()
+const nav = useNavigationStore()
+
+const hasProviders = computed(() => providers.configuredProviders.length > 0)
 
 onMounted(() => {
   if (suitesStore.suites.length === 0) suitesStore.load()
@@ -24,11 +30,19 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
 
 <template>
   <div class="view">
-    <SectionHeader>
+    <SectionHeader v-if="hasProviders">
       <Button type="primary" :icon="IconPlayerPlay" @click="store.startNewRun"> New Run </Button>
     </SectionHeader>
 
-    <div class="panels">
+    <div v-if="!hasProviders" class="no-providers">
+      <IconSettings :size="24" :stroke-width="1.5" color="#ffffff30" />
+      <span>No providers configured</span>
+      <Button :icon="IconSettings" @click="nav.openSettings('providers')">
+        Configure Provider
+      </Button>
+    </div>
+
+    <div v-else class="panels">
       <TestRunList
         :runs="store.runs"
         :selected-id="store.selectedRunId"
@@ -42,7 +56,7 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
       />
       <TestRunDetail v-else-if="store.selectedRun" :run="store.selectedRun" />
       <div v-else class="empty-detail">
-        <IconPlayerPlay :size="24" :stroke-width="1.5" class="empty-icon" />
+        <IconPlayerPlay :size="24" :stroke-width="1.5" color="#ffffff30" />
         <span>Select a run or start a new one</span>
       </div>
     </div>
@@ -65,6 +79,18 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
   overflow: hidden;
 }
 
+.no-providers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 12px;
+  flex: 1;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
 .empty-detail {
   display: flex;
   flex-direction: column;
@@ -75,9 +101,5 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
   font-size: var(--text-sm);
   border: 1px solid var(--border);
   background: var(--surface);
-}
-
-.empty-icon {
-  opacity: 0.3;
 }
 </style>

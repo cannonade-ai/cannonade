@@ -1,13 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref, watch } from 'vue'
 import { api } from '../api'
-import {
-  DEFAULT_APP_SETTINGS as DEFAULTS,
-  DEFAULT_LM_STUDIO_URL,
-  DEFAULT_OLLAMA_URL,
-  type FontSize
-} from '@shared/app/app-settings'
-import type { ProviderId } from '@shared/provider/ids'
+import { DEFAULT_APP_SETTINGS as DEFAULTS, type FontSize } from '@shared/app/app-settings'
+import { useProvidersStore } from './providers'
 
 export type { FontSize }
 
@@ -17,17 +12,16 @@ function applyTheme(dark: boolean): void {
 }
 
 export const useSettingsStore = defineStore('settings', () => {
+  const providersStore = useProvidersStore()
+
   const isDark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches)
   const fontSize = ref<FontSize>(DEFAULTS.fontSize)
   const language = ref(DEFAULTS.language)
   const lastSuiteId = ref<string | null>(DEFAULTS.lastSuiteId)
-  const lastProvider = ref<ProviderId>(DEFAULTS.lastProvider)
   const autoDeleteModels = ref(DEFAULTS.autoDeleteModels)
   const parallelRuns = ref(DEFAULTS.parallelRuns)
   const defaultTestTimeout = ref(DEFAULTS.defaultTestTimeout)
-  const lmStudioUrl = ref(DEFAULT_LM_STUDIO_URL)
-  const lmStudioRemote = ref(DEFAULTS.lmStudioRemote)
-  const ollamaUrl = ref(DEFAULT_OLLAMA_URL)
+  const onboardingComplete = ref(DEFAULTS.onboardingComplete)
   const appVersion = ref('')
   const suitesDir = ref('')
 
@@ -41,13 +35,11 @@ export const useSettingsStore = defineStore('settings', () => {
       fontSize,
       language,
       lastSuiteId,
-      lastProvider,
       autoDeleteModels,
       parallelRuns,
       defaultTestTimeout,
-      lmStudioUrl,
-      lmStudioRemote,
-      ollamaUrl
+      providersStore.configuredProviders,
+      onboardingComplete
     ],
     () => {
       api.saveAppSettings({
@@ -55,13 +47,11 @@ export const useSettingsStore = defineStore('settings', () => {
         fontSize: fontSize.value,
         language: language.value,
         lastSuiteId: lastSuiteId.value,
-        lastProvider: lastProvider.value,
         autoDeleteModels: autoDeleteModels.value,
         parallelRuns: parallelRuns.value,
         defaultTestTimeout: defaultTestTimeout.value,
-        lmStudioUrl: lmStudioUrl.value,
-        lmStudioRemote: lmStudioRemote.value,
-        ollamaUrl: ollamaUrl.value
+        configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p })),
+        onboardingComplete: onboardingComplete.value
       })
     }
   )
@@ -78,13 +68,11 @@ export const useSettingsStore = defineStore('settings', () => {
     fontSize.value = appSettings.fontSize
     language.value = appSettings.language
     lastSuiteId.value = appSettings.lastSuiteId
-    lastProvider.value = appSettings.lastProvider ?? DEFAULTS.lastProvider
     autoDeleteModels.value = appSettings.autoDeleteModels
     parallelRuns.value = appSettings.parallelRuns
     defaultTestTimeout.value = appSettings.defaultTestTimeout
-    lmStudioUrl.value = appSettings.lmStudioUrl
-    lmStudioRemote.value = appSettings.lmStudioRemote
-    ollamaUrl.value = appSettings.ollamaUrl
+    onboardingComplete.value = appSettings.onboardingComplete ?? false
+    providersStore.init(appSettings.configuredProviders ?? [])
   }
 
   function toggleTheme(): void {
@@ -98,9 +86,12 @@ export const useSettingsStore = defineStore('settings', () => {
     autoDeleteModels.value = DEFAULTS.autoDeleteModels
     parallelRuns.value = DEFAULTS.parallelRuns
     defaultTestTimeout.value = DEFAULTS.defaultTestTimeout
-    lmStudioUrl.value = DEFAULT_LM_STUDIO_URL
-    lmStudioRemote.value = DEFAULTS.lmStudioRemote
-    ollamaUrl.value = DEFAULT_OLLAMA_URL
+    onboardingComplete.value = false
+    providersStore.init([])
+  }
+
+  function completeOnboarding(): void {
+    onboardingComplete.value = true
   }
 
   return {
@@ -108,17 +99,15 @@ export const useSettingsStore = defineStore('settings', () => {
     fontSize,
     language,
     lastSuiteId,
-    lastProvider,
     autoDeleteModels,
     parallelRuns,
     defaultTestTimeout,
-    lmStudioUrl,
-    lmStudioRemote,
-    ollamaUrl,
+    onboardingComplete,
     appVersion,
     suitesDir,
     init,
     toggleTheme,
-    reset
+    reset,
+    completeOnboarding
   }
 })

@@ -49,9 +49,7 @@ async function showDeleteConfirm(): Promise<void> {
 <template>
   <Panel title="Test Run Details">
     <template #header-right>
-      <span class="meta-tag">{{
-        run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter'
-      }}</span>
+      <span class="meta-tag">{{ run.config.providerName ?? run.config.provider }}</span>
       <span v-if="run.config.parallelRun" class="meta-tag">Parallel</span>
       <span class="meta-date">{{ formatDate(run.createdAt) }}</span>
     </template>

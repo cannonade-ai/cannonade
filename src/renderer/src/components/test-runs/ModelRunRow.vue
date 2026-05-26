@@ -35,7 +35,8 @@ const showTestCases = computed<boolean>(() => {
 })
 
 function modelLabel(ref: ModelRef): string {
-  return ref.source === 'installed' ? ref.modelKey : ref.modelId
+  const key = ref.source === 'installed' ? ref.modelKey : ref.modelId
+  return key.replace(/^(huggingface\.co|hf\.co)\//, '').replace(/:latest$/, '')
 }
 
 function duration(mr: PerModelRun): string {

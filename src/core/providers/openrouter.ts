@@ -1,15 +1,12 @@
 import type { LLMProvider } from './base'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { Model } from '@shared/open-router/ipc-contracts'
-import type { ChatResponse } from '@shared/lm-studio/chat'
 
-const API_BASE = 'http://localhost:3000'
-
-function mapToExternalModel(model: Model): ExternalModel {
+function mapToExternalModel(instanceId: string, model: Model): ExternalModel {
   return {
     id: model.id,
     name: model.name,
-    providerId: 'openrouter',
+    providerId: instanceId,
     contextLength: model.context_length,
     meta: {
       canonical_slug: model.canonical_slug,
@@ -23,29 +20,29 @@ function mapToExternalModel(model: Model): ExternalModel {
   }
 }
 
-export const openRouterProvider: LLMProvider = {
-  id: 'openrouter',
+export function createOpenRouterProvider(instanceId: string, baseUrl: string): LLMProvider {
+  const normalizedBase = baseUrl.replace(/\/$/, '')
 
-  capabilities: {
-    chat: false,
-    localModels: false,
-    externalModels: true,
-    downloadModel: false,
-    downloadStatus: false,
-    deleteModel: false,
-    loadModel: false,
-    serverControl: false,
-    requiresApiKey: true
-  },
+  return {
+    id: instanceId,
 
-  async fetchExternalModels(): Promise<ExternalModel[]> {
-    const res = await fetch(`${API_BASE}/api/v1/models`)
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-    const data = (await res.json()) as { data: Model[] }
-    return data.data.map(mapToExternalModel)
-  },
+    capabilities: {
+      chat: false,
+      localModels: false,
+      externalModels: true,
+      downloadModel: false,
+      downloadStatus: false,
+      deleteModel: false,
+      loadModel: false,
+      serverControl: false,
+      requiresApiKey: true
+    },
 
-  async chat(): Promise<ChatResponse> {
-    throw new Error('not implemented')
+    async fetchExternalModels(): Promise<ExternalModel[]> {
+      const res = await fetch(`${normalizedBase}/models`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      const data = (await res.json()) as { data: Model[] }
+      return data.data.map((m) => mapToExternalModel(instanceId, m))
+    }
   }
 }

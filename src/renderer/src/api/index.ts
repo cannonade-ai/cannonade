@@ -1,4 +1,3 @@
-import type { ProviderId } from '@shared/provider/ids'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
@@ -10,35 +9,39 @@ import type {
   ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
+import type { ProviderType } from '@shared/provider/configured-provider'
 import type { TestRun } from '@shared/app/test-run'
 
 export const api = {
-  fetchLocalModels: (providerId: ProviderId): Promise<LocalModel[]> =>
-    window.api.fetchLocalModels(providerId),
-  fetchExternalModels: (providerId: ProviderId): Promise<ExternalModel[]> =>
-    window.api.fetchExternalModels(providerId),
-  chat: (providerId: ProviderId, modelId: string, request: ChatRequest): Promise<ChatResponse> =>
-    window.api.chat(providerId, modelId, request),
-  getCapabilities: (providerId: ProviderId): Promise<ProviderCapabilities> =>
-    window.api.getCapabilities(providerId),
-  downloadModel: (providerId: ProviderId, url: string): Promise<DownloadModelResponse> =>
-    window.api.downloadModel(providerId, url),
-  getDownloadStatus: (providerId: ProviderId, jobId: string): Promise<DownloadStatusResponse> =>
-    window.api.getDownloadStatus(providerId, jobId),
-  deleteModel: (providerId: ProviderId, modelId: string): Promise<void> =>
-    window.api.deleteModel(providerId, modelId),
-  deleteModelByHfId: (providerId: ProviderId, hfModelId: string): Promise<void> =>
-    window.api.deleteModelByHfId(providerId, hfModelId),
-  loadModel: (providerId: ProviderId, modelId: string): Promise<void> =>
-    window.api.loadModel(providerId, modelId),
-  unloadModel: (providerId: ProviderId, instanceId: string): Promise<void> =>
-    window.api.unloadModel(providerId, instanceId),
-  serverStatus: (providerId: ProviderId): Promise<ServerStatusResponse> =>
-    window.api.serverStatus(providerId),
-  serverStart: (providerId: ProviderId): Promise<ServerStatusResponse> =>
-    window.api.serverStart(providerId),
-  serverStop: (providerId: ProviderId): Promise<ServerStatusResponse> =>
-    window.api.serverStop(providerId),
+  fetchLocalModels: (instanceId: string): Promise<LocalModel[]> =>
+    window.api.fetchLocalModels(instanceId),
+  fetchExternalModels: (instanceId: string): Promise<ExternalModel[]> =>
+    window.api.fetchExternalModels(instanceId),
+  chat: (instanceId: string, modelId: string, request: ChatRequest): Promise<ChatResponse> =>
+    window.api.chat(instanceId, modelId, request),
+  getCapabilities: (instanceId: string): Promise<ProviderCapabilities> =>
+    window.api.getCapabilities(instanceId),
+  downloadModel: (instanceId: string, url: string): Promise<DownloadModelResponse> =>
+    window.api.downloadModel(instanceId, url),
+  getDownloadStatus: (instanceId: string, jobId: string): Promise<DownloadStatusResponse> =>
+    window.api.getDownloadStatus(instanceId, jobId),
+  deleteModel: (instanceId: string, modelId: string): Promise<void> =>
+    window.api.deleteModel(instanceId, modelId),
+  deleteModelByHfId: (instanceId: string, hfModelId: string): Promise<void> =>
+    window.api.deleteModelByHfId(instanceId, hfModelId),
+  loadModel: (instanceId: string, modelId: string): Promise<void> =>
+    window.api.loadModel(instanceId, modelId),
+  unloadModel: (instanceId: string, loadedInstanceId: string): Promise<void> =>
+    window.api.unloadModel(instanceId, loadedInstanceId),
+  serverStatus: (instanceId: string): Promise<ServerStatusResponse> =>
+    window.api.serverStatus(instanceId),
+  serverStart: (instanceId: string): Promise<ServerStatusResponse> =>
+    window.api.serverStart(instanceId),
+  serverStop: (instanceId: string): Promise<ServerStatusResponse> =>
+    window.api.serverStop(instanceId),
+  testConnection: (instanceId: string): Promise<boolean> => window.api.testConnection(instanceId),
+  testConnectionUrl: (type: ProviderType, url: string): Promise<boolean> =>
+    window.api.testConnectionUrl(type, url),
   getAppVersion: (): Promise<string> => window.api.getAppVersion(),
   getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
   getRunsDir: (): Promise<string> => window.api.getRunsDir(),
