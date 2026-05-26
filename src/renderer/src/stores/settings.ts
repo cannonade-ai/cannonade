@@ -20,6 +20,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const parallelRuns = ref(DEFAULTS.parallelRuns)
   const defaultTestTimeout = ref(DEFAULTS.defaultTestTimeout)
   const configuredProviders = ref<ConfiguredProvider[]>(DEFAULTS.configuredProviders)
+  const onboardingComplete = ref(DEFAULTS.onboardingComplete)
   const appVersion = ref('')
   const suitesDir = ref('')
 
@@ -36,7 +37,8 @@ export const useSettingsStore = defineStore('settings', () => {
       autoDeleteModels,
       parallelRuns,
       defaultTestTimeout,
-      configuredProviders
+      configuredProviders,
+      onboardingComplete
     ],
     () => {
       api.saveAppSettings({
@@ -47,7 +49,8 @@ export const useSettingsStore = defineStore('settings', () => {
         autoDeleteModels: autoDeleteModels.value,
         parallelRuns: parallelRuns.value,
         defaultTestTimeout: defaultTestTimeout.value,
-        configuredProviders: configuredProviders.value.map((p) => ({ ...p }))
+        configuredProviders: configuredProviders.value.map((p) => ({ ...p })),
+        onboardingComplete: onboardingComplete.value
       })
     }
   )
@@ -68,6 +71,7 @@ export const useSettingsStore = defineStore('settings', () => {
     parallelRuns.value = appSettings.parallelRuns
     defaultTestTimeout.value = appSettings.defaultTestTimeout
     configuredProviders.value = appSettings.configuredProviders ?? []
+    onboardingComplete.value = appSettings.onboardingComplete ?? false
   }
 
   function toggleTheme(): void {
@@ -82,6 +86,11 @@ export const useSettingsStore = defineStore('settings', () => {
     parallelRuns.value = DEFAULTS.parallelRuns
     defaultTestTimeout.value = DEFAULTS.defaultTestTimeout
     configuredProviders.value = []
+    onboardingComplete.value = false
+  }
+
+  function completeOnboarding(): void {
+    onboardingComplete.value = true
   }
 
   function addProvider(provider: ConfiguredProvider): void {
@@ -117,6 +126,7 @@ export const useSettingsStore = defineStore('settings', () => {
     parallelRuns,
     defaultTestTimeout,
     configuredProviders,
+    onboardingComplete,
     appVersion,
     suitesDir,
     init,
@@ -124,6 +134,7 @@ export const useSettingsStore = defineStore('settings', () => {
     reset,
     addProvider,
     removeProvider,
-    setDefault
+    setDefault,
+    completeOnboarding
   }
 })

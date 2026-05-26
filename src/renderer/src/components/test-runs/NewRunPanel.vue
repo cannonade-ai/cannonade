@@ -168,7 +168,7 @@ function onSubmit(): void {
       <Select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
     </Field>
 
-    <Field v-if="allProviderOptions.length > 1" label="Provider">
+    <Field v-if="allProviderOptions.length > 0" label="Provider">
       <div class="provider-groups">
         <div v-if="localProviderOptions.length > 0" class="provider-group">
           <span class="group-label">Local</span>

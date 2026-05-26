@@ -11,6 +11,7 @@ export interface AppSettings {
   parallelRuns: boolean
   defaultTestTimeout: number
   configuredProviders: ConfiguredProvider[]
+  onboardingComplete: boolean
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -21,5 +22,6 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   autoDeleteModels: false,
   parallelRuns: false,
   defaultTestTimeout: 42000,
-  configuredProviders: []
+  configuredProviders: [],
+  onboardingComplete: false
 }
