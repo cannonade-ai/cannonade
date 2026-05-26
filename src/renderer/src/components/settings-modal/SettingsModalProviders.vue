@@ -5,9 +5,20 @@ import Button from '@renderer/components/ui/Button.vue'
 import { useSettingsStore } from '@renderer/stores/settings'
 import SettingsModalProviderCard from './SettingsModalProviderCard.vue'
 import AddProviderModal from '@renderer/components/add-provider-modal/AddProviderModal.vue'
+import type { ConfiguredProvider } from '@shared/provider/configured-provider'
 
 const settings = useSettingsStore()
 const addProviderOpen = ref(false)
+const editingProvider = ref<ConfiguredProvider | undefined>(undefined)
+
+function openEdit(provider: ConfiguredProvider): void {
+  editingProvider.value = provider
+  addProviderOpen.value = true
+}
+
+function onModalClose(open: boolean): void {
+  if (!open) editingProvider.value = undefined
+}
 </script>
 
 <template>
@@ -29,10 +40,15 @@ const addProviderOpen = ref(false)
         :key="provider.instanceId"
         :provider="provider"
         :show-set-default="settings.configuredProviders.length > 1"
+        @edit="openEdit"
       />
     </div>
 
-    <AddProviderModal v-model="addProviderOpen" />
+    <AddProviderModal
+      v-model="addProviderOpen"
+      :edit-provider="editingProvider"
+      @update:model-value="onModalClose"
+    />
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { api } from '../api'
 import { useSettingsStore } from './settings'
 import type { LocalModel } from '@shared/provider/local-model'
@@ -84,6 +84,29 @@ export const useModelsStore = defineStore('models', () => {
     return capabilities
   }
 
+  const activeCapabilities = ref<ProviderCapabilities | null>(null)
+
+  watch(
+    [activeLocalProvider, () => capabilitiesCache.value[activeLocalProvider.value]],
+    async ([instanceId, cached]) => {
+      if (!instanceId) {
+        activeCapabilities.value = null
+        return
+      }
+      if (cached) {
+        activeCapabilities.value = cached
+      } else {
+        const caps = await api.getCapabilities(instanceId)
+        capabilitiesCache.value[instanceId] = caps
+      }
+    },
+    { immediate: true }
+  )
+
+  function invalidateCapabilities(instanceId: string): void {
+    delete capabilitiesCache.value[instanceId]
+  }
+
   return {
     activeLocalProvider,
     setLocalProvider,
@@ -94,6 +117,8 @@ export const useModelsStore = defineStore('models', () => {
     error,
     loadLocalModels,
     loadExternalModels,
-    getCapabilities
+    getCapabilities,
+    invalidateCapabilities,
+    activeCapabilities
   }
 })

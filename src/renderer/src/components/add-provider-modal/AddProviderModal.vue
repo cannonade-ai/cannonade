@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Component } from 'vue'
 import { IconServer, IconCode, IconCircleCheck, IconCircleX } from '@tabler/icons-vue'
 import Modal from '@renderer/components/ui/Modal.vue'
@@ -28,6 +28,10 @@ const providerEntries = Object.entries(KNOWN_PROVIDER_DEFAULTS) as Array<
 
 const model = defineModel<boolean>({ required: true })
 
+const props = defineProps<{
+  editProvider?: ConfiguredProvider
+}>()
+
 const settings = useSettingsStore()
 
 const step = ref<1 | 2>(1)
@@ -37,11 +41,35 @@ const url = ref('')
 const isRemote = ref(false)
 const connectionStatus = ref<'idle' | 'testing' | 'ok' | 'error'>('idle')
 
+const isEditMode = computed(() => !!props.editProvider)
+
 const existingTypes = computed(() => new Set(settings.configuredProviders.map((p) => p.type)))
 
 const canAdd = computed(() => displayName.value.trim().length > 0 && url.value.trim().length > 0)
 
 const selectedDefinition = computed(() => KNOWN_PROVIDER_DEFAULTS[selectedType.value])
+
+const modalTitle = computed(() => {
+  if (isEditMode.value) return 'Edit Provider'
+  return step.value === 1 ? 'Add Provider' : 'Configure Provider'
+})
+
+watch(
+  () => props.editProvider,
+  (provider) => {
+    if (provider) {
+      selectedType.value = provider.type
+      displayName.value = provider.displayName
+      url.value = provider.url
+      isRemote.value = provider.isRemote ?? false
+      step.value = 2
+      connectionStatus.value = 'idle'
+    } else {
+      reset()
+    }
+  },
+  { immediate: true }
+)
 
 function isDisabled(type: ProviderType): boolean {
   return KNOWN_PROVIDER_DEFAULTS[type].singleton && existingTypes.value.has(type)
@@ -87,6 +115,17 @@ function addProvider(): void {
   reset()
 }
 
+function saveProvider(): void {
+  if (!props.editProvider) return
+  settings.updateProvider({
+    ...props.editProvider,
+    displayName: displayName.value.trim(),
+    url: url.value.trim(),
+    ...(selectedDefinition.value.supportsRemote && { isRemote: isRemote.value })
+  })
+  model.value = false
+}
+
 function reset(): void {
   step.value = 1
   selectedType.value = 'lmstudio'
@@ -97,14 +136,14 @@ function reset(): void {
 }
 
 function onClose(): void {
-  reset()
+  if (!isEditMode.value) reset()
 }
 </script>
 
 <template>
   <Modal
     v-model="model"
-    :title="step === 1 ? 'Add Provider' : 'Configure Provider'"
+    :title="modalTitle"
     size="sm"
     :close-on-backdrop="true"
     @update:model-value="onClose"
@@ -149,9 +188,12 @@ function onClose(): void {
     </div>
 
     <template #actions>
-      <Button v-if="step === 2" @click="goBack">Back</Button>
+      <Button v-if="step === 2 && !isEditMode" @click="goBack">Back</Button>
       <Button v-else @click="model = false">Cancel</Button>
-      <Button v-if="step === 2" type="primary" :disabled="!canAdd" @click="addProvider">
+      <Button v-if="step === 2 && isEditMode" type="primary" :disabled="!canAdd" @click="saveProvider">
+        Save
+      </Button>
+      <Button v-else-if="step === 2" type="primary" :disabled="!canAdd" @click="addProvider">
         Add Provider
       </Button>
     </template>

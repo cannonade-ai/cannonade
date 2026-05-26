@@ -3,6 +3,7 @@ import { ref, watch } from 'vue'
 import { api } from '../api'
 import { DEFAULT_APP_SETTINGS as DEFAULTS, type FontSize } from '@shared/app/app-settings'
 import type { ConfiguredProvider } from '@shared/provider/configured-provider'
+import { useModelsStore } from './models'
 
 export type { FontSize }
 
@@ -117,6 +118,13 @@ export const useSettingsStore = defineStore('settings', () => {
     }))
   }
 
+  function updateProvider(updated: ConfiguredProvider): void {
+    useModelsStore().invalidateCapabilities(updated.instanceId)
+    configuredProviders.value = configuredProviders.value.map((p) =>
+      p.instanceId === updated.instanceId ? { ...updated, isDefault: p.isDefault } : p
+    )
+  }
+
   return {
     isDark,
     fontSize,
@@ -134,6 +142,7 @@ export const useSettingsStore = defineStore('settings', () => {
     reset,
     addProvider,
     removeProvider,
+    updateProvider,
     setDefault,
     completeOnboarding
   }

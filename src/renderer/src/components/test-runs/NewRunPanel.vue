@@ -97,6 +97,14 @@ watch(
 )
 
 watch(
+  () => settingsStore.configuredProviders.find((p) => p.instanceId === form.provider),
+  async (provider) => {
+    if (!provider) return
+    capabilities.value = await modelsStore.getCapabilities(form.provider)
+  }
+)
+
+watch(
   () => form.deleteAutoDownloadedModels,
   (val) => {
     if (val) form.unloadModelsAfterRun = true
@@ -197,7 +205,7 @@ function onSubmit(): void {
           <span class="toggle-label">Unload models after run</span>
           <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
         </label>
-        <label v-if="capabilities?.downloadModel" class="toggle-row">
+        <label v-if="capabilities?.downloadModel && capabilities.deleteModel" class="toggle-row">
           <span class="toggle-label">Delete auto-downloaded models after run</span>
           <Toggle v-model="form.deleteAutoDownloadedModels" />
         </label>

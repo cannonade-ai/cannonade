@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
 import { IconRefresh, IconSettings, IconAlertCircle } from '@tabler/icons-vue'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted } from 'vue'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import LocalModelCard from '@renderer/components/LocalModelCard.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
 import type { LocalModel } from '@shared/provider/local-model'
-import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { useModelsStore } from '@renderer/stores/models'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { useSettingsStore } from '@renderer/stores/settings'
@@ -14,7 +13,6 @@ import { useSettingsStore } from '@renderer/stores/settings'
 const store = useModelsStore()
 const navStore = useNavigationStore()
 const settingsStore = useSettingsStore()
-const capabilities = ref<ProviderCapabilities | null>(null)
 
 const providers = computed(() => settingsStore.configuredProviders)
 
@@ -39,18 +37,12 @@ const provider = computed<string>({
   set: (v) => {
     store.setLocalProvider(v)
     store.loadLocalModels()
-    store.getCapabilities(v).then((caps) => {
-      capabilities.value = caps
-    })
   }
 })
 
 onMounted(() => {
   if (providers.value.length === 0) return
   store.loadLocalModels()
-  store.getCapabilities(store.activeLocalProvider).then((caps) => {
-    capabilities.value = caps
-  })
 })
 </script>
 
@@ -97,7 +89,7 @@ onMounted(() => {
               v-for="model in llms"
               :key="model.id"
               :model="model"
-              :capabilities="capabilities"
+              :capabilities="store.activeCapabilities"
             />
           </div>
         </section>
@@ -112,7 +104,7 @@ onMounted(() => {
               v-for="model in embeddings"
               :key="model.id"
               :model="model"
-              :capabilities="capabilities"
+              :capabilities="store.activeCapabilities"
             />
           </div>
         </section>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { IconStar, IconStarFilled, IconTrash } from '@tabler/icons-vue'
+import { IconStar, IconStarFilled, IconTrash, IconPencil } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
 import SettingsModalProviderCardServerStatus from './SettingsModalProviderCardServerStatus.vue'
 import { useSettingsStore } from '@renderer/stores/settings'
@@ -11,6 +11,10 @@ import type { ConfiguredProvider } from '@shared/provider/configured-provider'
 const props = defineProps<{
   provider: ConfiguredProvider
   showSetDefault: boolean
+}>()
+
+const emit = defineEmits<{
+  edit: [provider: ConfiguredProvider]
 }>()
 
 const settings = useSettingsStore()
@@ -65,6 +69,13 @@ onMounted(async () => {
         :icon-size="15"
         title="Set as default"
         @click="setDefault"
+      />
+      <Button
+        type="icon"
+        :icon="IconPencil"
+        :icon-size="15"
+        title="Edit provider"
+        @click="emit('edit', provider)"
       />
       <Button
         type="icon"
