@@ -85,11 +85,7 @@ const computedIconAnimation = computed(() => {
       :class="computedIconAnimation"
     />
     <slot />
-    <button
-      v-if="removable"
-      class="badge-remove"
-      @click.stop="emit('remove')"
-    >
+    <button v-if="removable" class="badge-remove" @click.stop="emit('remove')">
       <IconX :size="10" :stroke-width="2.5" />
     </button>
   </span>
