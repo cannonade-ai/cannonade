@@ -1,7 +1,7 @@
 import { app, ipcMain, BrowserWindow, shell } from 'electron'
 import '../../core/providers'
-import { getProvider, createProbeProvider } from '../../core/providers/registry'
-import type { ProviderType } from '@shared/provider/configured-provider'
+import { getProvider, createProbeProvider, buildRegistry } from '../../core/providers/registry'
+import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, EVAL } from '@shared/app/ipc-channels'
 import { VM } from 'vm2'
@@ -140,6 +140,10 @@ export function registerHandlers(): void {
     const fn = vm.run(`(${code})`) as (output: string) => { score: number; details?: string }
     const result = fn(output)
     return { score: Math.min(1, Math.max(0, result.score)), details: result.details }
+  })
+
+  ipcMain.handle(PROVIDER.SYNC, (_event, providers: ConfiguredProvider[]): void => {
+    buildRegistry(providers)
   })
 
   ipcMain.on(APP.MINIMIZE, () => BrowserWindow.getFocusedWindow()?.minimize())

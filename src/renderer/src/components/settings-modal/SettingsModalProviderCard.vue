@@ -29,7 +29,7 @@ async function remove(): Promise<void> {
     confirmText: 'Remove',
     danger: true
   })
-  if (ok) providers.removeProvider(props.provider.instanceId)
+  if (ok) await providers.removeProvider(props.provider.instanceId)
 }
 
 function setDefault(): void {

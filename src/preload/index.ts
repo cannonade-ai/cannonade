@@ -4,7 +4,7 @@ import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, SUITES, SETTINGS, TEST_RUNS, EVAL } from '@shared/app/ipc-channels'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ChatRequest } from '@shared/lm-studio/chat'
-import type { ProviderType } from '@shared/provider/configured-provider'
+import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
 
@@ -35,6 +35,7 @@ const api = {
   testConnection: (instanceId: string) => ipcRenderer.invoke(PROVIDER.TEST_CONNECTION, instanceId),
   testConnectionUrl: (type: ProviderType, url: string) =>
     ipcRenderer.invoke(PROVIDER.TEST_CONNECTION_URL, type, url),
+  syncProviders: (providers: ConfiguredProvider[]) => ipcRenderer.invoke(PROVIDER.SYNC, providers),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),

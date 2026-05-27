@@ -13,5 +13,6 @@ export const PROVIDER = {
   SERVER_STOP: 'provider:serverStop',
   GET_CAPABILITIES: 'provider:getCapabilities',
   TEST_CONNECTION: 'provider:testConnection',
-  TEST_CONNECTION_URL: 'provider:testConnectionUrl'
+  TEST_CONNECTION_URL: 'provider:testConnectionUrl',
+  SYNC: 'provider:sync'
 } as const

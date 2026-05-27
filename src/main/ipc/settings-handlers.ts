@@ -30,7 +30,6 @@ export function registerSettingsHandlers(): void {
 
   ipcMain.handle(SETTINGS.SAVE, async (_event, settings: AppSettings): Promise<void> => {
     cache = settings
-    buildRegistry(cache.configuredProviders)
     await fs.writeFile(settingsPath(), JSON.stringify(settings, null, 2), 'utf-8')
   })
 }

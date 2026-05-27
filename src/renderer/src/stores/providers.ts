@@ -42,20 +42,24 @@ export const useProvidersStore = defineStore('providers', () => {
     _localProviderOverride.value = instanceId
   }
 
-  function addProvider(provider: ConfiguredProvider): void {
-    if (configuredProviders.value.length === 0) {
-      configuredProviders.value = [{ ...provider, isDefault: true }]
-    } else {
-      configuredProviders.value = [...configuredProviders.value, provider]
-    }
+  async function addProvider(provider: ConfiguredProvider): Promise<void> {
+    const next =
+      configuredProviders.value.length === 0
+        ? [{ ...provider, isDefault: true }]
+        : [...configuredProviders.value.map((p) => ({ ...p })), provider]
+    await api.syncProviders(next)
+    configuredProviders.value = next
   }
 
-  function removeProvider(instanceId: string): void {
-    const remaining = configuredProviders.value.filter((p) => p.instanceId !== instanceId)
+  async function removeProvider(instanceId: string): Promise<void> {
+    const remaining = configuredProviders.value
+      .filter((p) => p.instanceId !== instanceId)
+      .map((p) => ({ ...p }))
     const hadDefault = configuredProviders.value.find((p) => p.instanceId === instanceId)?.isDefault
     if (hadDefault && remaining.length > 0) {
       remaining[0] = { ...remaining[0], isDefault: true }
     }
+    await api.syncProviders(remaining)
     configuredProviders.value = remaining
   }
 
@@ -66,11 +70,13 @@ export const useProvidersStore = defineStore('providers', () => {
     }))
   }
 
-  function updateProvider(updated: ConfiguredProvider): void {
-    invalidateCapabilities(updated.instanceId)
-    configuredProviders.value = configuredProviders.value.map((p) =>
-      p.instanceId === updated.instanceId ? { ...updated, isDefault: p.isDefault } : p
+  async function updateProvider(updated: ConfiguredProvider): Promise<void> {
+    const next = configuredProviders.value.map((p) =>
+      p.instanceId === updated.instanceId ? { ...updated, isDefault: p.isDefault } : { ...p }
     )
+    invalidateCapabilities(updated.instanceId)
+    await api.syncProviders(next)
+    configuredProviders.value = next
   }
 
   async function getCapabilities(instanceId: string): Promise<ProviderCapabilities> {
