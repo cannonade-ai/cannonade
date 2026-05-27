@@ -38,8 +38,8 @@ export const useSettingsStore = defineStore('settings', () => {
       autoDeleteModels,
       parallelRuns,
       defaultTestTimeout,
-      providersStore.configuredProviders,
-      onboardingComplete
+      onboardingComplete,
+      () => providersStore.configuredProviders
     ],
     () => {
       api.saveAppSettings({

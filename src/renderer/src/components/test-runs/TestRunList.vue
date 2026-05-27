@@ -48,7 +48,7 @@ function modelCount(run: TestRun): string {
         <div class="run-info">
           <span class="run-suite">{{ run.suiteName }}</span>
           <span class="run-meta">
-            {{ run.config.provider === 'lmstudio' ? 'LM Studio' : 'OpenRouter' }}
+            {{ run.config.providerName ?? run.config.provider }}
             &middot; {{ modelCount(run) }}
           </span>
         </div>

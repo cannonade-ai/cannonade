@@ -105,6 +105,9 @@ const { suiteMenuItems } = useTestSuiteMenus()
     font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .suite-desc {
@@ -113,7 +116,6 @@ const { suiteMenuItems } = useTestSuiteMenus()
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 480px;
   }
 }
 

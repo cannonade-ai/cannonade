@@ -1,6 +1,6 @@
 {
   "name": "cannonade",
-  "version": "0.2.2",
+  "version": "0.3.2",
   "description": "Simplest LLM Evaluation Tool",
   "main": "./out/main/index.js",
   "author": "example.com",

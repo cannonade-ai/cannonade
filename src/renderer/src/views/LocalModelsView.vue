@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
 import { IconRefresh, IconSettings, IconAlertCircle } from '@tabler/icons-vue'
-import { computed, onMounted } from 'vue'
+import { computed, watch } from 'vue'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import LocalModelCard from '@renderer/components/LocalModelCard.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
@@ -42,10 +42,15 @@ const provider = computed<string>({
   }
 })
 
-onMounted(() => {
-  if (providers.value.length === 0) return
-  store.loadLocalModels()
-})
+watch(
+  () => providersStore.activeLocalProvider,
+  (instanceId) => {
+    console.log('instanceId', instanceId)
+    if (!instanceId) return
+    store.loadLocalModels()
+  },
+  { immediate: true }
+)
 </script>
 
 <template>

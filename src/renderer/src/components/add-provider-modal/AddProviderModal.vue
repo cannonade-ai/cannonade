@@ -100,7 +100,7 @@ async function testConnection(): Promise<void> {
   }
 }
 
-function addProvider(): void {
+async function addProvider(): Promise<void> {
   const provider: ConfiguredProvider = {
     instanceId: crypto.randomUUID(),
     type: selectedType.value,
@@ -110,14 +110,14 @@ function addProvider(): void {
     ...(selectedDefinition.value.supportsRemote && { isRemote: isRemote.value })
   }
 
-  providers.addProvider(provider)
+  await providers.addProvider(provider)
   model.value = false
   reset()
 }
 
-function saveProvider(): void {
+async function saveProvider(): Promise<void> {
   if (!props.editProvider) return
-  providers.updateProvider({
+  await providers.updateProvider({
     ...props.editProvider,
     displayName: displayName.value.trim(),
     url: url.value.trim(),

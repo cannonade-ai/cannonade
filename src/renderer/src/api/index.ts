@@ -9,7 +9,7 @@ import type {
   ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
-import type { ProviderType } from '@shared/provider/configured-provider'
+import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { TestRun } from '@shared/app/test-run'
 
 export const api = {
@@ -42,6 +42,8 @@ export const api = {
   testConnection: (instanceId: string): Promise<boolean> => window.api.testConnection(instanceId),
   testConnectionUrl: (type: ProviderType, url: string): Promise<boolean> =>
     window.api.testConnectionUrl(type, url),
+  syncProviders: (providers: ConfiguredProvider[]): Promise<void> =>
+    window.api.syncProviders(providers),
   getAppVersion: (): Promise<string> => window.api.getAppVersion(),
   getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
   getRunsDir: (): Promise<string> => window.api.getRunsDir(),

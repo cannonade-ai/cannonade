@@ -11,7 +11,8 @@ vi.mock('../api', () => ({
     downloadModel: vi.fn(),
     getDownloadStatus: vi.fn(),
     deleteModelByHfId: vi.fn(),
-    unloadModel: vi.fn()
+    unloadModel: vi.fn(),
+    fetchLocalModels: vi.fn()
   }
 }))
 
@@ -80,7 +81,7 @@ function makeRun(modelRuns: PerModelRun[] = [makeModelRun()]): TestRun {
     id: 'run-1',
     suiteId: 'suite-1',
     suiteName: 'Suite 1',
-    config: { suiteId: 'suite-1', provider: 'lmstudio', models: [] },
+    config: { suiteId: 'suite-1', provider: 'lmstudio', providerName: 'LM Studio', models: [] },
     status: 'pending',
     createdAt: new Date().toISOString(),
     modelRuns
@@ -118,6 +119,7 @@ beforeEach(() => {
   mockApi.chat.mockResolvedValue(makeChatResponse('hello'))
   mockApi.getCapabilities.mockResolvedValue(lmStudioCapabilities)
   mockApi.downloadModel.mockResolvedValue({ job_id: '', status: 'already_downloaded' })
+  mockApi.fetchLocalModels.mockResolvedValue([])
 })
 
 describe('executeTestRun – callback sequence', () => {
@@ -167,6 +169,17 @@ describe('executeTestRun – model key resolution', () => {
   })
 
   it('uses modelId for huggingface model refs', async () => {
+    mockApi.fetchLocalModels.mockResolvedValue([
+      {
+        id: 'meta/llama-3',
+        name: 'llama-3',
+        providerId: 'lmstudio',
+        sizeBytes: 0,
+        type: 'llm',
+        loadedInstances: [],
+        meta: {}
+      }
+    ])
     const modelRun = makeModelRun({ modelRef: { source: 'huggingface', modelId: 'meta/llama-3' } })
     await executeTestRun(makeRun([modelRun]), makeSuite(), makeCallbacks())
     expect(mockApi.chat).toHaveBeenCalledWith(

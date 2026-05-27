@@ -10,7 +10,7 @@ import type {
   ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
-import type { ProviderType } from '@shared/provider/configured-provider'
+import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { TestRun } from '@shared/app/test-run'
 
 export interface AppAPI {
@@ -29,6 +29,7 @@ export interface AppAPI {
   serverStop(instanceId: string): Promise<ServerStatusResponse>
   testConnection(instanceId: string): Promise<boolean>
   testConnectionUrl(type: ProviderType, url: string): Promise<boolean>
+  syncProviders(providers: ConfiguredProvider[]): Promise<void>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>
