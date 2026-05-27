@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Badge, Input } from '@renderer/components/ui'
 import type { ModelRef } from '@shared/app/test-run'
-import { IconLoader2, IconPlus, IconX } from '@tabler/icons-vue'
+import { IconLoader2, IconPlus, IconCloudDownload, IconCircleCheck } from '@tabler/icons-vue'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -59,12 +59,16 @@ function onHfKeydown(e: KeyboardEvent): void {
 <template>
   <div class="model-selector">
     <div v-if="modelValue.length > 0" class="selected-chips">
-      <span v-for="(m, i) in modelValue" :key="i" class="chip" :class="m.source">
-        <span class="chip-label">{{ modelChipLabel(m) }}</span>
-        <button class="chip-remove" @click="removeModel(i)">
-          <IconX :size="10" :stroke-width="2.5" />
-        </button>
-      </span>
+      <Badge
+        v-for="(m, i) in modelValue"
+        :key="i"
+        :type="m.source === 'installed' ? 'secondary' : 'default'"
+        :icon="m.source === 'installed' ? IconCircleCheck : IconCloudDownload"
+        removable
+        @remove="removeModel(i)"
+      >
+        {{ modelChipLabel(m) }}
+      </Badge>
     </div>
     <div v-else class="selected-chips">
       <span class="chip">No models selected</span>
@@ -121,6 +125,10 @@ function onHfKeydown(e: KeyboardEvent): void {
   display: flex;
   flex-direction: column;
   gap: 12px;
+
+  .badge {
+    padding: 4px 8px;
+  }
 }
 
 .selected-chips {
@@ -132,48 +140,8 @@ function onHfKeydown(e: KeyboardEvent): void {
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 8px 3px 9px;
   font-size: var(--text-xs);
-  font-weight: 500;
-  border-radius: var(--radius-full);
-  max-width: 100%;
-  min-height: 1.75rem;
-}
-
-.chip.installed {
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid var(--accent-border);
-}
-
-.chip.huggingface {
-  background: var(--surface-elevated);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-}
-
-.chip-label {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 15rem;
-}
-
-.chip-remove {
-  display: flex;
-  align-items: center;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  color: inherit;
-  opacity: 0.6;
-  flex-shrink: 0;
-}
-
-.chip-remove:hover {
-  opacity: 1;
+  color: var(--text-muted);
 }
 
 .sub-section {
@@ -233,7 +201,7 @@ function onHfKeydown(e: KeyboardEvent): void {
 }
 
 .installed-item.checked {
-  background-color: var(--accent-dim);
+  background-color: var(--accent-bg);
 }
 
 .loaded-badge {
@@ -283,7 +251,7 @@ function onHfKeydown(e: KeyboardEvent): void {
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: var(--accent-dim);
+  background: var(--accent-bg);
   color: var(--accent);
   border: 1px solid var(--accent-border);
   border-radius: var(--radius-lg);

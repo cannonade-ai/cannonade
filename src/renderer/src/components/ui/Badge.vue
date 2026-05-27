@@ -6,7 +6,8 @@ import {
   IconCircleX,
   IconClock,
   IconCloudDownload,
-  IconLoader2
+  IconLoader2,
+  IconX
 } from '@tabler/icons-vue'
 import { computed } from 'vue'
 
@@ -20,6 +21,11 @@ const props = defineProps<{
   icon?: Icon
   iconAnimation?: IconAnimation
   square?: boolean
+  removable?: boolean
+}>()
+
+const emit = defineEmits<{
+  remove: []
 }>()
 
 const statusBadgeTypeMap: Record<Status, BadgeType> = {
@@ -79,6 +85,13 @@ const computedIconAnimation = computed(() => {
       :class="computedIconAnimation"
     />
     <slot />
+    <button
+      v-if="removable"
+      class="badge-remove"
+      @click.stop="emit('remove')"
+    >
+      <IconX :size="10" :stroke-width="2.5" />
+    </button>
   </span>
 </template>
 
@@ -126,6 +139,23 @@ const computedIconAnimation = computed(() => {
   &.info {
     background: var(--blue-dim);
     color: var(--blue);
+  }
+}
+
+.badge-remove {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  margin-left: 2px;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 1;
   }
 }
 </style>

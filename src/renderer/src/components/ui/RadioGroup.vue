@@ -15,8 +15,8 @@ const model = defineModel<T>({ required: true })
       class="option"
       :class="{
         active: model === option.value,
-        'rounded-first': type === 'rounded' && index === 0,
-        'rounded-last': type === 'rounded' && index === options.length - 1
+        'rounded-first': index === 0,
+        'rounded-last': index === options.length - 1
       }"
     >
       <input v-model="model" type="radio" :value="option.value" />
@@ -38,7 +38,6 @@ const model = defineModel<T>({ required: true })
     color: var(--text-secondary);
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
     cursor: pointer;
     transition:
       background 0.12s,
@@ -50,15 +49,15 @@ const model = defineModel<T>({ required: true })
     }
 
     &.rounded-first {
-      border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+      border-radius: var(--radius) 0 0 var(--radius);
     }
 
     &.rounded-last {
-      border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+      border-radius: 0 var(--radius) var(--radius) 0;
     }
 
     &.active {
-      background: var(--accent-dim);
+      background: var(--accent-bg);
       border-color: var(--accent-border);
       color: var(--accent);
     }
