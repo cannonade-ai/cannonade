@@ -26,5 +26,5 @@ export const TEST_RUNS = {
 } as const
 
 export const EVAL = {
-  RUN_CUSTOM_VALIDATOR: 'eval:runCustomValidator'
+  RUN: 'eval:run'
 } as const

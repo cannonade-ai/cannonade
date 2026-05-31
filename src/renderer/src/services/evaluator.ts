@@ -1,15 +1,20 @@
-import type { EvaluationConfig, EvaluationMethodResult, TestCase } from '@shared/app/test-suite'
-import { l as rougeL } from 'js-rouge'
-import { distance as levenshteinDistance } from 'fastest-levenshtein'
-import { bleu } from 'bleu-score'
+﻿import type { EvaluationConfig, EvaluationMethodResult, TestCase } from '@shared/app/test-suite'
+import type { EvaluationResult } from '@shared/app/test-run'
+import { toRaw } from 'vue'
+import {
+  evaluateBleu,
+  evaluateContains,
+  evaluateExactMatch,
+  evaluateF1,
+  evaluateJsonMatch,
+  evaluateLevenshtein,
+  evaluateNotContains,
+  evaluateRegex,
+  evaluateRouge
+} from '@renderer/services/evaluatorMetrics'
 import { api } from '@renderer/api'
 
-export interface EvaluationResult {
-  score: number
-  passed: boolean
-  details?: string
-  error?: string
-}
+export type { EvaluationResult }
 
 export interface MultiEvaluationResult {
   score: number
@@ -17,8 +22,6 @@ export interface MultiEvaluationResult {
   evalResults: EvaluationMethodResult[]
   error?: string
 }
-
-const PASS_THRESHOLD = 0.9
 
 export async function evaluateAll(
   output: string,
@@ -28,21 +31,26 @@ export async function evaluateAll(
     return { score: 0, passed: false, evalResults: [], error: 'No evaluation methods configured' }
   }
 
-  const evalResults: EvaluationMethodResult[] = await Promise.all(
-    testCase.evaluations.map(async (ev) => {
-      const result = await evaluate(output, ev)
-      return { type: ev.type, ...result }
-    })
-  )
+  try {
+    const evalResults: EvaluationMethodResult[] = await Promise.all(
+      testCase.evaluations.map(async (ev) => {
+        const result = await evaluate(output, ev)
+        return { type: ev.type, ...result }
+      })
+    )
 
-  const passed =
-    testCase.passingLogic === 'all'
-      ? evalResults.every((r) => r.passed)
-      : evalResults.some((r) => r.passed)
+    const passed =
+      testCase.passingLogic === 'all'
+        ? evalResults.every((r) => r.passed)
+        : evalResults.some((r) => r.passed)
 
-  const score = evalResults.reduce((sum, r) => sum + r.score, 0) / evalResults.length
+    const score = evalResults.reduce((sum, r) => sum + r.score, 0) / evalResults.length
 
-  return { score, passed, evalResults }
+    return { score, passed, evalResults }
+  } catch (err) {
+    console.error('Error: ', err)
+    return { score: 0, passed: false, evalResults: [] }
+  }
 }
 
 export async function evaluate(
@@ -68,206 +76,7 @@ export async function evaluate(
       return evaluateJsonMatch(output, evaluation)
     case 'bleu':
       return evaluateBleu(output, evaluation)
-    case 'custom':
-      return evaluateCustom(output, evaluation)
     default:
-      return {
-        score: 0,
-        passed: false,
-        error: `Evaluation type '${evaluation.type}' is not implemented yet`
-      }
+      return api.runEvaluation(output, toRaw(evaluation))
   }
-}
-
-function evaluateBleu(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  if (!expected) {
-    return { score: 0, passed: false, error: 'No expected value provided' }
-  }
-  if (output.length === 0) {
-    return { score: 0, passed: false, error: 'Model output was empty' }
-  }
-  const score = bleu(expected, output, 2)
-  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
-}
-
-function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-
-  const predSet = new Set(output.toLowerCase().split(' '))
-  const refSet = new Set(expected.toLowerCase().split(' '))
-  const common = [...predSet].filter((t) => refSet.has(t))
-
-  const precision = common.length / predSet.size
-  const recall = common.length / refSet.size
-
-  if (precision + recall === 0) {
-    return { score: 0, passed: false }
-  }
-  const score = (2 * precision * recall) / (precision + recall)
-  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
-}
-
-function evaluateExactMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  const matched = output.trim() === expected.trim()
-  const score = matched ? 1 : 0
-  return { score, passed: matched }
-}
-
-function evaluateRegex(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  const pattern = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  if (!pattern) {
-    return { score: 0, passed: false, error: 'No regex pattern provided' }
-  }
-  let regex: RegExp
-  try {
-    regex = new RegExp(pattern)
-  } catch {
-    return { score: 0, passed: false, error: `Invalid regex pattern: ${pattern}` }
-  }
-  const matched = regex.test(output)
-  const score = matched ? 1 : 0
-  return { score, passed: matched }
-}
-
-function evaluateContains(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  const raw = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  const terms = raw
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean)
-  if (!terms.length) {
-    return { score: 0, passed: false, error: 'No search terms provided' }
-  }
-  const matched = terms.filter((t) => output.includes(t))
-  const score = matched.length / terms.length
-  return {
-    score,
-    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
-    details: `${matched.length}/${terms.length} terms found`
-  }
-}
-
-function evaluateNotContains(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  const raw = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  const terms = raw
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean)
-  if (!terms.length) {
-    return { score: 0, passed: false, error: 'No search terms provided' }
-  }
-  const matched = terms.filter((t) => output.includes(t))
-  const score = 1 - matched.length / terms.length
-  return {
-    score,
-    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
-    details: `${matched.length}/${terms.length} forbidden terms found`
-  }
-}
-
-function evaluateRouge(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  // todo: add case insensivity as param
-  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  if (expected.length === 0) {
-    return { score: 0, passed: false, error: 'No expected value provided' }
-  }
-  if (output.length === 0) {
-    return { score: 0, passed: false, error: 'Model output was empty' }
-  }
-  const score = rougeL(output, expected, { caseSensitive: false })
-  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
-}
-
-function evaluateLevenshtein(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  // todo: add case insensivity as param
-  const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  if (expected.length === 0) {
-    return { score: 0, passed: false, error: 'No expected value provided' }
-  }
-  if (output.length === 0) {
-    return { score: 0, passed: false, error: 'Model output was empty' }
-  }
-  const distance = levenshteinDistance(output.toLocaleLowerCase(), expected.toLocaleLowerCase())
-  const score = 1 - distance / Math.max(output.length, expected.length)
-  return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
-}
-
-function evaluateJsonMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  const expectedRaw = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  if (expectedRaw.length === 0) {
-    return { score: 0, passed: false, error: 'No expected JSON provided' }
-  }
-  if (output.length === 0) {
-    return { score: 0, passed: false, error: 'Model output was empty' }
-  }
-
-  let actualJson: object
-  let expectedJson: object
-
-  try {
-    expectedJson = JSON.parse(expectedRaw)
-  } catch {
-    return { score: 0, passed: false, error: 'Expected value is not valid JSON' }
-  }
-
-  try {
-    actualJson = JSON.parse(output)
-  } catch {
-    return { score: 0, passed: false, error: 'Model output is not valid JSON' }
-  }
-
-  const expectedPaths = collectJsonPaths(expectedJson)
-  const actualPaths = collectJsonPaths(actualJson)
-  const totalFields = Math.max(expectedPaths.size, actualPaths.size)
-
-  if (totalFields === 0) {
-    return { score: 1, passed: true }
-  }
-
-  let matchedFields = 0
-  for (const path of expectedPaths) {
-    if (actualPaths.has(path)) matchedFields++
-  }
-
-  const score = matchedFields / totalFields
-  return {
-    score,
-    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
-    details: `Matched ${matchedFields}/${totalFields} keys`
-  }
-}
-
-async function evaluateCustom(
-  output: string,
-  evaluation: EvaluationConfig
-): Promise<EvaluationResult> {
-  if (!evaluation.customValidator?.code) {
-    return { score: 0, passed: false, error: 'No custom validator code provided' }
-  }
-  try {
-    const result = await api.runCustomValidator(evaluation.customValidator.code, output)
-    const score = Math.min(1, Math.max(0, result.score))
-    return {
-      score,
-      passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
-      details: result.details
-    }
-  } catch (err) {
-    return { score: 0, passed: false, error: `Custom validator error: ${err}` }
-  }
-}
-
-function collectJsonPaths(obj: unknown, prefix = '', paths = new Set<string>()): Set<string> {
-  if (Array.isArray(obj)) {
-    obj.forEach((item, index) => collectJsonPaths(item, `${prefix}[${index}]`, paths))
-  } else if (typeof obj === 'object' && obj !== null) {
-    for (const key of Object.keys(obj)) {
-      const path = prefix ? `${prefix}.${key}` : key
-      paths.add(path)
-      collectJsonPaths(obj[key], path, paths)
-    }
-  }
-  return paths
 }

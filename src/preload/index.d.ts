@@ -1,8 +1,9 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
+﻿import { ElectronAPI } from '@electron-toolkit/preload'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
-import type { TestSuite } from '@shared/app/test-suite'
+import type { TestSuite, EvaluationConfig } from '@shared/app/test-suite'
+import type { EvaluationResult } from '@shared/app/test-run'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type {
   DownloadModelResponse,
@@ -45,7 +46,7 @@ export interface AppAPI {
   listTestRuns(): Promise<TestRun[]>
   saveTestRun(run: TestRun): Promise<void>
   deleteTestRun(id: string): Promise<void>
-  runCustomValidator(code: string, output: string): Promise<{ score: number; details?: string }>
+  runEvaluation(output: string, evaluation: EvaluationConfig): Promise<EvaluationResult>
 }
 
 declare global {

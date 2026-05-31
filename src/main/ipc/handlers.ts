@@ -4,12 +4,15 @@ import { getProvider, createProbeProvider, buildRegistry } from '../../core/prov
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, EVAL } from '@shared/app/ipc-channels'
-import { VM } from 'vm2'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
 import type { ChatRequest } from '@shared/lm-studio/chat'
+
+import type { EvaluationConfig } from '@shared/app/test-suite'
+import { runCustomValidator } from '../eval/customValidator'
+import { runCosineSimilarity } from '../eval/cosineSimilarity'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
@@ -135,11 +138,15 @@ export function registerHandlers(): void {
   ipcMain.handle(APP.GET_RUNS_DIR, () => join(app.getPath('userData'), 'runs'))
   ipcMain.handle(APP.OPEN_PATH, (_event, path: string) => shell.openPath(path))
 
-  ipcMain.handle(EVAL.RUN_CUSTOM_VALIDATOR, (_event, code: string, output: string) => {
-    const vm = new VM({ timeout: 1000, allowAsync: false, sandbox: {} })
-    const fn = vm.run(`(${code})`) as (output: string) => { score: number; details?: string }
-    const result = fn(output)
-    return { score: Math.min(1, Math.max(0, result.score)), details: result.details }
+  ipcMain.handle(EVAL.RUN, async (_event, output: string, evaluation: EvaluationConfig) => {
+    switch (evaluation.type) {
+      case 'custom':
+        return runCustomValidator(output, evaluation)
+      case 'cosine_similarity':
+        return runCosineSimilarity(output, evaluation)
+      default:
+        return { score: 0, passed: false, error: `Unsupported eval type: ${evaluation.type}` }
+    }
   })
 
   ipcMain.handle(PROVIDER.SYNC, (_event, providers: ConfiguredProvider[]): void => {

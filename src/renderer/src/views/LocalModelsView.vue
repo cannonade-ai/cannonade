@@ -45,7 +45,6 @@ const provider = computed<string>({
 watch(
   () => providersStore.activeLocalProvider,
   (instanceId) => {
-    console.log('instanceId', instanceId)
     if (!instanceId) return
     store.loadLocalModels()
   },

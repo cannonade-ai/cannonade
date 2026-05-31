@@ -10,7 +10,10 @@ function runsDir(): string {
 }
 
 function runPath(id: string, suiteName: string): string {
-  return join(runsDir(), `${id}-${slugify(suiteName, { lower: true, strict: true })}.json`)
+  return join(
+    runsDir(),
+    `${id}-${slugify(suiteName, { lower: true, strict: true }).slice(0, 25)}.json`
+  )
 }
 
 async function ensureRunsDir(): Promise<void> {

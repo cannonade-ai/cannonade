@@ -53,14 +53,14 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   async function submitRun(config: TestRunConfig, suite: TestSuite): Promise<void> {
     const now = new Date().toISOString()
     const run: TestRun = {
-      id: `run-${Date.now()}`,
+      id: crypto.randomUUID(),
       suiteId: config.suiteId,
       suiteName: suite.name,
       config,
       status: 'pending',
       createdAt: now,
-      modelRuns: config.models.map((modelRef, i) => ({
-        id: `mr-${Date.now()}-${i}`,
+      modelRuns: config.models.map((modelRef) => ({
+        id: crypto.randomUUID(),
         modelRef,
         status: 'pending',
         autoDownloaded: false,
@@ -149,7 +149,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
           testRun.status = status
           testRun.completedAt = new Date().toISOString()
           abortControllers.delete(runId)
-          api.saveTestRun(JSON.parse(JSON.stringify(toRaw(testRun))))
+          api.saveTestRun(toRaw(testRun))
         }
       },
       controller.signal

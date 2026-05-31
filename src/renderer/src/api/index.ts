@@ -1,7 +1,8 @@
-import type { LocalModel } from '@shared/provider/local-model'
+﻿import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
-import type { TestSuite } from '@shared/app/test-suite'
+import type { TestSuite, EvaluationConfig } from '@shared/app/test-suite'
+import type { EvaluationResult } from '@shared/app/test-run'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type {
   DownloadModelResponse,
@@ -59,8 +60,6 @@ export const api = {
   listTestRuns: (): Promise<TestRun[]> => window.api.listTestRuns(),
   saveTestRun: (run: TestRun): Promise<void> => window.api.saveTestRun(run),
   deleteTestRun: (id: string): Promise<void> => window.api.deleteTestRun(id),
-  runCustomValidator: (
-    code: string,
-    output: string
-  ): Promise<{ score: number; details?: string }> => window.api.runCustomValidator(code, output)
+  runEvaluation: (output: string, evaluation: EvaluationConfig): Promise<EvaluationResult> =>
+    window.api.runEvaluation(output, evaluation)
 }

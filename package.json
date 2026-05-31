@@ -25,6 +25,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@huggingface/transformers": "^4.2.0",
     "@tabler/icons-vue": "^3.44.0",
     "bleu-score": "^1.0.4",
     "electron-updater": "^6.8.3",

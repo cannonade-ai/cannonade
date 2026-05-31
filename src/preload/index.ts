@@ -1,8 +1,9 @@
-import { contextBridge, ipcRenderer } from 'electron'
+﻿import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, SUITES, SETTINGS, TEST_RUNS, EVAL } from '@shared/app/ipc-channels'
-import type { TestSuite } from '@shared/app/test-suite'
+import type { TestSuite, EvaluationConfig } from '@shared/app/test-suite'
+import type { EvaluationResult } from '@shared/app/test-run'
 import type { ChatRequest } from '@shared/lm-studio/chat'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { AppSettings } from '@shared/app/app-settings'
@@ -52,11 +53,8 @@ const api = {
   listTestRuns: (): Promise<TestRun[]> => ipcRenderer.invoke(TEST_RUNS.LIST),
   saveTestRun: (run: TestRun): Promise<void> => ipcRenderer.invoke(TEST_RUNS.SAVE, run),
   deleteTestRun: (id: string): Promise<void> => ipcRenderer.invoke(TEST_RUNS.DELETE, id),
-  runCustomValidator: (
-    code: string,
-    output: string
-  ): Promise<{ score: number; details?: string }> =>
-    ipcRenderer.invoke(EVAL.RUN_CUSTOM_VALIDATOR, code, output)
+  runEvaluation: (output: string, evaluation: EvaluationConfig): Promise<EvaluationResult> =>
+    ipcRenderer.invoke(EVAL.RUN, output, evaluation)
 }
 
 if (process.contextIsolated) {
