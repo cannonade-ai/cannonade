@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { IconCheck, IconCopy } from '@tabler/icons-vue'
-import { nextTick, onMounted, ref } from 'vue'
+import { nextTick, onMounted } from 'vue'
+import { ref } from 'vue'
+import CopyButton from './CopyButton.vue'
 
 defineOptions({ inheritAttrs: false })
 
@@ -26,7 +27,6 @@ const props = withDefaults(
 )
 
 const textareaEl = ref<HTMLTextAreaElement | null>(null)
-const copied = ref(false)
 
 function fitHeight(): void {
   const el = textareaEl.value
@@ -35,24 +35,15 @@ function fitHeight(): void {
   el.style.height = `${Math.min(el.scrollHeight + 2, 120)}px`
 }
 
-async function copy(): Promise<void> {
-  await navigator.clipboard.writeText(model.value ?? '')
-  copied.value = true
-  setTimeout(() => {
-    copied.value = false
-  }, 1500)
-}
-
 onMounted(() => nextTick(fitHeight))
 </script>
 
 <template>
-  <div
+  <component
+    :is="copyable ? CopyButton : 'div'"
+    v-bind="copyable ? { value: model ?? '' } : {}"
     class="textarea-wrap"
-    :class="{
-      'textarea-wrap--fill': fill,
-      'textarea-wrap--copyable': copyable
-    }"
+    :class="{ 'textarea-wrap--fill': fill }"
   >
     <textarea
       ref="textareaEl"
@@ -68,11 +59,7 @@ onMounted(() => nextTick(fitHeight))
       :disabled="disabled"
       :rows="rows"
     />
-    <button v-if="copyable" type="button" class="copy-btn" @click="copy">
-      <IconCheck v-if="copied" :size="13" :stroke-width="2.5" />
-      <IconCopy v-else :size="13" :stroke-width="2" />
-    </button>
-  </div>
+  </component>
 </template>
 
 <style scoped lang="scss">
@@ -85,37 +72,6 @@ onMounted(() => nextTick(fitHeight))
     flex: 1;
     display: flex;
     flex-direction: column;
-  }
-
-  &--copyable:hover .copy-btn {
-    opacity: 1;
-  }
-}
-
-.copy-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  padding: 0;
-  background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md, 6px);
-  color: var(--text-muted);
-  cursor: pointer;
-  opacity: 0;
-  transition:
-    opacity 0.15s,
-    color 0.15s,
-    background 0.15s;
-
-  &:hover {
-    color: var(--text-primary);
-    background: var(--surface-hover, rgba(255, 255, 255, 0.06));
   }
 }
 

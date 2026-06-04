@@ -1,4 +1,5 @@
 export { default as Badge } from './Badge.vue'
+export { default as CopyButton } from './CopyButton.vue'
 export { default as CircleProgress } from './CircleProgress.vue'
 export { default as Button } from './Button.vue'
 export { default as Chevron } from './Chevron.vue'

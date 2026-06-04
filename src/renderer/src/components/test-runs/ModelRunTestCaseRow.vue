@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Chevron, Textarea } from '@renderer/components/ui'
+import { Chevron, CopyButton, Textarea } from '@renderer/components/ui'
 import type { TestCaseRun } from '@shared/app/test-run'
 import type { ChatMessage, TestCase, TestCaseResult } from '@shared/app/test-suite'
 import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
@@ -182,12 +182,11 @@ const hasMetrics = computed<boolean>(() => {
           >
             <div class="eval-result__row">
               <span class="eval-result__type">{{ er.type.replace(/_/g, ' ') }}</span>
-              <span
-                v-if="expectedForEval(i) != null"
-                class="eval-result__expected"
-                :title="fullExpectedForEval(i) ?? undefined"
-                >{{ expectedForEval(i) }}</span
-              >
+              <CopyButton :value="fullExpectedForEval(i) ?? ''" inset>
+                <span class="eval-result__expected" :title="fullExpectedForEval(i) ?? undefined">{{
+                  expectedForEval(i)
+                }}</span>
+              </CopyButton>
               <span v-if="er.details" class="eval-result__detail">{{ er.details }}</span>
               <span v-if="er.error" class="eval-result__error">{{ er.error }}</span>
               <span class="eval-result__score">{{ (er.score * 100).toFixed(0) }}%</span>
