@@ -224,7 +224,7 @@ async function onDelete(): Promise<void> {
   }
 
   :deep(.panel__footer) {
-    justify-content: space-between;
+    justify-content: flex-start;
   }
 }
 
@@ -251,6 +251,7 @@ async function onDelete(): Promise<void> {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-left: auto;
 }
 
 .section {

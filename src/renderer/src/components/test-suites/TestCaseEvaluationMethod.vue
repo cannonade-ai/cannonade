@@ -2,7 +2,7 @@
 import { Field, NumberInput, Select, Textarea, Button } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import type { EvaluationConfig } from '@shared/app/test-suite'
-import { IconX } from '@tabler/icons-vue'
+import { IconTrash } from '@tabler/icons-vue'
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps<{
@@ -85,7 +85,7 @@ watch([type, expected, threshold, customCode], () => {
     <div class="eval-method__body">
       <div class="eval-method__type-row">
         <Select v-model="type" :options="evaluationTypes" class="eval-method__select" />
-        <Button type="icon" :icon="IconX" @click="emit('remove')" />
+        <Button type="icon" :icon="IconTrash" @click="emit('remove')" />
       </div>
       <Field v-if="showExpected" :label="expectedLabel">
         <Textarea
