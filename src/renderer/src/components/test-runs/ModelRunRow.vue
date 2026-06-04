@@ -15,6 +15,10 @@ import {
 } from '@tabler/icons-vue'
 import { computed, ref } from 'vue'
 
+const filteredTestCases = computed(() =>
+  props.testCases.filter((tc) => caseRunFor(tc.id) !== undefined)
+)
+
 const props = defineProps<{
   modelRun: PerModelRun
   testCases: TestCase[]
@@ -193,7 +197,7 @@ function remainingTime(estimatedCompletion: string): string {
       <div v-if="showTestCases" class="test-cases">
         <div class="test-case-list">
           <ModelRunTestCaseRow
-            v-for="tc in testCases"
+            v-for="tc in filteredTestCases"
             :key="tc.id"
             :test-case="tc"
             :case-run="caseRunFor(tc.id)"

@@ -116,6 +116,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
       id: crypto.randomUUID(),
       suiteId: config.suiteId,
       suiteName: suite.name,
+      testCases: suite.testCases,
       config,
       status: 'pending',
       createdAt: now,
