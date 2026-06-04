@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
-import { ref, computed, toRaw } from 'vue'
+import { ref, computed } from 'vue'
 import type { TestRun, TestRunConfig, PerModelRun, RunStatus } from '@shared/app/test-run'
-import type { TestSuite, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
-import { executeTestRun } from '../services/test-runner'
+import type { TestSuite } from '@shared/app/test-suite'
 import { api } from '../api'
+
 export interface SuiteSummary {
   id: string
   name: string
@@ -13,7 +13,6 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   const testRuns = ref<TestRun[]>([])
   const selectedRunId = ref<string | null>(null)
   const isCreatingNew = ref(false)
-  const abortControllers = new Map<string, AbortController>()
 
   const selectedRun = computed<TestRun | null>(
     () => testRuns.value.find((r) => r.id === selectedRunId.value) ?? null
@@ -38,8 +37,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   }
 
   function cancelRun(id: string): void {
-    abortControllers.get(id)?.abort()
-    abortControllers.delete(id)
+    api.abortRun(id)
   }
 
   function findModelRun(modelRunId: string): PerModelRun | undefined {
@@ -48,6 +46,68 @@ export const useTestRunsStore = defineStore('test-runs', () => {
       if (mr) return mr
     }
     return undefined
+  }
+
+  function initEventListeners(): void {
+    api.onRunStarted(({ runId }) => {
+      const testRun = testRuns.value.find((r) => r.id === runId)
+      if (!testRun) return
+      testRun.status = 'running'
+      testRun.startedAt = new Date().toISOString()
+    })
+
+    api.onModelDownloading(({ modelRunId, downloadedBytes, totalBytes, estimatedCompletion }) => {
+      const modelRun = findModelRun(modelRunId)
+      if (!modelRun) return
+      modelRun.status = 'downloading'
+      modelRun.downloadedBytes = downloadedBytes
+      modelRun.totalBytes = totalBytes
+      modelRun.estimatedCompletion = estimatedCompletion
+    })
+
+    api.onModelStarted(({ modelRunId, autoDownloaded }) => {
+      const modelRun = findModelRun(modelRunId)
+      if (!modelRun) return
+      modelRun.status = 'running'
+      modelRun.autoDownloaded = autoDownloaded
+      modelRun.startedAt = new Date().toISOString()
+    })
+
+    api.onCaseStarted(({ modelRunId, testCaseId }) => {
+      const modelRun = findModelRun(modelRunId)
+      const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
+      if (!caseRun) return
+      caseRun.status = 'running'
+      caseRun.startedAt = new Date().toISOString()
+    })
+
+    api.onCaseCompleted(({ modelRunId, testCaseId, result, aggregate }) => {
+      const modelRun = findModelRun(modelRunId)
+      const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
+      if (modelRun) {
+        modelRun.aggregate = aggregate
+      }
+      if (!caseRun) return
+      caseRun.status = 'completed'
+      caseRun.completedAt = new Date().toISOString()
+      caseRun.result = result
+    })
+
+    api.onModelCompleted(({ modelRunId, status, aggregate, error }) => {
+      const modelRun = findModelRun(modelRunId)
+      if (!modelRun) return
+      modelRun.status = status
+      modelRun.completedAt = new Date().toISOString()
+      modelRun.aggregate = aggregate
+      if (error) modelRun.error = error
+    })
+
+    api.onRunCompleted(({ runId, status }) => {
+      const testRun = testRuns.value.find((r) => r.id === runId)
+      if (!testRun) return
+      testRun.status = status
+      testRun.completedAt = new Date().toISOString()
+    })
   }
 
   async function submitRun(config: TestRunConfig, suite: TestSuite): Promise<void> {
@@ -73,87 +133,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     testRuns.value.unshift(run)
     selectedRunId.value = run.id
     isCreatingNew.value = false
-
-    const controller = new AbortController()
-    abortControllers.set(run.id, controller)
-
-    await executeTestRun(
-      run,
-      suite,
-      {
-        onRunStart(runId: string): void {
-          const testRun = testRuns.value.find((r) => r.id === runId)
-          if (!testRun) return
-          testRun.status = 'running'
-          testRun.startedAt = new Date().toISOString()
-        },
-        onModelDownloading(
-          modelRunId: string,
-          downloadedBytes: number,
-          totalBytes: number,
-          estimatedCompletion?: string
-        ): void {
-          const modelRun = findModelRun(modelRunId)
-          if (!modelRun) return
-          modelRun.status = 'downloading'
-          modelRun.downloadedBytes = downloadedBytes
-          modelRun.totalBytes = totalBytes
-          modelRun.estimatedCompletion = estimatedCompletion
-        },
-        onModelRunStart(modelRunId: string, autoDownloaded: boolean): void {
-          const modelRun = findModelRun(modelRunId)
-          if (!modelRun) return
-          modelRun.status = 'running'
-          modelRun.autoDownloaded = autoDownloaded
-          modelRun.startedAt = new Date().toISOString()
-        },
-        onCaseStart(modelRunId: string, testCaseId: string): void {
-          const modelRun = findModelRun(modelRunId)
-          const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
-          if (!caseRun) return
-          caseRun.status = 'running'
-          caseRun.startedAt = new Date().toISOString()
-        },
-        onCaseComplete(
-          modelRunId: string,
-          testCaseId: string,
-          result: TestCaseResult,
-          aggregate: AggregateMetrics
-        ): void {
-          const modelRun = findModelRun(modelRunId)
-          const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
-          if (modelRun) {
-            modelRun.aggregate = aggregate
-          }
-          if (!caseRun) return
-          caseRun.status = 'completed'
-          caseRun.completedAt = new Date().toISOString()
-          caseRun.result = result
-        },
-        onModelRunComplete(
-          modelRunId: string,
-          status: RunStatus,
-          aggregate: AggregateMetrics,
-          error?: string
-        ): void {
-          const modelRun = findModelRun(modelRunId)
-          if (!modelRun) return
-          modelRun.status = status
-          modelRun.completedAt = new Date().toISOString()
-          modelRun.aggregate = aggregate
-          if (error) modelRun.error = error
-        },
-        onRunComplete(runId: string, status: RunStatus): void {
-          const testRun = testRuns.value.find((r) => r.id === runId)
-          if (!testRun) return
-          testRun.status = status
-          testRun.completedAt = new Date().toISOString()
-          abortControllers.delete(runId)
-          api.saveTestRun(toRaw(testRun))
-        }
-      },
-      controller.signal
-    )
+    await api.startRun(JSON.parse(JSON.stringify(run)), JSON.parse(JSON.stringify(suite)))
   }
 
   async function deleteRun(id: string): Promise<void> {
@@ -177,6 +157,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     cancelNewRun,
     cancelRun,
     deleteRun,
-    submitRun
+    submitRun,
+    initEventListeners
   }
 })

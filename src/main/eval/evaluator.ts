@@ -1,6 +1,5 @@
-﻿import type { EvaluationConfig, EvaluationMethodResult, TestCase } from '@shared/app/test-suite'
-import type { EvaluationResult } from '@shared/app/test-run'
-import { toRaw } from 'vue'
+import type { EvaluationConfig, EvaluationMethodResult, TestCase } from '@shared/app/test-suite'
+import type { EvaluationResult } from '@shared/app/evaluation-result'
 import {
   evaluateBleu,
   evaluateContains,
@@ -11,10 +10,9 @@ import {
   evaluateNotContains,
   evaluateRegex,
   evaluateRouge
-} from '@renderer/services/evaluatorMetrics'
-import { api } from '@renderer/api'
-
-export type { EvaluationResult }
+} from './metrics'
+import { runCustomValidator } from './customValidator'
+import { runCosineSimilarity } from './cosineSimilarity'
 
 export interface MultiEvaluationResult {
   score: number
@@ -31,26 +29,21 @@ export async function evaluateAll(
     return { score: 0, passed: false, evalResults: [], error: 'No evaluation methods configured' }
   }
 
-  try {
-    const evalResults: EvaluationMethodResult[] = await Promise.all(
-      testCase.evaluations.map(async (ev) => {
-        const result = await evaluate(output, ev)
-        return { type: ev.type, ...result }
-      })
-    )
+  const evalResults: EvaluationMethodResult[] = await Promise.all(
+    testCase.evaluations.map(async (ev) => {
+      const result = await evaluate(output, ev)
+      return { type: ev.type, ...result }
+    })
+  )
 
-    const passed =
-      testCase.passingLogic === 'all'
-        ? evalResults.every((r) => r.passed)
-        : evalResults.some((r) => r.passed)
+  const passed =
+    testCase.passingLogic === 'all'
+      ? evalResults.every((r) => r.passed)
+      : evalResults.some((r) => r.passed)
 
-    const score = evalResults.reduce((sum, r) => sum + r.score, 0) / evalResults.length
+  const score = evalResults.reduce((sum, r) => sum + r.score, 0) / evalResults.length
 
-    return { score, passed, evalResults }
-  } catch (err) {
-    console.error('Error: ', err)
-    return { score: 0, passed: false, evalResults: [] }
-  }
+  return { score, passed, evalResults }
 }
 
 export async function evaluate(
@@ -76,7 +69,15 @@ export async function evaluate(
       return evaluateJsonMatch(output, evaluation)
     case 'bleu':
       return evaluateBleu(output, evaluation)
+    case 'custom':
+      return runCustomValidator(output, evaluation)
+    case 'cosine_similarity':
+      return runCosineSimilarity(output, evaluation)
     default:
-      return api.runEvaluation(output, toRaw(evaluation))
+      return {
+        score: 0,
+        passed: false,
+        error: `Unsupported eval type: ${(evaluation as EvaluationConfig).type}`
+      }
   }
 }

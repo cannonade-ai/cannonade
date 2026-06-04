@@ -1,19 +1,8 @@
-﻿import type { EvaluationConfig, EvaluationMethodResult } from '@shared/app/test-suite'
-import type { EvaluationResult } from '@shared/app/test-run'
+import type { EvaluationConfig } from '@shared/app/test-suite'
+import type { EvaluationResult } from '@shared/app/evaluation-result'
 import { l as rougeL } from 'js-rouge'
 import { distance as levenshteinDistance } from 'fastest-levenshtein'
 import { bleu } from 'bleu-score'
-
-export type { EvaluationResult }
-
-export interface MultiEvaluationResult {
-  score: number
-  passed: boolean
-  evalResults: EvaluationMethodResult[]
-  error?: string
-}
-
-const PASS_THRESHOLD = 0.9
 
 export function evaluateBleu(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
@@ -107,7 +96,6 @@ export function evaluateNotContains(
 }
 
 export function evaluateRouge(output: string, evaluation: EvaluationConfig): EvaluationResult {
-  // todo: add case insensivity as param
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (expected.length === 0) {
     return { score: 0, passed: false, error: 'No expected value provided' }
@@ -123,7 +111,6 @@ export function evaluateLevenshtein(
   output: string,
   evaluation: EvaluationConfig
 ): EvaluationResult {
-  // todo: add case insensivity as param
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (expected.length === 0) {
     return { score: 0, passed: false, error: 'No expected value provided' }
@@ -188,8 +175,10 @@ function collectJsonPaths(obj: unknown, prefix = '', paths = new Set<string>()):
     for (const key of Object.keys(obj)) {
       const path = prefix ? `${prefix}.${key}` : key
       paths.add(path)
-      collectJsonPaths(obj[key], path, paths)
+      collectJsonPaths(obj[key as keyof typeof obj], path, paths)
     }
   }
   return paths
 }
+
+const PASS_THRESHOLD = 0.9

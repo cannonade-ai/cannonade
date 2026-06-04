@@ -1,30 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { executeTestRun, type RunnerCallbacks } from './test-runner'
-import type { TestRun, PerModelRun } from '@shared/app/test-run'
+import { executeTestRun } from './test-runner'
+import { RUN } from '@shared/app/ipc-channels'
+import type { TestRun, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, EvaluationConfig } from '@shared/app/test-suite'
 import type { ChatResponse } from '@shared/lm-studio/chat'
 
-vi.mock('../api', () => ({
-  api: {
-    getCapabilities: vi.fn(),
-    chat: vi.fn(),
-    downloadModel: vi.fn(),
-    getDownloadStatus: vi.fn(),
-    deleteModelByHfId: vi.fn(),
-    unloadModel: vi.fn(),
-    fetchLocalModels: vi.fn()
-  }
-}))
+vi.mock('../../core/providers/registry')
+vi.mock('../eval/evaluator')
+vi.mock('../ipc/test-run-handlers', () => ({ saveTestRun: vi.fn() }))
 
-vi.mock('./evaluator', () => ({
-  evaluateAll: vi.fn()
-}))
+import { getProvider } from '../../core/providers/registry'
+import { evaluateAll } from '../eval/evaluator'
 
-import { api } from '../api'
-import { evaluateAll } from './evaluator'
-
-const mockApi = vi.mocked(api)
+const mockGetProvider = vi.mocked(getProvider)
 const mockEvaluate = vi.mocked(evaluateAll)
+
+const mockChat = vi.fn()
+const mockFetchLocalModels = vi.fn()
+const mockDownloadModel = vi.fn()
+const mockGetDownloadStatus = vi.fn()
 
 const lmStudioCapabilities = {
   chat: true,
@@ -38,16 +32,10 @@ const lmStudioCapabilities = {
   requiresApiKey: false
 }
 
-function makeCallbacks(): RunnerCallbacks {
-  return {
-    onRunStart: vi.fn(),
-    onModelDownloading: vi.fn(),
-    onModelRunStart: vi.fn(),
-    onCaseStart: vi.fn(),
-    onCaseComplete: vi.fn(),
-    onModelRunComplete: vi.fn(),
-    onRunComplete: vi.fn()
-  }
+type SendMock = ReturnType<typeof vi.fn> & ((channel: string, payload: unknown) => void)
+
+function makeSend(): SendMock {
+  return vi.fn() as SendMock
 }
 
 const baseEval: EvaluationConfig = {
@@ -76,7 +64,14 @@ function makeModelRun(overrides: Partial<PerModelRun> = {}): PerModelRun {
   }
 }
 
-function makeRun(modelRuns: PerModelRun[] = [makeModelRun()]): TestRun {
+function makeRun(
+  modelRuns: PerModelRun[] = [makeModelRun()],
+  testCases: TestCase[] = [makeTestCase()]
+): TestRun {
+  const populatedModelRuns = modelRuns.map((mr) => ({
+    ...mr,
+    caseRuns: testCases.map((tc) => ({ testCaseId: tc.id, status: 'pending' as RunStatus }))
+  }))
   return {
     id: 'run-1',
     suiteId: 'suite-1',
@@ -84,7 +79,7 @@ function makeRun(modelRuns: PerModelRun[] = [makeModelRun()]): TestRun {
     config: { suiteId: 'suite-1', provider: 'lmstudio', providerName: 'LM Studio', models: [] },
     status: 'pending',
     createdAt: new Date().toISOString(),
-    modelRuns
+    modelRuns: populatedModelRuns
   }
 }
 
@@ -116,60 +111,75 @@ function makeChatResponse(content: string, tps = 50, ttft = 0.1): ChatResponse {
 beforeEach(() => {
   vi.clearAllMocks()
   mockEvaluate.mockResolvedValue({ passed: true, score: 1, evalResults: [] })
-  mockApi.chat.mockResolvedValue(makeChatResponse('hello'))
-  mockApi.getCapabilities.mockResolvedValue(lmStudioCapabilities)
-  mockApi.downloadModel.mockResolvedValue({ job_id: '', status: 'already_downloaded' })
-  mockApi.fetchLocalModels.mockResolvedValue([])
+  mockChat.mockResolvedValue(makeChatResponse('hello'))
+  mockFetchLocalModels.mockResolvedValue([])
+  mockDownloadModel.mockResolvedValue({ job_id: '', status: 'already_downloaded' })
+  mockGetProvider.mockReturnValue({
+    id: 'lmstudio',
+    capabilities: lmStudioCapabilities,
+    chat: mockChat,
+    fetchLocalModels: mockFetchLocalModels,
+    downloadModel: mockDownloadModel,
+    getDownloadStatus: mockGetDownloadStatus
+  })
 })
 
 describe('executeTestRun – callback sequence', () => {
   it('calls onRunStart with the run id', async () => {
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(), callbacks)
-    expect(callbacks.onRunStart).toHaveBeenCalledWith('run-1')
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(RUN.STARTED, { runId: 'run-1' })
   })
 
   it('calls onModelRunStart for each model run', async () => {
+    const testCases = [makeTestCase()]
     const modelRuns = [makeModelRun({ id: 'mr-1' }), makeModelRun({ id: 'mr-2' })]
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(modelRuns), makeSuite(), callbacks)
-    expect(callbacks.onModelRunStart).toHaveBeenCalledWith('mr-1', false)
-    expect(callbacks.onModelRunStart).toHaveBeenCalledWith('mr-2', false)
-    expect(callbacks.onModelRunStart).toHaveBeenCalledTimes(2)
+    const send = makeSend()
+    await executeTestRun(makeRun(modelRuns, testCases), makeSuite(testCases), send)
+    expect(send).toHaveBeenCalledWith(RUN.MODEL_STARTED, {
+      modelRunId: 'mr-1',
+      autoDownloaded: false
+    })
+    expect(send).toHaveBeenCalledWith(RUN.MODEL_STARTED, {
+      modelRunId: 'mr-2',
+      autoDownloaded: false
+    })
+    const modelStartedCalls = send.mock.calls.filter(([ch]) => ch === RUN.MODEL_STARTED)
+    expect(modelStartedCalls).toHaveLength(2)
   })
 
   it('calls onCaseComplete once per test case per model run', async () => {
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
-    expect(callbacks.onCaseComplete).toHaveBeenCalledTimes(2)
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], testCases), makeSuite(testCases), send)
+    const caseCompletedCalls = send.mock.calls.filter(([ch]) => ch === RUN.CASE_COMPLETED)
+    expect(caseCompletedCalls).toHaveLength(2)
   })
 
   it('calls onModelRunComplete after each model run completes', async () => {
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(), callbacks)
-    expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
-      'mr-1',
-      'completed',
-      expect.any(Object),
-      undefined
-    )
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(RUN.MODEL_COMPLETED, {
+      modelRunId: 'mr-1',
+      status: 'completed',
+      aggregate: expect.any(Object),
+      error: undefined
+    })
   })
 })
 
 describe('executeTestRun – model key resolution', () => {
   it('uses modelKey for installed model refs', async () => {
     const modelRun = makeModelRun({ modelRef: { source: 'installed', modelKey: 'llama-3-8b' } })
-    await executeTestRun(makeRun([modelRun]), makeSuite(), makeCallbacks())
-    expect(mockApi.chat).toHaveBeenCalledWith(
-      'lmstudio',
+    await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
+    expect(mockChat).toHaveBeenCalledWith(
       'llama-3-8b',
       expect.objectContaining({ model: 'llama-3-8b' })
     )
   })
 
   it('uses modelId for huggingface model refs', async () => {
-    mockApi.fetchLocalModels.mockResolvedValue([
+    mockFetchLocalModels.mockResolvedValue([
       {
         id: 'meta/llama-3',
         name: 'llama-3',
@@ -181,9 +191,8 @@ describe('executeTestRun – model key resolution', () => {
       }
     ])
     const modelRun = makeModelRun({ modelRef: { source: 'huggingface', modelId: 'meta/llama-3' } })
-    await executeTestRun(makeRun([modelRun]), makeSuite(), makeCallbacks())
-    expect(mockApi.chat).toHaveBeenCalledWith(
-      'lmstudio',
+    await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
+    expect(mockChat).toHaveBeenCalledWith(
       'meta/llama-3',
       expect.objectContaining({ model: 'meta/llama-3' })
     )
@@ -193,9 +202,8 @@ describe('executeTestRun – model key resolution', () => {
 describe('executeTestRun – request building', () => {
   it('builds a completion request from prompt input', async () => {
     const testCase = makeTestCase({ input: { type: 'completion', prompt: 'Say hello' } })
-    await executeTestRun(makeRun(), makeSuite([testCase]), makeCallbacks())
-    expect(mockApi.chat).toHaveBeenCalledWith(
-      'lmstudio',
+    await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
+    expect(mockChat).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ input: 'Say hello' })
     )
@@ -212,9 +220,8 @@ describe('executeTestRun – request building', () => {
         ]
       }
     })
-    await executeTestRun(makeRun(), makeSuite([testCase]), makeCallbacks())
-    expect(mockApi.chat).toHaveBeenCalledWith(
-      'lmstudio',
+    await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
+    expect(mockChat).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ input: 'Hello\nHi\nHow are you?' })
     )
@@ -230,9 +237,8 @@ describe('executeTestRun – request building', () => {
         ]
       }
     })
-    await executeTestRun(makeRun(), makeSuite([testCase]), makeCallbacks())
-    expect(mockApi.chat).toHaveBeenCalledWith(
-      'lmstudio',
+    await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
+    expect(mockChat).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({
         system_prompt: 'You are a helpful assistant.',
@@ -249,9 +255,8 @@ describe('executeTestRun – request building', () => {
         maxTokens: 256
       }
     })
-    await executeTestRun(makeRun(), makeSuite([testCase]), makeCallbacks())
-    expect(mockApi.chat).toHaveBeenCalledWith(
-      'lmstudio',
+    await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
+    expect(mockChat).toHaveBeenCalledWith(
       expect.any(String),
       expect.objectContaining({ temperature: 0.7, top_p: 0.9, max_output_tokens: 256 })
     )
@@ -260,8 +265,8 @@ describe('executeTestRun – request building', () => {
 
 describe('executeTestRun – output extraction', () => {
   it('passes extracted message content to evaluate', async () => {
-    mockApi.chat.mockResolvedValue(makeChatResponse('extracted output'))
-    await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
+    mockChat.mockResolvedValue(makeChatResponse('extracted output'))
+    await executeTestRun(makeRun(), makeSuite(), makeSend())
     expect(mockEvaluate).toHaveBeenCalledWith(
       'extracted output',
       expect.objectContaining({ id: 'tc-1' })
@@ -269,14 +274,14 @@ describe('executeTestRun – output extraction', () => {
   })
 
   it('ignores non-message output items', async () => {
-    mockApi.chat.mockResolvedValue({
+    mockChat.mockResolvedValue({
       ...makeChatResponse(''),
       output: [
         { type: 'reasoning', content: 'thinking...' },
         { type: 'message', content: 'final answer' }
       ]
     })
-    await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
+    await executeTestRun(makeRun(), makeSuite(), makeSend())
     expect(mockEvaluate).toHaveBeenCalledWith(
       'final answer',
       expect.objectContaining({ id: 'tc-1' })
@@ -284,14 +289,14 @@ describe('executeTestRun – output extraction', () => {
   })
 
   it('joins multiple message outputs with newline', async () => {
-    mockApi.chat.mockResolvedValue({
+    mockChat.mockResolvedValue({
       ...makeChatResponse(''),
       output: [
         { type: 'message', content: 'part one' },
         { type: 'message', content: 'part two' }
       ]
     })
-    await executeTestRun(makeRun(), makeSuite(), makeCallbacks())
+    await executeTestRun(makeRun(), makeSuite(), makeSend())
     expect(mockEvaluate).toHaveBeenCalledWith(
       'part one\npart two',
       expect.objectContaining({ id: 'tc-1' })
@@ -301,24 +306,27 @@ describe('executeTestRun – output extraction', () => {
 
 describe('executeTestRun – case result construction', () => {
   it('maps response stats to result metrics', async () => {
-    mockApi.chat.mockResolvedValue(makeChatResponse('hello', 100, 0.2))
+    mockChat.mockResolvedValue(makeChatResponse('hello', 100, 0.2))
     mockEvaluate.mockResolvedValue({ passed: true, score: 1, evalResults: [] })
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(), callbacks)
-    expect(callbacks.onCaseComplete).toHaveBeenCalledWith(
-      'mr-1',
-      'tc-1',
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.CASE_COMPLETED,
       expect.objectContaining({
-        metrics: {
-          tokensPerSecond: 100,
-          timeToFirstTokenMs: 200,
-          score: 1
-        }
-      }),
-      expect.objectContaining({
-        avgScore: 1,
-        avgTokensPerSecond: 100,
-        avgTimeToFirstTokenMs: 200
+        modelRunId: 'mr-1',
+        testCaseId: 'tc-1',
+        result: expect.objectContaining({
+          metrics: {
+            tokensPerSecond: 100,
+            timeToFirstTokenMs: 200,
+            score: 1
+          }
+        }),
+        aggregate: expect.objectContaining({
+          avgScore: 1,
+          avgTokensPerSecond: 100,
+          avgTimeToFirstTokenMs: 200
+        })
       })
     )
   })
@@ -330,19 +338,20 @@ describe('executeTestRun – case result construction', () => {
       evalResults: [],
       error: 'no match'
     })
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(), callbacks)
-    expect(callbacks.onCaseComplete).toHaveBeenCalledWith(
-      'mr-1',
-      'tc-1',
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.CASE_COMPLETED,
       expect.objectContaining({
-        passed: false,
-        error: 'no match'
-      }),
-      expect.objectContaining({
-        avgScore: 0,
-        avgTokensPerSecond: 50,
-        avgTimeToFirstTokenMs: 100
+        result: expect.objectContaining({
+          passed: false,
+          error: 'no match'
+        }),
+        aggregate: expect.objectContaining({
+          avgScore: 0,
+          avgTokensPerSecond: 50,
+          avgTimeToFirstTokenMs: 100
+        })
       })
     )
   })
@@ -351,109 +360,118 @@ describe('executeTestRun – case result construction', () => {
 describe('executeTestRun – error handling', () => {
   it('records per-case API error and continues to next case', async () => {
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
-    mockApi.chat
+    mockChat
       .mockRejectedValueOnce(new Error('network error'))
       .mockResolvedValueOnce(makeChatResponse('ok'))
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
-    expect(callbacks.onCaseComplete).toHaveBeenCalledTimes(2)
-    expect(callbacks.onCaseComplete).toHaveBeenNthCalledWith(
-      1,
-      'mr-1',
-      'tc-1',
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], testCases), makeSuite(testCases), send)
+    const caseCompletedCalls = send.mock.calls.filter(([ch]) => ch === RUN.CASE_COMPLETED)
+    expect(caseCompletedCalls).toHaveLength(2)
+    expect(send).toHaveBeenCalledWith(
+      RUN.CASE_COMPLETED,
       expect.objectContaining({
+        modelRunId: 'mr-1',
         testCaseId: 'tc-1',
-        passed: false,
-        error: 'network error',
-        output: '',
-        metrics: {}
-      }),
-      expect.objectContaining({
-        avgScore: 0,
-        failed: 1,
-        passed: 0
+        result: expect.objectContaining({
+          testCaseId: 'tc-1',
+          passed: false,
+          error: 'network error',
+          output: '',
+          metrics: {}
+        }),
+        aggregate: expect.objectContaining({
+          avgScore: 0,
+          failed: 1,
+          passed: 0
+        })
       })
     )
   })
 
   it('marks model run as failed on fatal error from buildRequest', async () => {
     const badTestCase = { ...makeTestCase(), input: null as unknown as TestCase['input'] }
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite([badTestCase]), callbacks)
-    expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
-      'mr-1',
-      'failed',
-      expect.any(Object),
-      expect.any(String)
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], [badTestCase]), makeSuite([badTestCase]), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.MODEL_COMPLETED,
+      expect.objectContaining({
+        modelRunId: 'mr-1',
+        status: 'failed',
+        error: expect.any(String)
+      })
     )
   })
 
   it('marks overall run as failed when any model run encounters a fatal error', async () => {
     const badTestCase = { ...makeTestCase(), input: null as unknown as TestCase['input'] }
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite([badTestCase]), callbacks)
-    expect(callbacks.onRunComplete).toHaveBeenCalledWith('run-1', 'failed')
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], [badTestCase]), makeSuite([badTestCase]), send)
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'failed' })
   })
 
   it('marks overall run as completed when all model runs succeed', async () => {
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(), callbacks)
-    expect(callbacks.onRunComplete).toHaveBeenCalledWith('run-1', 'completed')
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'completed' })
   })
 })
 
 describe('executeTestRun – aggregate metrics', () => {
   it('computes correct aggregate for all passing results', async () => {
-    mockApi.chat.mockResolvedValue(makeChatResponse('ok', 60, 0.1))
+    mockChat.mockResolvedValue(makeChatResponse('ok', 60, 0.1))
     mockEvaluate.mockResolvedValue({ passed: true, score: 1, evalResults: [] })
-    const callbacks = makeCallbacks()
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
-    await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
-    expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
-      'mr-1',
-      'completed',
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], testCases), makeSuite(testCases), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.MODEL_COMPLETED,
       expect.objectContaining({
-        total: 2,
-        passed: 2,
-        failed: 0,
-        avgScore: 1,
-        avgTokensPerSecond: 60,
-        minTokensPerSecond: 60,
-        maxTokensPerSecond: 60,
-        avgTimeToFirstTokenMs: 100,
-        minTimeToFirstTokenMs: 100,
-        maxTimeToFirstTokenMs: 100
-      }),
-      undefined
+        modelRunId: 'mr-1',
+        status: 'completed',
+        aggregate: expect.objectContaining({
+          total: 2,
+          passed: 2,
+          failed: 0,
+          avgScore: 1,
+          avgTokensPerSecond: 60,
+          minTokensPerSecond: 60,
+          maxTokensPerSecond: 60,
+          avgTimeToFirstTokenMs: 100,
+          minTimeToFirstTokenMs: 100,
+          maxTimeToFirstTokenMs: 100
+        }),
+        error: undefined
+      })
     )
   })
 
   it('computes aggregate with mixed pass/fail results', async () => {
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
-    mockApi.chat.mockResolvedValue(makeChatResponse('ok'))
+    mockChat.mockResolvedValue(makeChatResponse('ok'))
     mockEvaluate
       .mockResolvedValueOnce({ passed: true, score: 1, evalResults: [] })
       .mockResolvedValueOnce({ passed: false, score: 0, evalResults: [] })
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(testCases), callbacks)
-    expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
-      'mr-1',
-      'completed',
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], testCases), makeSuite(testCases), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.MODEL_COMPLETED,
       expect.objectContaining({
-        total: 2,
-        passed: 1,
-        failed: 1,
-        avgScore: 0.5
-      }),
-      undefined
+        aggregate: expect.objectContaining({
+          total: 2,
+          passed: 1,
+          failed: 1,
+          avgScore: 0.5
+        })
+      })
     )
   })
 
   it('omits avg/min/max metrics from aggregate when all cases fail with no metrics', async () => {
-    mockApi.chat.mockRejectedValue(new Error('network error'))
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(), makeSuite(), callbacks)
-    const aggregate = (callbacks.onModelRunComplete as ReturnType<typeof vi.fn>).mock.calls[0][2]
+    mockChat.mockRejectedValue(new Error('network error'))
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    const modelCompletedCall = send.mock.calls.find(([ch]) => ch === RUN.MODEL_COMPLETED)
+    const aggregate = (modelCompletedCall![1] as any).aggregate
     expect(aggregate.avgTokensPerSecond).toBeUndefined()
     expect(aggregate.minTokensPerSecond).toBeUndefined()
     expect(aggregate.maxTokensPerSecond).toBeUndefined()
@@ -463,24 +481,27 @@ describe('executeTestRun – aggregate metrics', () => {
   })
 
   it('computes separate aggregates per model run', async () => {
+    const testCases = [makeTestCase()]
     const modelRuns = [makeModelRun({ id: 'mr-1' }), makeModelRun({ id: 'mr-2' })]
-    mockApi.chat
+    mockChat
       .mockResolvedValueOnce(makeChatResponse('ok', 40, 0.05))
       .mockResolvedValueOnce(makeChatResponse('ok', 80, 0.15))
     mockEvaluate.mockResolvedValue({ passed: true, score: 1, evalResults: [] })
-    const callbacks = makeCallbacks()
-    await executeTestRun(makeRun(modelRuns), makeSuite(), callbacks)
-    expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
-      'mr-1',
-      'completed',
-      expect.objectContaining({ avgTokensPerSecond: 40 }),
-      undefined
+    const send = makeSend()
+    await executeTestRun(makeRun(modelRuns, testCases), makeSuite(testCases), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.MODEL_COMPLETED,
+      expect.objectContaining({
+        modelRunId: 'mr-1',
+        aggregate: expect.objectContaining({ avgTokensPerSecond: 40 })
+      })
     )
-    expect(callbacks.onModelRunComplete).toHaveBeenCalledWith(
-      'mr-2',
-      'completed',
-      expect.objectContaining({ avgTokensPerSecond: 80 }),
-      undefined
+    expect(send).toHaveBeenCalledWith(
+      RUN.MODEL_COMPLETED,
+      expect.objectContaining({
+        modelRunId: 'mr-2',
+        aggregate: expect.objectContaining({ avgTokensPerSecond: 80 })
+      })
     )
   })
 })

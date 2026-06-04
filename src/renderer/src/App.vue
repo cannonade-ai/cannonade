@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { useSettingsStore } from '@renderer/stores/settings'
+import { useTestRunsStore } from '@renderer/stores/test-runs'
 import AppSidebar from '@renderer/components/AppSidebar.vue'
 import AppTitleBar from '@renderer/components/AppTitleBar.vue'
 import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
@@ -11,6 +12,8 @@ import { LocalModelsView, TestSuitesView, TestRunsView, OnboardingView } from '@
 
 const nav = useNavigationStore()
 const settings = useSettingsStore()
+const testRuns = useTestRunsStore()
+testRuns.initEventListeners()
 
 const viewComponent = computed(() => {
   switch (nav.current) {

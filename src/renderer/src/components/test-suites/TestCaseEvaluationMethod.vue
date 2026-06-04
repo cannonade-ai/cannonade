@@ -30,7 +30,14 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'cosine_similarity', label: 'Cosine Similarity' }
 ]
 
-const THRESHOLD_TYPES: EvaluationConfig['type'][] = ['bleu', 'rouge', 'levenshtein', 'f1', 'custom', 'cosine_similarity']
+const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
+  'bleu',
+  'rouge',
+  'levenshtein',
+  'f1',
+  'custom',
+  'cosine_similarity'
+]
 
 const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
   // output: full model output string
