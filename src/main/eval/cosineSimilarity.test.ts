@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { EvaluationConfig } from '@shared/app/test-suite'
+import { EvaluationResult } from '@shared/app/test-run'
 
 vi.mock('@huggingface/transformers', () => ({
   pipeline: vi.fn()
@@ -19,7 +20,7 @@ describe('runCosineSimilarity', () => {
   async function setup(
     outputEmb: ReturnType<typeof embed>,
     expectedEmb: ReturnType<typeof embed>
-  ): Promise<unknown> {
+  ): Promise<(output: string, evaluation: EvaluationConfig) => Promise<EvaluationResult>> {
     const { pipeline } = await import('@huggingface/transformers')
     const mockExtractor = vi
       .fn()
@@ -69,7 +70,7 @@ describe('runCosineSimilarity', () => {
     // [1,0] · [0.6, 0.8] = 0.6, both unit vectors
     const fn = await setup(embed(1, 0), embed(0.6, 0.8))
     const result = await fn('output', { ...base, expected: 'expected' })
-    expect(result.score).toBe(0.6)
+    expect(result.score).toBeCloseTo(0.6, 8)
     expect(result.passed).toBe(false)
   })
 
@@ -77,14 +78,14 @@ describe('runCosineSimilarity', () => {
     // [1,0] · [0.8, 0.6] = 0.8, both unit vectors
     const fn = await setup(embed(1, 0), embed(0.8, 0.6))
     const result = await fn('output', { ...base, expected: 'expected' })
-    expect(result.score).toBe(0.8)
+    expect(result.score).toBeCloseTo(0.8, 8)
     expect(result.passed).toBe(true)
   })
 
   it('respects a custom threshold', async () => {
     const fn = await setup(embed(1, 0), embed(0.6, 0.8))
     const result = await fn('output', { ...base, threshold: 0.5, expected: 'expected' })
-    expect(result.score).toBe(0.6)
+    expect(result.score).toBeCloseTo(0.6, 8)
     expect(result.passed).toBe(true)
   })
 
@@ -93,13 +94,13 @@ describe('runCosineSimilarity', () => {
     const v = 1 / Math.sqrt(3)
     const fn = await setup(embed(1, 0, 0), embed(v, v, v))
     const result = await fn('output', { ...base, expected: 'expected' })
-    expect(result.score).toBe(parseFloat((1 / Math.sqrt(3)).toFixed(4)))
+    expect(result.score).toBeCloseTo(parseFloat((1 / Math.sqrt(3)).toFixed(4)), 8)
   })
 
   it('returns error when the extractor throws', async () => {
     const { pipeline } = await import('@huggingface/transformers')
     const mockExtractor = vi.fn().mockRejectedValue(new Error('model load failed'))
-    vi.mocked(pipeline).mockResolvedValue(mockExtractor as any)
+    vi.mocked(pipeline).mockResolvedValue(mockExtractor as never)
     const { runCosineSimilarity } = await import('./cosineSimilarity')
     const result = await runCosineSimilarity('output', { ...base, expected: 'expected' })
     expect(result.passed).toBe(false)
