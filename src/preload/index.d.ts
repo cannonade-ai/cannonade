@@ -3,25 +3,57 @@ import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import type {
-  DownloadModelResponse,
-  DownloadStatusResponse,
-  ServerStatusResponse
-} from '@shared/lm-studio/ipc-contracts'
+import type { ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
-import type { TestRun } from '@shared/app/test-run'
+import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
+import type { TestCaseResult } from '@shared/app/test-suite'
+
+export interface RunStartedPayload {
+  runId: string
+}
+
+export interface RunCompletedPayload {
+  runId: string
+  status: RunStatus
+}
+
+export interface ModelDownloadingPayload {
+  modelRunId: string
+  downloadedBytes: number
+  totalBytes: number
+  estimatedCompletion?: string
+}
+
+export interface ModelStartedPayload {
+  modelRunId: string
+  autoDownloaded: boolean
+}
+
+export interface ModelCompletedPayload {
+  modelRunId: string
+  status: RunStatus
+  aggregate: AggregateMetrics
+  error?: string
+}
+
+export interface CaseStartedPayload {
+  modelRunId: string
+  testCaseId: string
+}
+
+export interface CaseCompletedPayload {
+  modelRunId: string
+  testCaseId: string
+  result: TestCaseResult
+  aggregate: AggregateMetrics
+}
 
 export interface AppAPI {
   fetchLocalModels(instanceId: string): Promise<LocalModel[]>
   fetchExternalModels(instanceId: string): Promise<ExternalModel[]>
-  chat(instanceId: string, modelId: string, request: ChatRequest): Promise<ChatResponse>
   getCapabilities(instanceId: string): Promise<ProviderCapabilities>
-  downloadModel(instanceId: string, url: string): Promise<DownloadModelResponse>
-  getDownloadStatus(instanceId: string, jobId: string): Promise<DownloadStatusResponse>
   deleteModel(instanceId: string, modelId: string): Promise<void>
-  deleteModelByHfId(instanceId: string, hfModelId: string): Promise<void>
   loadModel(instanceId: string, modelId: string): Promise<void>
   unloadModel(instanceId: string, loadedInstanceId: string): Promise<void>
   serverStatus(instanceId: string): Promise<ServerStatusResponse>
@@ -43,9 +75,16 @@ export interface AppAPI {
   loadAppSettings(): Promise<AppSettings>
   saveAppSettings(settings: AppSettings): Promise<void>
   listTestRuns(): Promise<TestRun[]>
-  saveTestRun(run: TestRun): Promise<void>
   deleteTestRun(id: string): Promise<void>
-  runCustomValidator(code: string, output: string): Promise<{ score: number; details?: string }>
+  startRun(run: TestRun, suite: TestSuite): Promise<void>
+  abortRun(runId: string): Promise<void>
+  onRunStarted(cb: (payload: RunStartedPayload) => void): void
+  onRunCompleted(cb: (payload: RunCompletedPayload) => void): void
+  onModelDownloading(cb: (payload: ModelDownloadingPayload) => void): void
+  onModelStarted(cb: (payload: ModelStartedPayload) => void): void
+  onModelCompleted(cb: (payload: ModelCompletedPayload) => void): void
+  onCaseStarted(cb: (payload: CaseStartedPayload) => void): void
+  onCaseCompleted(cb: (payload: CaseCompletedPayload) => void): void
 }
 
 declare global {

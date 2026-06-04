@@ -21,10 +21,17 @@ export const SETTINGS = {
 
 export const TEST_RUNS = {
   LIST: 'test-runs:list',
-  SAVE: 'test-runs:save',
   DELETE: 'test-runs:delete'
 } as const
 
-export const EVAL = {
-  RUN_CUSTOM_VALIDATOR: 'eval:runCustomValidator'
+export const RUN = {
+  START: 'run:start',
+  ABORT: 'run:abort',
+  STARTED: 'run:started',
+  COMPLETED: 'run:completed',
+  MODEL_DOWNLOADING: 'run:model:downloading',
+  MODEL_STARTED: 'run:model:started',
+  MODEL_COMPLETED: 'run:model:completed',
+  CASE_STARTED: 'run:case:started',
+  CASE_COMPLETED: 'run:case:completed'
 } as const

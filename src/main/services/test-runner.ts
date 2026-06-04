@@ -1,35 +1,13 @@
-import { api } from '../api'
+import { getProvider } from '../../core/providers/registry'
+import { saveTestRun } from '../ipc/test-run-handlers'
+import { evaluateAll } from '../eval/evaluator'
+import { RUN } from '@shared/app/ipc-channels'
 import type { TestRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { LocalModel } from '@shared/provider/local-model'
-import { evaluateAll } from './evaluator'
 
-export interface RunnerCallbacks {
-  onRunStart(runId: string): void
-  onModelDownloading(
-    modelRunId: string,
-    downloadedBytes: number,
-    totalBytes: number,
-    estimatedCompletion?: string
-  ): void
-  onModelRunStart(modelRunId: string, autoDownloaded: boolean): void
-  onCaseStart(modelRunId: string, testCaseId: string): void
-  onCaseComplete(
-    modelRunId: string,
-    testCaseId: string,
-    result: TestCaseResult,
-    aggregate: AggregateMetrics
-  ): void
-  onModelRunComplete(
-    modelRunId: string,
-    status: RunStatus,
-    aggregate: AggregateMetrics,
-    error?: string
-  ): void
-  onRunComplete(runId: string, status: RunStatus): void
-}
+type SendEvent = (channel: string, payload: unknown) => void
 
 const HF_BASE_URL = 'https://huggingface.co/'
 const POLL_INTERVAL_MS = 1000
@@ -43,6 +21,9 @@ function extractHfModelId(modelId: string): string {
 }
 
 async function resolveModelKey(providerId: string, hfModelId: string): Promise<string> {
+  const provider = getProvider(providerId)
+  if (!provider.fetchLocalModels) throw new Error(`${providerId}: fetchLocalModels not supported`)
+
   const hfParts = hfModelId.split('/')
   const normalizedKey =
     hfParts.length >= 2 ? hfParts[hfParts.length - 1].toLowerCase().replace(/-gguf$/i, '') : null
@@ -55,11 +36,11 @@ async function resolveModelKey(providerId: string, hfModelId: string): Promise<s
         (normalizedKey !== null && m.id.toLowerCase().endsWith('/' + normalizedKey))
     )
 
-  let match = findMatch(await api.fetchLocalModels(providerId))
+  let match = findMatch(await provider.fetchLocalModels())
   if (!match) {
     for (let attempt = 0; attempt < 5; attempt++) {
       await new Promise((resolve) => setTimeout(resolve, 2000))
-      match = findMatch(await api.fetchLocalModels(providerId))
+      match = findMatch(await provider.fetchLocalModels!())
       if (match) break
     }
   }
@@ -71,11 +52,15 @@ async function downloadAndPoll(
   providerId: string,
   modelRunId: string,
   hfModelId: string,
-  callbacks: RunnerCallbacks,
+  send: SendEvent,
   signal: AbortSignal
 ): Promise<boolean> {
+  const provider = getProvider(providerId)
+  if (!provider.downloadModel) throw new Error(`${providerId}: downloadModel not supported`)
+  if (!provider.getDownloadStatus) throw new Error(`${providerId}: getDownloadStatus not supported`)
+
   const modelUrl = toHuggingFaceUrl(hfModelId)
-  const response = await api.downloadModel(providerId, modelUrl)
+  const response = await provider.downloadModel(modelUrl)
 
   if (response.status === 'already_downloaded') {
     return false
@@ -84,15 +69,15 @@ async function downloadAndPoll(
   const jobId = response.job_id
   await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS / 2))
   while (!signal.aborted) {
-    const status = await api.getDownloadStatus(providerId, jobId)
+    const status = await provider.getDownloadStatus!(jobId)
     if (status.status === 'completed') return true
     if (status.status === 'failed') throw new Error(`Download failed for ${hfModelId}`)
-    callbacks.onModelDownloading(
+    send(RUN.MODEL_DOWNLOADING, {
       modelRunId,
-      status.downloaded_bytes ?? 0,
-      status.total_size_bytes ?? response.total_size_bytes ?? 0,
-      status.estimated_completion
-    )
+      downloadedBytes: status.downloaded_bytes ?? 0,
+      totalBytes: status.total_size_bytes ?? response.total_size_bytes ?? 0,
+      estimatedCompletion: status.estimated_completion
+    })
     await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS))
   }
   throw new Error('Aborted during download')
@@ -157,13 +142,17 @@ function computeAggregate(results: TestCaseResult[], testCases?: TestCase[]): Ag
 export async function executeTestRun(
   run: TestRun,
   suite: TestSuite,
-  callbacks: RunnerCallbacks,
+  send: SendEvent,
   signal: AbortSignal = new AbortController().signal
 ): Promise<void> {
+  const runState: TestRun = structuredClone(run)
   const providerId = run.config.provider
-  const capabilities: ProviderCapabilities = await api.getCapabilities(providerId)
+  const provider = getProvider(providerId)
+  const capabilities = provider.capabilities
 
-  callbacks.onRunStart(run.id)
+  runState.status = 'running'
+  runState.startedAt = new Date().toISOString()
+  send(RUN.STARTED, { runId: run.id })
   console.log('[test-runner] Starting test run:', run, suite)
 
   let overallFailed = false
@@ -171,36 +160,39 @@ export async function executeTestRun(
   for (const modelRun of run.modelRuns) {
     if (signal.aborted) break
 
+    const modelRunState = runState.modelRuns.find((m) => m.id === modelRun.id)!
     const results: TestCaseResult[] = []
     let fatalError: string | undefined
     let autoDownloaded = false
 
     try {
       if (capabilities.downloadModel && modelRun.modelRef.source === 'huggingface') {
+        modelRunState.status = 'downloading'
         const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
-        autoDownloaded = await downloadAndPoll(
-          providerId,
-          modelRun.id,
-          hfModelId,
-          callbacks,
-          signal
-        )
+        autoDownloaded = await downloadAndPoll(providerId, modelRun.id, hfModelId, send, signal)
       }
     } catch (err) {
       fatalError = err instanceof Error ? err.message : String(err)
       overallFailed = true
-      callbacks.onModelRunComplete(
-        modelRun.id,
-        signal.aborted ? 'cancelled' : 'failed',
-        computeAggregate(results, suite.testCases),
-        fatalError
-      )
+      modelRunState.status = signal.aborted ? 'cancelled' : 'failed'
+      modelRunState.completedAt = new Date().toISOString()
+      modelRunState.aggregate = computeAggregate(results, suite.testCases)
+      modelRunState.error = fatalError
+      send(RUN.MODEL_COMPLETED, {
+        modelRunId: modelRun.id,
+        status: modelRunState.status,
+        aggregate: modelRunState.aggregate,
+        error: fatalError
+      })
       continue
     }
 
     if (signal.aborted) break
 
-    callbacks.onModelRunStart(modelRun.id, autoDownloaded)
+    modelRunState.status = 'running'
+    modelRunState.autoDownloaded = autoDownloaded
+    modelRunState.startedAt = new Date().toISOString()
+    send(RUN.MODEL_STARTED, { modelRunId: modelRun.id, autoDownloaded })
 
     let modelKey: string
     if (modelRun.modelRef.source === 'installed') {
@@ -217,12 +209,18 @@ export async function executeTestRun(
     try {
       for (const testCase of suite.testCases) {
         if (signal.aborted) break
-        callbacks.onCaseStart(modelRun.id, testCase.id)
+
+        const caseRunState = modelRunState.caseRuns.find((c) => c.testCaseId === testCase.id)!
+        caseRunState.status = 'running'
+        caseRunState.startedAt = new Date().toISOString()
+        send(RUN.CASE_STARTED, { modelRunId: modelRun.id, testCaseId: testCase.id })
         console.log('[test-runner] Starting test case:', testCase)
+
         const request = buildRequest(testCase, modelKey)
 
         try {
-          const response = await api.chat(providerId, modelKey, request)
+          if (!provider.chat) throw new Error(`${providerId}: chat not supported`)
+          const response = await provider.chat(modelKey, request)
           if (!modelInstanceId) modelInstanceId = response.model_instance_id
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
@@ -242,7 +240,16 @@ export async function executeTestRun(
           }
 
           results.push(result)
-          callbacks.onCaseComplete(modelRun.id, testCase.id, result, computeAggregate(results))
+          caseRunState.status = 'completed'
+          caseRunState.completedAt = new Date().toISOString()
+          caseRunState.result = result
+          modelRunState.aggregate = computeAggregate(results)
+          send(RUN.CASE_COMPLETED, {
+            modelRunId: modelRun.id,
+            testCaseId: testCase.id,
+            result,
+            aggregate: modelRunState.aggregate
+          })
           console.log('[test-runner] Test case completed:', result)
         } catch (err) {
           const error = err instanceof Error ? err.message : String(err)
@@ -255,7 +262,16 @@ export async function executeTestRun(
             error
           }
           results.push(result)
-          callbacks.onCaseComplete(modelRun.id, testCase.id, result, computeAggregate(results))
+          caseRunState.status = 'completed'
+          caseRunState.completedAt = new Date().toISOString()
+          caseRunState.result = result
+          modelRunState.aggregate = computeAggregate(results)
+          send(RUN.CASE_COMPLETED, {
+            modelRunId: modelRun.id,
+            testCaseId: testCase.id,
+            result,
+            aggregate: modelRunState.aggregate
+          })
           console.log('[test-runner] Test case completed with error:', result)
         }
       }
@@ -266,17 +282,23 @@ export async function executeTestRun(
     }
 
     const wasCancelled = signal.aborted
-    callbacks.onModelRunComplete(
-      modelRun.id,
-      wasCancelled ? 'cancelled' : fatalError ? 'failed' : 'completed',
-      computeAggregate(results, suite.testCases),
-      fatalError
-    )
+    const modelStatus: RunStatus = wasCancelled ? 'cancelled' : fatalError ? 'failed' : 'completed'
+    modelRunState.status = modelStatus
+    modelRunState.completedAt = new Date().toISOString()
+    modelRunState.aggregate = computeAggregate(results, suite.testCases)
+    if (fatalError) modelRunState.error = fatalError
+    send(RUN.MODEL_COMPLETED, {
+      modelRunId: modelRun.id,
+      status: modelStatus,
+      aggregate: modelRunState.aggregate,
+      error: fatalError
+    })
     console.log('[test-runner] Model run completed:', modelRun)
 
     if (capabilities.loadModel && run.config.unloadModelsAfterRun && modelInstanceId) {
       try {
-        await api.unloadModel(providerId, modelInstanceId)
+        if (!provider.unloadModel) throw new Error(`${providerId}: unloadModel not supported`)
+        await provider.unloadModel(modelInstanceId)
       } catch (err) {
         console.error('[test-runner] Failed to unload model:', err)
       }
@@ -290,16 +312,24 @@ export async function executeTestRun(
     ) {
       const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
       try {
-        await api.deleteModelByHfId(providerId, hfModelId)
+        if (!provider.deleteModelByHfId)
+          throw new Error(`${providerId}: deleteModelByHfId not supported`)
+        await provider.deleteModelByHfId(hfModelId)
       } catch (err) {
         console.error('[test-runner] Failed to delete auto-downloaded model:', err)
       }
     }
   }
 
-  callbacks.onRunComplete(
-    run.id,
-    signal.aborted ? 'cancelled' : overallFailed ? 'failed' : 'completed'
-  )
+  const finalStatus: RunStatus = signal.aborted
+    ? 'cancelled'
+    : overallFailed
+      ? 'failed'
+      : 'completed'
+  runState.status = finalStatus
+  runState.completedAt = new Date().toISOString()
+
+  await saveTestRun(runState)
+  send(RUN.COMPLETED, { runId: run.id, status: finalStatus })
   console.log('[test-runner] Test run completed:', run)
 }

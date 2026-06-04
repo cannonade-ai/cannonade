@@ -190,7 +190,12 @@ function onClose(): void {
     <template #actions>
       <Button v-if="step === 2 && !isEditMode" @click="goBack">Back</Button>
       <Button v-else @click="model = false">Cancel</Button>
-      <Button v-if="step === 2 && isEditMode" type="primary" :disabled="!canAdd" @click="saveProvider">
+      <Button
+        v-if="step === 2 && isEditMode"
+        type="primary"
+        :disabled="!canAdd"
+        @click="saveProvider"
+      >
         Save
       </Button>
       <Button v-else-if="step === 2" type="primary" :disabled="!canAdd" @click="addProvider">

@@ -1,9 +1,8 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { PROVIDER } from '@shared/provider/ipc-channels'
-import { APP, SUITES, SETTINGS, TEST_RUNS, EVAL } from '@shared/app/ipc-channels'
+import { APP, SUITES, SETTINGS, TEST_RUNS, RUN } from '@shared/app/ipc-channels'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { ChatRequest } from '@shared/lm-studio/chat'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
@@ -13,18 +12,10 @@ const api = {
     ipcRenderer.invoke(PROVIDER.FETCH_LOCAL_MODELS, instanceId),
   fetchExternalModels: (instanceId: string) =>
     ipcRenderer.invoke(PROVIDER.FETCH_EXTERNAL_MODELS, instanceId),
-  chat: (instanceId: string, modelId: string, request: ChatRequest) =>
-    ipcRenderer.invoke(PROVIDER.CHAT, instanceId, modelId, request),
   getCapabilities: (instanceId: string) =>
     ipcRenderer.invoke(PROVIDER.GET_CAPABILITIES, instanceId),
-  downloadModel: (instanceId: string, url: string) =>
-    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL, instanceId, url),
-  getDownloadStatus: (instanceId: string, jobId: string) =>
-    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL_STATUS, instanceId, jobId),
   deleteModel: (instanceId: string, modelId: string) =>
     ipcRenderer.invoke(PROVIDER.DELETE_MODEL, instanceId, modelId),
-  deleteModelByHfId: (instanceId: string, hfModelId: string) =>
-    ipcRenderer.invoke(PROVIDER.DELETE_MODEL_BY_HF_ID, instanceId, hfModelId),
   loadModel: (instanceId: string, modelId: string) =>
     ipcRenderer.invoke(PROVIDER.LOAD_MODEL, instanceId, modelId),
   unloadModel: (instanceId: string, loadedInstanceId: string) =>
@@ -50,13 +41,31 @@ const api = {
   saveAppSettings: (settings: AppSettings): Promise<void> =>
     ipcRenderer.invoke(SETTINGS.SAVE, settings),
   listTestRuns: (): Promise<TestRun[]> => ipcRenderer.invoke(TEST_RUNS.LIST),
-  saveTestRun: (run: TestRun): Promise<void> => ipcRenderer.invoke(TEST_RUNS.SAVE, run),
   deleteTestRun: (id: string): Promise<void> => ipcRenderer.invoke(TEST_RUNS.DELETE, id),
-  runCustomValidator: (
-    code: string,
-    output: string
-  ): Promise<{ score: number; details?: string }> =>
-    ipcRenderer.invoke(EVAL.RUN_CUSTOM_VALIDATOR, code, output)
+  startRun: (run: TestRun, suite: TestSuite): Promise<void> =>
+    ipcRenderer.invoke(RUN.START, run, suite),
+  abortRun: (runId: string): Promise<void> => ipcRenderer.invoke(RUN.ABORT, runId),
+  onRunStarted: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.STARTED, (_e, payload) => cb(payload))
+  },
+  onRunCompleted: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.COMPLETED, (_e, payload) => cb(payload))
+  },
+  onModelDownloading: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.MODEL_DOWNLOADING, (_e, payload) => cb(payload))
+  },
+  onModelStarted: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.MODEL_STARTED, (_e, payload) => cb(payload))
+  },
+  onModelCompleted: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.MODEL_COMPLETED, (_e, payload) => cb(payload))
+  },
+  onCaseStarted: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.CASE_STARTED, (_e, payload) => cb(payload))
+  },
+  onCaseCompleted: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.CASE_COMPLETED, (_e, payload) => cb(payload))
+  }
 }
 
 if (process.contextIsolated) {

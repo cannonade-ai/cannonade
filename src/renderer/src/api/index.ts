@@ -2,33 +2,29 @@ import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { TestSuite } from '@shared/app/test-suite'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import type {
-  DownloadModelResponse,
-  DownloadStatusResponse,
-  ServerStatusResponse
-} from '@shared/lm-studio/ipc-contracts'
+import type { ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { TestRun } from '@shared/app/test-run'
+import type {
+  RunStartedPayload,
+  RunCompletedPayload,
+  ModelDownloadingPayload,
+  ModelStartedPayload,
+  ModelCompletedPayload,
+  CaseStartedPayload,
+  CaseCompletedPayload
+} from '../../../preload/index.d'
 
 export const api = {
   fetchLocalModels: (instanceId: string): Promise<LocalModel[]> =>
     window.api.fetchLocalModels(instanceId),
   fetchExternalModels: (instanceId: string): Promise<ExternalModel[]> =>
     window.api.fetchExternalModels(instanceId),
-  chat: (instanceId: string, modelId: string, request: ChatRequest): Promise<ChatResponse> =>
-    window.api.chat(instanceId, modelId, request),
   getCapabilities: (instanceId: string): Promise<ProviderCapabilities> =>
     window.api.getCapabilities(instanceId),
-  downloadModel: (instanceId: string, url: string): Promise<DownloadModelResponse> =>
-    window.api.downloadModel(instanceId, url),
-  getDownloadStatus: (instanceId: string, jobId: string): Promise<DownloadStatusResponse> =>
-    window.api.getDownloadStatus(instanceId, jobId),
   deleteModel: (instanceId: string, modelId: string): Promise<void> =>
     window.api.deleteModel(instanceId, modelId),
-  deleteModelByHfId: (instanceId: string, hfModelId: string): Promise<void> =>
-    window.api.deleteModelByHfId(instanceId, hfModelId),
   loadModel: (instanceId: string, modelId: string): Promise<void> =>
     window.api.loadModel(instanceId, modelId),
   unloadModel: (instanceId: string, loadedInstanceId: string): Promise<void> =>
@@ -57,10 +53,19 @@ export const api = {
   loadAppSettings: (): Promise<AppSettings> => window.api.loadAppSettings(),
   saveAppSettings: (settings: AppSettings): Promise<void> => window.api.saveAppSettings(settings),
   listTestRuns: (): Promise<TestRun[]> => window.api.listTestRuns(),
-  saveTestRun: (run: TestRun): Promise<void> => window.api.saveTestRun(run),
   deleteTestRun: (id: string): Promise<void> => window.api.deleteTestRun(id),
-  runCustomValidator: (
-    code: string,
-    output: string
-  ): Promise<{ score: number; details?: string }> => window.api.runCustomValidator(code, output)
+  startRun: (run: TestRun, suite: TestSuite): Promise<void> => window.api.startRun(run, suite),
+  abortRun: (runId: string): Promise<void> => window.api.abortRun(runId),
+  onRunStarted: (cb: (payload: RunStartedPayload) => void): void => window.api.onRunStarted(cb),
+  onRunCompleted: (cb: (payload: RunCompletedPayload) => void): void =>
+    window.api.onRunCompleted(cb),
+  onModelDownloading: (cb: (payload: ModelDownloadingPayload) => void): void =>
+    window.api.onModelDownloading(cb),
+  onModelStarted: (cb: (payload: ModelStartedPayload) => void): void =>
+    window.api.onModelStarted(cb),
+  onModelCompleted: (cb: (payload: ModelCompletedPayload) => void): void =>
+    window.api.onModelCompleted(cb),
+  onCaseStarted: (cb: (payload: CaseStartedPayload) => void): void => window.api.onCaseStarted(cb),
+  onCaseCompleted: (cb: (payload: CaseCompletedPayload) => void): void =>
+    window.api.onCaseCompleted(cb)
 }

@@ -7,8 +7,8 @@
 ```
 ## Commands
 ```
-npm run lint
 npm run build
+npm run lint -- --fix
 ```
 
 ## Coding Rules

@@ -25,9 +25,9 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'f1', label: 'F1' },
   { value: 'json_match', label: 'JSON Match' },
   { value: 'bleu', label: 'BLEU' },
-  { value: 'mrr', label: 'MRR' },
   { value: 'custom', label: 'Custom Validator' },
-  { value: 'code_execution', label: 'Code Execution' }
+  { value: 'code_execution', label: 'Code Execution' },
+  { value: 'cosine_similarity', label: 'Cosine Similarity' }
 ]
 
 const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
@@ -35,13 +35,13 @@ const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
   'rouge',
   'levenshtein',
   'f1',
-  'mrr',
-  'custom'
+  'custom',
+  'cosine_similarity'
 ]
 
 const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
   // output: full model output string
-  // return score between 0.0 (fail) and 1.0 (pass)
+  // return score between 0.0 and 1.0
   return {
     score: output.length > 0 ? 1.0 : 0.0,
     details: 'Output is non-empty'

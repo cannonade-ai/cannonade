@@ -68,9 +68,9 @@ export interface EvaluationConfig {
     | 'rouge'
     | 'levenshtein'
     | 'f1'
-    | 'mrr'
     | 'custom'
     | 'code_execution'
+    | 'cosine_similarity'
 
   // expected output (if applicable)
   expected?: string | object

@@ -1,5 +1,12 @@
 import type { TestCaseResult, AggregateMetrics } from './test-suite'
 
+export interface EvaluationResult {
+  score: number
+  passed: boolean
+  details?: string
+  error?: string
+}
+
 export interface InstalledModelRef {
   source: 'installed'
   modelKey: string

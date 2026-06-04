@@ -10,11 +10,19 @@ function runsDir(): string {
 }
 
 function runPath(id: string, suiteName: string): string {
-  return join(runsDir(), `${id}-${slugify(suiteName, { lower: true, strict: true })}.json`)
+  return join(
+    runsDir(),
+    `${id}-${slugify(suiteName, { lower: true, strict: true }).slice(0, 25)}.json`
+  )
 }
 
 async function ensureRunsDir(): Promise<void> {
   await fs.mkdir(runsDir(), { recursive: true })
+}
+
+export async function saveTestRun(run: TestRun): Promise<void> {
+  await ensureRunsDir()
+  await fs.writeFile(runPath(run.id, run.suiteName), JSON.stringify(run, null, 2), 'utf-8')
 }
 
 export function registerTestRunHandlers(): void {
@@ -30,11 +38,6 @@ export function registerTestRunHandlers(): void {
       })
     )
     return runs.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-  })
-
-  ipcMain.handle(TEST_RUNS.SAVE, async (_event, run: TestRun): Promise<void> => {
-    await ensureRunsDir()
-    await fs.writeFile(runPath(run.id, run.suiteName), JSON.stringify(run, null, 2), 'utf-8')
   })
 
   ipcMain.handle(TEST_RUNS.DELETE, async (_event, id: string): Promise<void> => {

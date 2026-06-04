@@ -3,18 +3,18 @@ import '../../core/providers'
 import { getProvider, createProbeProvider, buildRegistry } from '../../core/providers/registry'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import { PROVIDER } from '@shared/provider/ipc-channels'
-import { APP, EVAL } from '@shared/app/ipc-channels'
-import { VM } from 'vm2'
+import { APP } from '@shared/app/ipc-channels'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
-import type { ChatRequest } from '@shared/lm-studio/chat'
+import { registerRunHandlers } from './run-handlers'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
   registerSettingsHandlers()
   registerTestRunHandlers()
+  registerRunHandlers()
 
   ipcMain.handle(
     PROVIDER.GET_CAPABILITIES,
@@ -34,43 +34,11 @@ export function registerHandlers(): void {
     return provider.fetchExternalModels()
   })
 
-  ipcMain.handle(
-    PROVIDER.CHAT,
-    (_event, providerId: string, modelId: string, request: ChatRequest) => {
-      const provider = getProvider(providerId)
-      if (!provider.chat) throw new Error(`${providerId}: chat not supported`)
-      return provider.chat(modelId, request)
-    }
-  )
-
-  ipcMain.handle(PROVIDER.DOWNLOAD_MODEL, (_event, providerId: string, url: string) => {
-    const provider = getProvider(providerId)
-    if (!provider.downloadModel) throw new Error(`${providerId}: downloadModel not supported`)
-    return provider.downloadModel(url)
-  })
-
-  ipcMain.handle(PROVIDER.DOWNLOAD_MODEL_STATUS, (_event, providerId: string, jobId: string) => {
-    const provider = getProvider(providerId)
-    if (!provider.getDownloadStatus)
-      throw new Error(`${providerId}: getDownloadStatus not supported`)
-    return provider.getDownloadStatus(jobId)
-  })
-
   ipcMain.handle(PROVIDER.DELETE_MODEL, (_event, providerId: string, modelId: string) => {
     const provider = getProvider(providerId)
     if (!provider.deleteModel) throw new Error(`${providerId}: deleteModel not supported`)
     return provider.deleteModel(modelId)
   })
-
-  ipcMain.handle(
-    PROVIDER.DELETE_MODEL_BY_HF_ID,
-    (_event, providerId: string, hfModelId: string) => {
-      const provider = getProvider(providerId)
-      if (!provider.deleteModelByHfId)
-        throw new Error(`${providerId}: deleteModelByHfId not supported`)
-      return provider.deleteModelByHfId(hfModelId)
-    }
-  )
 
   ipcMain.handle(PROVIDER.LOAD_MODEL, (_event, providerId: string, modelId: string) => {
     const provider = getProvider(providerId)
@@ -134,13 +102,6 @@ export function registerHandlers(): void {
   ipcMain.handle(APP.GET_SUITES_DIR, () => join(app.getPath('userData'), 'suites'))
   ipcMain.handle(APP.GET_RUNS_DIR, () => join(app.getPath('userData'), 'runs'))
   ipcMain.handle(APP.OPEN_PATH, (_event, path: string) => shell.openPath(path))
-
-  ipcMain.handle(EVAL.RUN_CUSTOM_VALIDATOR, (_event, code: string, output: string) => {
-    const vm = new VM({ timeout: 1000, allowAsync: false, sandbox: {} })
-    const fn = vm.run(`(${code})`) as (output: string) => { score: number; details?: string }
-    const result = fn(output)
-    return { score: Math.min(1, Math.max(0, result.score)), details: result.details }
-  })
 
   ipcMain.handle(PROVIDER.SYNC, (_event, providers: ConfiguredProvider[]): void => {
     buildRegistry(providers)
