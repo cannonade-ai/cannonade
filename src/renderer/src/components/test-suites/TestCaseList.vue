@@ -70,7 +70,7 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
 
 <style scoped lang="scss">
 .cases-panel {
-  max-height: 19rem;
+  max-height: 14rem;
 
   :deep(.panel__body) {
     padding: 0;
