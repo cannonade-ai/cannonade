@@ -10,6 +10,7 @@ withDefaults(
     error?: boolean
     type?: 'text' | 'password' | 'email' | 'search' | 'url'
     alignRight?: boolean
+    maxlength?: number
   }>(),
   {
     type: 'text',
@@ -35,6 +36,7 @@ function onInput(): void {
     :type="type"
     :placeholder="placeholder"
     :disabled="disabled"
+    :maxlength="maxlength"
     @input="onInput"
   />
 </template>

@@ -162,7 +162,7 @@ function onClose(): void {
 
     <div v-else class="form">
       <Field label="Name">
-        <Input v-model="displayName" placeholder="My Provider" />
+        <Input v-model="displayName" placeholder="My Provider" :maxlength="25" />
       </Field>
       <Field label="URL">
         <Input v-model="url" placeholder="http://localhost:1234" type="url" />

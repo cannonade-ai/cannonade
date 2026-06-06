@@ -157,6 +157,30 @@ export async function executeTestRun(
 
   let overallFailed = false
 
+  if (
+    capabilities.loadModel &&
+    run.config.unloadModelsBeforeRun &&
+    provider.fetchLocalModels &&
+    provider.unloadModel
+  ) {
+    const selectedModelKeys = new Set(
+      run.modelRuns
+        .filter((mr) => mr.modelRef.source === 'installed')
+        .map((mr) => (mr.modelRef as { source: 'installed'; modelKey: string }).modelKey)
+    )
+    try {
+      const localModels = await provider.fetchLocalModels()
+      for (const m of localModels) {
+        if (selectedModelKeys.has(m.id)) continue
+        for (const instance of m.loadedInstances) {
+          await provider.unloadModel(instance.id)
+        }
+      }
+    } catch (err) {
+      console.error('[test-runner] Failed to unload models before run:', err)
+    }
+  }
+
   for (const modelRun of run.modelRuns) {
     if (signal.aborted) break
 
@@ -261,6 +285,7 @@ export async function executeTestRun(
             evalResults: [],
             error
           }
+          overallFailed = true
           results.push(result)
           caseRunState.status = 'completed'
           caseRunState.completedAt = new Date().toISOString()
@@ -281,8 +306,11 @@ export async function executeTestRun(
       console.log('[test-runner] Test case completed with fatal error:', fatalError)
     }
 
-    const wasCancelled = signal.aborted
-    const modelStatus: RunStatus = wasCancelled ? 'cancelled' : fatalError ? 'failed' : 'completed'
+    const modelStatus: RunStatus = signal.aborted
+      ? 'cancelled'
+      : fatalError || overallFailed
+        ? 'failed'
+        : 'completed'
     modelRunState.status = modelStatus
     modelRunState.completedAt = new Date().toISOString()
     modelRunState.aggregate = computeAggregate(results, suite.testCases)

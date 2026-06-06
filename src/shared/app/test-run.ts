@@ -1,4 +1,4 @@
-import type { TestCaseResult, AggregateMetrics } from './test-suite'
+import type { TestCase, TestCaseResult, AggregateMetrics } from './test-suite'
 
 export interface EvaluationResult {
   score: number
@@ -25,6 +25,7 @@ export interface TestRunConfig {
   providerName: string
   models: ModelRef[]
   deleteAutoDownloadedModels?: boolean
+  unloadModelsBeforeRun?: boolean
   unloadModelsAfterRun?: boolean
   parallelRun?: boolean
 }
@@ -58,6 +59,7 @@ export interface TestRun {
   id: string
   suiteId: string
   suiteName: string
+  testCases?: TestCase[]
   config: TestRunConfig
   status: RunStatus
   createdAt: string

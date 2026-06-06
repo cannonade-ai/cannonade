@@ -12,12 +12,12 @@ const props = defineProps<{
 </script>
 
 <template>
-  <Panel title="Suite Info">
+  <Panel title="Suite Info" class="suite-info-panel">
     <Field label="Name">
-      <Input v-model="name" />
+      <Input v-model="name" :maxlength="75" />
     </Field>
     <Field label="Description">
-      <Textarea v-model="description" fill :rows="3" />
+      <Textarea v-model="description" :rows="2" />
     </Field>
     <div class="meta-rows">
       <div class="meta-row">
@@ -33,6 +33,10 @@ const props = defineProps<{
 </template>
 
 <style scoped lang="scss">
+.suite-info-panel {
+  max-height: 14rem;
+}
+
 .meta-rows {
   display: flex;
   flex-direction: column;

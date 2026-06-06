@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Chevron } from '@renderer/components/ui'
+import { Chevron, CopyButton, Textarea } from '@renderer/components/ui'
 import type { TestCaseRun } from '@shared/app/test-run'
 import type { ChatMessage, TestCase, TestCaseResult } from '@shared/app/test-suite'
 import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
@@ -121,27 +121,51 @@ const hasMetrics = computed<boolean>(() => {
 
       <div v-if="systemPrompt" class="detail-block">
         <span class="detail-label">System Prompt</span>
-        <pre class="detail-pre">{{ systemPrompt }}</pre>
+        <Textarea
+          :model-value="systemPrompt ?? undefined"
+          variant="display"
+          readonly
+          copyable
+          class="field-textarea"
+        />
       </div>
 
       <div v-if="inputMessages.length > 0" class="detail-block">
         <div class="messages">
           <div v-for="(msg, i) in inputMessages" :key="i" class="message" :class="msg.role">
             <span class="message-role">{{ msg.role }}</span>
-            <pre class="message-content">{{ msg.content }}</pre>
+            <Textarea
+              :model-value="msg.content"
+              variant="display"
+              readonly
+              copyable
+              class="field-textarea"
+            />
           </div>
         </div>
       </div>
 
       <div v-else-if="inputPrompt" class="detail-block">
         <span class="detail-label">Input</span>
-        <pre class="detail-pre">{{ inputPrompt }}</pre>
+        <Textarea
+          :model-value="inputPrompt ?? undefined"
+          variant="display"
+          readonly
+          copyable
+          class="field-textarea"
+        />
       </div>
 
       <div class="outputs-grid">
         <div v-if="caseRun.result.output" class="output-col">
           <span class="detail-label">Actual Output</span>
-          <pre class="detail-pre output-pre">{{ caseRun.result.output }}</pre>
+          <Textarea
+            :model-value="caseRun.result.output"
+            variant="display"
+            readonly
+            copyable
+            class="field-textarea"
+          />
         </div>
       </div>
 
@@ -158,12 +182,11 @@ const hasMetrics = computed<boolean>(() => {
           >
             <div class="eval-result__row">
               <span class="eval-result__type">{{ er.type.replace(/_/g, ' ') }}</span>
-              <span
-                v-if="expectedForEval(i) != null"
-                class="eval-result__expected"
-                :title="fullExpectedForEval(i) ?? undefined"
-                >{{ expectedForEval(i) }}</span
-              >
+              <CopyButton :value="fullExpectedForEval(i) ?? ''" inset>
+                <span class="eval-result__expected" :title="fullExpectedForEval(i) ?? undefined">{{
+                  expectedForEval(i)
+                }}</span>
+              </CopyButton>
               <span v-if="er.details" class="eval-result__detail">{{ er.details }}</span>
               <span v-if="er.error" class="eval-result__error">{{ er.error }}</span>
               <span class="eval-result__score">{{ (er.score * 100).toFixed(0) }}%</span>
@@ -366,23 +389,6 @@ const hasMetrics = computed<boolean>(() => {
     }
   }
 
-  .detail-pre {
-    white-space: pre-wrap;
-    word-break: break-word;
-    background: var(--surface-elevated);
-    padding: 8px 10px;
-    margin: 0;
-    font-family: var(--font-mono, monospace);
-    font-size: var(--text-xs);
-    color: var(--text-secondary);
-    line-height: 1.5;
-
-    &.output-pre {
-      max-height: 10rem;
-      overflow-y: auto;
-    }
-  }
-
   .messages {
     display: flex;
     flex-direction: column;
@@ -406,18 +412,6 @@ const hasMetrics = computed<boolean>(() => {
     }
     &.assistant .message-role {
       color: #22c55e;
-    }
-
-    .message-content {
-      white-space: pre-wrap;
-      word-break: break-word;
-      background: var(--surface-elevated);
-      padding: 8px 10px;
-      margin: 0;
-      font-family: var(--font-mono, monospace);
-      font-size: var(--text-xs);
-      color: var(--text-secondary);
-      line-height: 1.5;
     }
   }
 

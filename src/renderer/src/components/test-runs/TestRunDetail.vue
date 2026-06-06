@@ -2,11 +2,9 @@
 import { computed } from 'vue'
 import { IconPlayerStop, IconTrash } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
-import type { TestCase } from '@shared/app/test-suite'
 import { Button, Panel } from '@renderer/components/ui'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
-import { useTestSuitesStore } from '@renderer/stores/test-suites'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { formatDate } from '@renderer/utils/format'
 
@@ -15,12 +13,7 @@ const props = defineProps<{
 }>()
 
 const store = useTestRunsStore()
-const suitesStore = useTestSuitesStore()
 const confirm = useConfirmStore()
-
-const testCases = computed<TestCase[]>(
-  () => suitesStore.suites.find((s) => s.id === props.run.suiteId)?.testCases ?? []
-)
 
 const isActive = computed(() => props.run.status === 'running' || props.run.status === 'pending')
 
@@ -67,7 +60,7 @@ async function showDeleteConfirm(): Promise<void> {
         v-for="(mr, i) in run.modelRuns"
         :key="mr.id"
         :model-run="mr"
-        :test-cases="testCases"
+        :test-cases="run.testCases ?? []"
         :expanded="i === 0"
       />
     </div>

@@ -4,6 +4,9 @@ import { IconPlayerPlay, IconPlayerStop, IconRefresh } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
 import { api } from '@renderer/api'
 import type { ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
+import { useModelsStore } from '@renderer/stores/models'
+
+const modelsStore = useModelsStore()
 
 const props = defineProps<{
   instanceId: string
@@ -28,8 +31,14 @@ async function withLoading(fn: () => Promise<ServerStatusResponse>): Promise<voi
 }
 
 const refresh = (): Promise<void> => withLoading(() => api.serverStatus(props.instanceId))
-const start = (): Promise<void> => withLoading(() => api.serverStart(props.instanceId))
-const stop = (): Promise<void> => withLoading(() => api.serverStop(props.instanceId))
+const start = async (): Promise<void> => {
+  await withLoading(() => api.serverStart(props.instanceId))
+  modelsStore.loadLocalModels()
+}
+const stop = async (): Promise<void> => {
+  await withLoading(() => api.serverStop(props.instanceId))
+  modelsStore.loadLocalModels()
+}
 
 onMounted(refresh)
 </script>

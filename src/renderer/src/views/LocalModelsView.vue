@@ -127,10 +127,6 @@ watch(
 </template>
 
 <style scoped lang="scss">
-.models {
-  height: 100%;
-}
-
 .no-providers {
   display: flex;
   flex-direction: column;

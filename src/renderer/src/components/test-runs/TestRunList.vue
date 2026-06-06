@@ -48,7 +48,7 @@ function modelCount(run: TestRun): string {
         <div class="run-info">
           <span class="run-suite">{{ run.suiteName }}</span>
           <span class="run-meta">
-            {{ run.config.providerName ?? run.config.provider }}
+            <span class="provider-name">{{ run.config.providerName ?? run.config.provider }}</span>
             &middot; {{ modelCount(run) }}
           </span>
         </div>
@@ -119,8 +119,17 @@ function modelCount(run: TestRun): string {
   }
 
   .run-meta {
+    display: flex;
     font-size: var(--text-xs);
     color: var(--text-secondary);
+
+    .provider-name {
+      max-width: 6rem;
+      margin-right: 4px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
   }
 }
 
