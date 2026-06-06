@@ -25,6 +25,7 @@ export interface TestRunConfig {
   providerName: string
   models: ModelRef[]
   deleteAutoDownloadedModels?: boolean
+  unloadModelsBeforeRun?: boolean
   unloadModelsAfterRun?: boolean
   parallelRun?: boolean
 }

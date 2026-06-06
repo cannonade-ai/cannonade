@@ -59,6 +59,7 @@ const form = reactive<{
   provider: string
   models: ModelRef[]
   deleteAutoDownloadedModels: boolean
+  unloadModelsBeforeRun: boolean
   unloadModelsAfterRun: boolean
   parallelRun: boolean
 }>({
@@ -66,6 +67,7 @@ const form = reactive<{
   provider: initialProvider,
   models: [],
   deleteAutoDownloadedModels: false,
+  unloadModelsBeforeRun: true,
   unloadModelsAfterRun: false,
   parallelRun: false
 })
@@ -159,6 +161,7 @@ function onSubmit(): void {
       providerName,
       models: form.models,
       deleteAutoDownloadedModels: form.deleteAutoDownloadedModels,
+      unloadModelsBeforeRun: capabilities.value?.loadModel ? form.unloadModelsBeforeRun : undefined,
       unloadModelsAfterRun: capabilities.value?.loadModel ? form.unloadModelsAfterRun : undefined,
       parallelRun:
         capabilities.value && !capabilities.value.localModels ? form.parallelRun : undefined
@@ -206,7 +209,11 @@ function onSubmit(): void {
     <Field label="Options">
       <div class="options-list">
         <label v-if="capabilities?.loadModel" class="toggle-row">
-          <span class="toggle-label">Unload models after run</span>
+          <span class="toggle-label">Unload loaded models before run</span>
+          <Toggle v-model="form.unloadModelsBeforeRun" />
+        </label>
+        <label v-if="capabilities?.loadModel" class="toggle-row">
+          <span class="toggle-label">Unload model after each run</span>
           <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
         </label>
         <label v-if="capabilities?.downloadModel && capabilities.deleteModel" class="toggle-row">
