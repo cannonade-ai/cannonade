@@ -127,5 +127,33 @@ onMounted(() => nextTick(fitHeight))
     font-family: var(--font-mono, monospace);
     font-size: var(--text-xs);
   }
+
+  &::-webkit-resizer {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Cpath d='M9 2L2 9M9 5.5L5.5 9' stroke='rgba(120,120,130,0.5)' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: bottom right;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--border-hover);
+    border-radius: var(--radius-full);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 </style>
