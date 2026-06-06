@@ -14,7 +14,7 @@ const props = defineProps<{
 <template>
   <Panel title="Suite Info" class="suite-info-panel">
     <Field label="Name">
-      <Input v-model="name" />
+      <Input v-model="name" :maxlength="75" />
     </Field>
     <Field label="Description">
       <Textarea v-model="description" :rows="2" />

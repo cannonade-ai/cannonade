@@ -119,8 +119,17 @@ function modelCount(run: TestRun): string {
   }
 
   .run-meta {
+    display: flex;
     font-size: var(--text-xs);
     color: var(--text-secondary);
+
+    .provider-name {
+      max-width: 6rem;
+      margin-right: 4px;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
   }
 }
 
