@@ -87,9 +87,15 @@ function buildRequest(testCase: TestCase, modelKey: string): ChatRequest {
   const { input, runConfig } = testCase
   const base: Partial<ChatRequest> = {
     model: modelKey,
+    max_output_tokens: runConfig?.maxTokens,
     temperature: runConfig?.temperature,
     top_p: runConfig?.topP,
-    max_output_tokens: runConfig?.maxTokens
+    top_k: runConfig?.topK,
+    min_p: runConfig?.minP,
+    repeat_penalty: runConfig?.repeatPenalty,
+    frequency_penalty: runConfig?.frequencyPenalty,
+    presence_penalty: runConfig?.presencePenalty,
+    seed: runConfig?.seed
   }
 
   if (input.type === 'chat' && input.messages?.length) {

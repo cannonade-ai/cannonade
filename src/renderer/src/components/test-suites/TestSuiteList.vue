@@ -37,7 +37,7 @@ const { suiteMenuItems } = useTestSuiteMenus()
         <div class="suite-aside">
           <div class="aside-top">
             <span class="case-count">
-              <icon-test-pipe :size="11" :stroke-width="2" />
+              <IconTestPipe :size="11" :stroke-width="2" />
               {{ suite.testCases.length }} cases
             </span>
             <Button

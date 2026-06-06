@@ -48,11 +48,14 @@ export interface ChatMessage {
 
 export interface RunConfig {
   temperature?: number
-  maxTokens?: number
   topP?: number
-
-  frequencyPenalty?: number
+  topK?: number
+  minP?: number
+  repeatPenalty?: number
   presencePenalty?: number
+  frequencyPenalty?: number
+  seed?: number
+  maxTokens?: number
 
   providerOptions?: Record<string, unknown>
 }
