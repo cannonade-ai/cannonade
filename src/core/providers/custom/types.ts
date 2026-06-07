@@ -1,3 +1,22 @@
+export interface OpenAIChatMessage {
+  role: string
+  content: string
+}
+
+export interface OpenAIChatRequest {
+  model: string
+  messages: OpenAIChatMessage[]
+  stream?: boolean
+  temperature?: number
+  top_p?: number
+  top_k?: number
+  max_tokens?: number
+  presence_penalty?: number
+  frequency_penalty?: number
+  repeat_penalty?: number
+  seed?: number
+}
+
 export interface OpenAIModel {
   id: string
   object: string

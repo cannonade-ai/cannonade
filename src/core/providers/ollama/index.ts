@@ -3,7 +3,8 @@ import type { LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/provider/ipc-contracts'
-import { ModelResponse } from './types'
+
+import { toLocalModel, toChatRequest, toChatResponse, toDownloadProgress } from './mappers'
 
 export function createOllamaProvider(instanceId: string, url: string): LLMProvider {
   const client = new Ollama({ host: url })
@@ -26,87 +27,14 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
 
     async fetchLocalModels(): Promise<LocalModel[]> {
       const [listRes, psRes] = await Promise.all([client.list(), client.ps()])
-
-      return listRes.models.map((m) => {
-        const loadedInstance = psRes.models.find((p) => p.name === m.name) as
-          | ModelResponse
-          | undefined
-
-        const meta: Record<string, string | number> = {}
-        if (m.details.family) meta.family = m.details.family
-        if (m.details.parameter_size) meta.params_string = m.details.parameter_size
-        if (m.details.quantization_level) meta.quantization = m.details.quantization_level
-        if (m.details.format) meta.format = m.details.format
-
-        const parts = m.name.split('/')
-        let displayName = m.name
-        if (parts.length === 3) {
-          const publisher = parts[1]
-          meta.publisher = publisher
-          displayName = parts[2].split(':')[0]
-        }
-
-        return {
-          id: m.name,
-          name: displayName,
-          providerId: instanceId,
-          sizeBytes: m.size,
-          type: m.name.includes('embed') ? 'embedding' : 'llm',
-          loadedInstances: loadedInstance
-            ? [
-                {
-                  id: loadedInstance.name,
-                  config: { context_length: loadedInstance.context_length }
-                }
-              ]
-            : [],
-          meta
-        }
-      })
+      return listRes.models.map((m) => toLocalModel(m, psRes.models, instanceId))
     },
 
     async chat(request: ChatRequest): Promise<ChatResponse> {
-      const messages: { role: string; content: string }[] = []
-
-      if (request.system_prompt) {
-        messages.push({ role: 'system', content: request.system_prompt })
-      }
-
-      if (typeof request.input === 'string') {
-        messages.push({ role: 'user', content: request.input })
-      } else {
-        const text = request.input
-          .filter((item) => item.type === 'message')
-          .map((item) => (item as { type: 'message'; content: string }).content)
-          .join('\n')
-        messages.push({ role: 'user', content: text })
-      }
-
-      const ollamaBody = {
-        model: request.model,
-        messages,
-        options: {
-          temperature: request.temperature,
-          top_p: request.top_p,
-          top_k: request.top_k,
-          repeat_penalty: request.repeat_penalty,
-          num_predict: request.max_output_tokens
-        }
-      }
-      console.log('[ollama] chat body:', JSON.stringify(ollamaBody, null, 2))
-      const response = await client.chat(ollamaBody)
-
-      return {
-        model_instance_id: request.model,
-        output: [{ type: 'message', content: response.message.content }],
-        stats: {
-          input_tokens: response.prompt_eval_count,
-          total_output_tokens: response.eval_count,
-          reasoning_output_tokens: 0,
-          tokens_per_second: response.eval_count / (response.eval_duration / 1e9),
-          time_to_first_token_seconds: response.prompt_eval_duration / 1e9
-        }
-      }
+      const ollamaRequest = toChatRequest(request)
+      console.log('[ollama] chat body:', JSON.stringify(ollamaRequest, null, 2))
+      const response = await client.chat(ollamaRequest)
+      return toChatResponse(response)
     },
 
     async deleteModel(modelId: string): Promise<void> {
@@ -121,13 +49,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
         try {
           const stream = await client.pull({ model: modelName, stream: true })
           for await (const chunk of stream) {
-            const existing = downloadJobs.get(jobId)!
-            downloadJobs.set(jobId, {
-              ...existing,
-              status: 'downloading',
-              downloaded_bytes: chunk.completed,
-              total_size_bytes: chunk.total
-            })
+            downloadJobs.set(jobId, toDownloadProgress(jobId, chunk))
           }
           downloadJobs.set(jobId, { job_id: jobId, status: 'completed' })
         } catch {

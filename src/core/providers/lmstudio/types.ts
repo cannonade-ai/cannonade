@@ -43,3 +43,11 @@ export interface ErrorBody {
   code?: string
   param?: string
 }
+
+export interface ModelListResponse {
+  models: Model[]
+}
+
+export interface LmStudioSettings {
+  downloadsFolder: string
+}

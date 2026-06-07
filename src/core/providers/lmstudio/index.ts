@@ -9,8 +9,9 @@ import type {
   DownloadStatusResponse,
   ServerStatusResponse
 } from '@shared/provider/ipc-contracts'
-import type { ErrorBody, Model } from './types'
+import type { ErrorBody, LmStudioSettings, ModelListResponse, Model } from './types'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import { toLocalModel, parseStatusOutput, parseStartOutput, parseStopOutput } from './mappers'
 
 function parseError(raw: string, status: number): ProviderError {
   try {
@@ -56,32 +57,7 @@ export function createLmStudioProvider(
 
   async function fetchRawModels(): Promise<Model[]> {
     const res = await fetchOrThrow(`${base}/api/v1/models`)
-    const data = (await res.json()) as { models: Model[] }
-    return data.models
-  }
-
-  function mapToLocalModel(model: Model): LocalModel {
-    const meta: Record<string, string | number> = {}
-    if (model.publisher) meta.publisher = model.publisher
-    if (model.architecture) meta.architecture = model.architecture
-    if (model.quantization?.name) meta.quantization = model.quantization.name
-    if (model.params_string) meta.params_string = model.params_string
-    if (model.format) meta.format = model.format
-
-    return {
-      id: model.key,
-      name: model.display_name,
-      providerId: instanceId,
-      sizeBytes: model.size_bytes,
-      type: model.type,
-      loadedInstances: model.loaded_instances.map((i) => ({
-        id: i.id,
-        config: { context_length: i.config.context_length }
-      })),
-      capabilities: model.capabilities,
-      maxContextLength: model.max_context_length,
-      meta
-    }
+    return ((await res.json()) as ModelListResponse).models
   }
 
   const provider: LLMProvider = {
@@ -100,18 +76,17 @@ export function createLmStudioProvider(
     },
 
     async fetchLocalModels(): Promise<LocalModel[]> {
-      return (await fetchRawModels()).map(mapToLocalModel)
+      return (await fetchRawModels()).map((m) => toLocalModel(m, instanceId))
     },
 
     async chat(request: ChatRequest): Promise<ChatResponse> {
-      const body = { ...request }
-      console.log('[lmstudio] chat body:', JSON.stringify(body, null, 2))
+      console.log('[lmstudio] chat body:', JSON.stringify(request, null, 2))
       const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify(request)
       })
-      return res.json() as Promise<ChatResponse>
+      return (await res.json()) as ChatResponse
     },
 
     async downloadModel(downloadUrl: string): Promise<DownloadModelResponse> {
@@ -134,7 +109,7 @@ export function createLmStudioProvider(
       if (!model) throw new Error(`Model not found: ${modelId}`)
       const lmSettingsPath = join(homedir(), '.lmstudio', 'settings.json')
       const raw = await readFile(lmSettingsPath, 'utf-8')
-      const lmSettings = JSON.parse(raw) as { downloadsFolder: string }
+      const lmSettings = JSON.parse(raw) as LmStudioSettings
       const folderName = `${model.key}-${(model.format ?? '').toUpperCase()}`
       const modelPath = join(lmSettings.downloadsFolder, model.publisher, folderName)
       await rm(modelPath, { recursive: true, force: true })
@@ -170,28 +145,17 @@ export function createLmStudioProvider(
 
     async getServerStatus(): Promise<ServerStatusResponse> {
       const output = await execCommand('lms server status')
-      const portMatch = output.match(/port (\d+)/)
-      return {
-        running: output.toLowerCase().includes('is running'),
-        port: portMatch ? Number(portMatch[1]) : null
-      }
+      return parseStatusOutput(output)
     },
 
     async startServer(): Promise<ServerStatusResponse> {
       const output = await execCommand('lms server start')
-      const portMatch = output.match(/port (\d+)/)
-      return {
-        running: output.toLowerCase().includes('running'),
-        port: portMatch ? Number(portMatch[1]) : null
-      }
+      return parseStartOutput(output)
     },
 
     async stopServer(): Promise<ServerStatusResponse> {
       const output = await execCommand('lms server stop')
-      return {
-        running: !output.toLowerCase().includes('stopped'),
-        port: null
-      }
+      return parseStopOutput(output)
     }
   }
 

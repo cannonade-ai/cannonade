@@ -1,7 +1,8 @@
 import type { LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
-import { OpenAIChatResponse, OpenAIModelsResponse } from './types'
+import { OpenAIModelsResponse, OpenAIChatResponse } from './types'
+import { toLocalModel, toChatRequest, toChatResponse } from './mappers'
 
 export function createCustomProvider(instanceId: string, baseUrl: string): LLMProvider {
   const normalizedBase = baseUrl.replace(/\/$/, '')
@@ -12,39 +13,11 @@ export function createCustomProvider(instanceId: string, baseUrl: string): LLMPr
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     const data = (await res.json()) as OpenAIModelsResponse
-    return data.data.map((m) => ({
-      id: m.id,
-      name: m.id,
-      providerId: instanceId,
-      sizeBytes: 0,
-      type: 'llm' as const,
-      loadedInstances: [],
-      meta: m.owned_by ? ({ owned_by: m.owned_by } as Record<string, string>) : {}
-    }))
+    return data.data.map((m) => toLocalModel(m, instanceId))
   }
 
   async function chat(request: ChatRequest): Promise<ChatResponse> {
-    const messages: { role: string; content: string }[] = []
-
-    if (request.system_prompt) {
-      messages.push({ role: 'system', content: request.system_prompt })
-    }
-
-    if (typeof request.input === 'string') {
-      messages.push({ role: 'user', content: request.input })
-    } else {
-      const text = request.input
-        .filter((item) => item.type === 'message')
-        .map((item) => (item as { type: 'message'; content: string }).content)
-        .join('\n')
-      messages.push({ role: 'user', content: text })
-    }
-
-    const body: Record<string, unknown> = { model: request.model, messages }
-    if (request.temperature !== undefined) body.temperature = request.temperature
-    if (request.top_p !== undefined) body.top_p = request.top_p
-    if (request.max_output_tokens !== undefined) body.max_tokens = request.max_output_tokens
-
+    const body = toChatRequest(request)
     console.log('[custom] chat body:', JSON.stringify(body, null, 2))
     const res = await fetch(`${normalizedBase}/v1/chat/completions`, {
       method: 'POST',
@@ -52,22 +25,7 @@ export function createCustomProvider(instanceId: string, baseUrl: string): LLMPr
       body: JSON.stringify(body)
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
-    const data = (await res.json()) as OpenAIChatResponse
-
-    const content = data.choices[0]?.message?.content ?? ''
-    const usage = data.usage
-
-    return {
-      model_instance_id: data.id,
-      output: [{ type: 'message', content }],
-      stats: {
-        input_tokens: usage?.prompt_tokens ?? 0,
-        total_output_tokens: usage?.completion_tokens ?? 0,
-        reasoning_output_tokens: 0,
-        tokens_per_second: 0,
-        time_to_first_token_seconds: 0
-      }
-    }
+    return toChatResponse((await res.json()) as OpenAIChatResponse)
   }
 
   return {
