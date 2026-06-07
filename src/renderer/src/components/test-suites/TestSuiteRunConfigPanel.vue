@@ -12,7 +12,7 @@ const config = defineModel<RunConfig | undefined>('config')
     </Field>
     <div class="field-row">
       <Field label="Temperature" grow>
-        <NumberInput v-model="config!.temperature" :min="0" :max="2" :step="0.1" />
+        <NumberInput v-model="config!.temperature" :min="0" :max="1" :step="0.05" />
       </Field>
       <Field label="Top P" grow>
         <NumberInput v-model="config!.topP" :min="0" :max="1" :step="0.05" />
@@ -20,10 +20,10 @@ const config = defineModel<RunConfig | undefined>('config')
     </div>
     <div class="field-row">
       <Field label="Top K" grow>
-        <NumberInput v-model="config!.topK" :min="0" :max="200" :step="1" />
+        <NumberInput v-model="config!.topK" :min="0" :max="999999999" :step="1" />
       </Field>
       <Field label="Min P" grow>
-        <NumberInput v-model="config!.minP" :min="0" :max="1" :step="0.01" />
+        <NumberInput v-model="config!.minP" :min="0" :max="1" :step="0.05" />
       </Field>
     </div>
     <div class="field-row">

@@ -3,7 +3,13 @@ import { saveTestRun } from '../ipc/test-run-handlers'
 import { evaluateAll } from '../eval/evaluator'
 import { RUN } from '@shared/app/ipc-channels'
 import type { TestRun, RunStatus } from '@shared/app/test-run'
-import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
+import type {
+  TestSuite,
+  TestCase,
+  TestCaseResult,
+  AggregateMetrics,
+  RunConfig
+} from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
 import type { LocalModel } from '@shared/provider/local-model'
 
@@ -83,8 +89,16 @@ async function downloadAndPoll(
   throw new Error('Aborted during download')
 }
 
-function buildRequest(testCase: TestCase, modelKey: string): ChatRequest {
-  const { input, runConfig } = testCase
+function buildRequest(
+  testCase: TestCase,
+  modelKey: string,
+  defaultRunConfig?: RunConfig
+): ChatRequest {
+  const { input } = testCase
+  const runConfig: RunConfig | undefined =
+    testCase.runConfig || defaultRunConfig
+      ? { ...defaultRunConfig, ...testCase.runConfig }
+      : undefined
   const base: Partial<ChatRequest> = {
     model: modelKey,
     max_output_tokens: runConfig?.maxTokens,
@@ -246,7 +260,7 @@ export async function executeTestRun(
         send(RUN.CASE_STARTED, { modelRunId: modelRun.id, testCaseId: testCase.id })
         console.log('[test-runner] Starting test case:', testCase)
 
-        const request = buildRequest(testCase, modelKey)
+        const request = buildRequest(testCase, modelKey, suite.defaultRunConfig)
 
         try {
           if (!provider.chat) throw new Error(`${providerId}: chat not supported`)

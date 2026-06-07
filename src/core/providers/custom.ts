@@ -68,6 +68,7 @@ export function createCustomProvider(instanceId: string, baseUrl: string): LLMPr
     if (request.top_p !== undefined) body.top_p = request.top_p
     if (request.max_output_tokens !== undefined) body.max_tokens = request.max_output_tokens
 
+    console.log('[custom] chat body:', JSON.stringify(body, null, 2))
     const res = await fetch(`${normalizedBase}/v1/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

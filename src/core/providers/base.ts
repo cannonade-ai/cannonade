@@ -8,6 +8,18 @@ import type {
   ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 
+export class ProviderError extends Error {
+  readonly status: number
+  readonly code: string | undefined
+
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = 'ProviderError'
+    this.status = status
+    this.code = code
+  }
+}
+
 export interface LLMProvider {
   readonly id: string
   readonly capabilities: ProviderCapabilities

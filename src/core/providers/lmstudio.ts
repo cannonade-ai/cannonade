@@ -2,7 +2,7 @@ import { readFile, rm } from 'fs/promises'
 import { join } from 'path'
 import { homedir } from 'os'
 import { exec } from 'child_process'
-import type { LLMProvider } from './base'
+import { ProviderError, type LLMProvider } from './base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type {
   Model,
@@ -11,6 +11,40 @@ import type {
   ServerStatusResponse
 } from '@shared/lm-studio/ipc-contracts'
 import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+
+interface LmStudioErrorBody {
+  message: string
+  type?: string
+  code?: string
+  param?: string
+}
+
+function parseError(raw: string, status: number): ProviderError {
+  try {
+    const parsed = JSON.parse(raw) as { error?: LmStudioErrorBody }
+    const err = parsed.error
+    if (err) {
+      const parts = [err.message]
+      if (err.type) parts.push(`type: ${err.type}`)
+      if (err.code) parts.push(`code: ${err.code}`)
+      if (err.param) parts.push(`param: ${err.param}`)
+      return new ProviderError(parts.join(' | '), status, err.code)
+    }
+  } catch {
+    //
+  }
+  return new ProviderError(`HTTP ${status}`, status)
+}
+
+async function fetchOrThrow(input: RequestInfo, init?: RequestInit): Promise<Response> {
+  const res = await fetch(input, init)
+  if (!res.ok) {
+    const raw = await res.text()
+    console.error(`[lmstudio] ${init?.method ?? 'GET'} ${input} error:`, raw)
+    throw parseError(raw, res.status)
+  }
+  return res
+}
 
 function execCommand(command: string): Promise<string> {
   return new Promise((resolve) => {
@@ -28,8 +62,7 @@ export function createLmStudioProvider(
   const base = url.replace(/\/$/, '')
 
   async function fetchRawModels(): Promise<Model[]> {
-    const res = await fetch(`${base}/api/v1/models`)
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    const res = await fetchOrThrow(`${base}/api/v1/models`)
     const data = (await res.json()) as { models: Model[] }
     return data.models
   }
@@ -78,28 +111,27 @@ export function createLmStudioProvider(
     },
 
     async chat(modelId: string, request: ChatRequest): Promise<ChatResponse> {
-      const res = await fetch(`${base}/api/v1/chat`, {
+      const body = { ...request, model: modelId }
+      console.log('[lmstudio] chat body:', JSON.stringify(body, null, 2))
+      const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...request, model: modelId })
+        body: JSON.stringify(body)
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       return res.json() as Promise<ChatResponse>
     },
 
     async downloadModel(downloadUrl: string): Promise<DownloadModelResponse> {
-      const res = await fetch(`${base}/api/v1/models/download`, {
+      const res = await fetchOrThrow(`${base}/api/v1/models/download`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: downloadUrl })
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       return res.json() as Promise<DownloadModelResponse>
     },
 
     async getDownloadStatus(jobId: string): Promise<DownloadStatusResponse> {
-      const res = await fetch(`${base}/api/v1/models/download/status/${jobId}`)
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      const res = await fetchOrThrow(`${base}/api/v1/models/download/status/${jobId}`)
       return res.json() as Promise<DownloadStatusResponse>
     },
 
@@ -128,21 +160,19 @@ export function createLmStudioProvider(
     },
 
     async loadModel(modelId: string): Promise<void> {
-      const res = await fetch(`${base}/api/v1/models/load`, {
+      await fetchOrThrow(`${base}/api/v1/models/load`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: modelId })
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     },
 
     async unloadModel(loadedInstanceId: string): Promise<void> {
-      const res = await fetch(`${base}/api/v1/models/unload`, {
+      await fetchOrThrow(`${base}/api/v1/models/unload`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ instance_id: loadedInstanceId })
       })
-      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
     },
 
     async getServerStatus(): Promise<ServerStatusResponse> {

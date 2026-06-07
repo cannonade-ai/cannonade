@@ -209,7 +209,7 @@ function onSubmit(): void {
     <Field label="Options">
       <div class="options-list">
         <label v-if="capabilities?.loadModel" class="toggle-row">
-          <span class="toggle-label">Unload loaded models before run</span>
+          <span class="toggle-label">Unload other models before run</span>
           <Toggle v-model="form.unloadModelsBeforeRun" />
         </label>
         <label v-if="capabilities?.loadModel" class="toggle-row">
@@ -217,7 +217,7 @@ function onSubmit(): void {
           <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
         </label>
         <label v-if="capabilities?.downloadModel && capabilities.deleteModel" class="toggle-row">
-          <span class="toggle-label">Delete auto-downloaded models after run</span>
+          <span class="toggle-label">Delete <b>auto-downloaded</b> models after run</span>
           <Toggle v-model="form.deleteAutoDownloadedModels" />
         </label>
 

@@ -26,10 +26,7 @@ interface ModelResponse {
 }
 
 export function createOllamaProvider(instanceId: string, url: string): LLMProvider {
-  function client(): Ollama {
-    return new Ollama({ host: url })
-  }
-
+  const client = new Ollama({ host: url })
   const downloadJobs = new Map<string, DownloadStatusResponse>()
 
   return {
@@ -48,7 +45,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
     },
 
     async fetchLocalModels(): Promise<LocalModel[]> {
-      const [listRes, psRes] = await Promise.all([client().list(), client().ps()])
+      const [listRes, psRes] = await Promise.all([client.list(), client.ps()])
 
       return listRes.models.map((m) => {
         const loadedInstance = psRes.models.find((p) => p.name === m.name) as
@@ -105,7 +102,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
         messages.push({ role: 'user', content: text })
       }
 
-      const response = await client().chat({
+      const ollamaBody = {
         model: modelId,
         messages,
         options: {
@@ -115,7 +112,9 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
           repeat_penalty: request.repeat_penalty,
           num_predict: request.max_output_tokens
         }
-      })
+      }
+      console.log('[ollama] chat body:', JSON.stringify(ollamaBody, null, 2))
+      const response = await client.chat(ollamaBody)
 
       return {
         model_instance_id: modelId,
@@ -131,7 +130,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
     },
 
     async deleteModel(modelId: string): Promise<void> {
-      await client().delete({ model: modelId })
+      await client.delete({ model: modelId })
     },
 
     async downloadModel(modelName: string): Promise<DownloadModelResponse> {
@@ -140,7 +139,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
 
       void (async () => {
         try {
-          const stream = await client().pull({ model: modelName, stream: true })
+          const stream = await client.pull({ model: modelName, stream: true })
           for await (const chunk of stream) {
             const existing = downloadJobs.get(jobId)!
             downloadJobs.set(jobId, {
@@ -164,11 +163,11 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
     },
 
     async loadModel(modelId: string): Promise<void> {
-      await client().generate({ model: modelId, prompt: '', keep_alive: '1h' })
+      await client.generate({ model: modelId, prompt: '', keep_alive: '1h' })
     },
 
     async unloadModel(loadedInstanceId: string): Promise<void> {
-      await client().generate({ model: loadedInstanceId, prompt: '', keep_alive: 0 })
+      await client.generate({ model: loadedInstanceId, prompt: '', keep_alive: 0 })
       await new Promise<void>((resolve) => setTimeout(resolve, 3000))
     }
   }
