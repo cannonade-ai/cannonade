@@ -73,6 +73,9 @@ export function toChatRequest(request: ChatRequest): OllamaChatRequest & { strea
       top_p: request.top_p,
       top_k: request.top_k,
       repeat_penalty: request.repeat_penalty,
+      presence_penalty: request.presence_penalty,
+      frequency_penalty: request.frequency_penalty,
+      seed: request.seed,
       num_predict: request.max_output_tokens
     }
   }
