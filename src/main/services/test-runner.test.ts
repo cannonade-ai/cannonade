@@ -2,8 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { executeTestRun } from './test-runner'
 import { RUN } from '@shared/app/ipc-channels'
 import type { TestRun, PerModelRun, RunStatus } from '@shared/app/test-run'
-import type { TestSuite, TestCase, EvaluationConfig } from '@shared/app/test-suite'
-import type { ChatResponse } from '@shared/lm-studio/chat'
+import type {
+  TestSuite,
+  TestCase,
+  EvaluationConfig,
+  AggregateMetrics
+} from '@shared/app/test-suite'
+import type { ChatResponse } from '@shared/provider/chat'
 
 vi.mock('../../core/providers/registry')
 vi.mock('../eval/evaluator')
@@ -20,7 +25,7 @@ const mockFetchLocalModels = vi.fn()
 const mockDownloadModel = vi.fn()
 const mockGetDownloadStatus = vi.fn()
 
-const lmStudioCapabilities = {
+const capabilities = {
   chat: true,
   localModels: true,
   externalModels: false,
@@ -116,7 +121,7 @@ beforeEach(() => {
   mockDownloadModel.mockResolvedValue({ job_id: '', status: 'already_downloaded' })
   mockGetProvider.mockReturnValue({
     id: 'lmstudio',
-    capabilities: lmStudioCapabilities,
+    capabilities: capabilities,
     chat: mockChat,
     fetchLocalModels: mockFetchLocalModels,
     downloadModel: mockDownloadModel,
@@ -172,10 +177,7 @@ describe('executeTestRun – model key resolution', () => {
   it('uses modelKey for installed model refs', async () => {
     const modelRun = makeModelRun({ modelRef: { source: 'installed', modelKey: 'llama-3-8b' } })
     await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
-    expect(mockChat).toHaveBeenCalledWith(
-      'llama-3-8b',
-      expect.objectContaining({ model: 'llama-3-8b' })
-    )
+    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ model: 'llama-3-8b' }))
   })
 
   it('uses modelId for huggingface model refs', async () => {
@@ -192,10 +194,7 @@ describe('executeTestRun – model key resolution', () => {
     ])
     const modelRun = makeModelRun({ modelRef: { source: 'huggingface', modelId: 'meta/llama-3' } })
     await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
-    expect(mockChat).toHaveBeenCalledWith(
-      'meta/llama-3',
-      expect.objectContaining({ model: 'meta/llama-3' })
-    )
+    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ model: 'meta/llama-3' }))
   })
 })
 
@@ -203,10 +202,7 @@ describe('executeTestRun – request building', () => {
   it('builds a completion request from prompt input', async () => {
     const testCase = makeTestCase({ input: { type: 'completion', prompt: 'Say hello' } })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
-    expect(mockChat).toHaveBeenCalledWith(
-      expect.any(String),
-      expect.objectContaining({ input: 'Say hello' })
-    )
+    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ input: 'Say hello' }))
   })
 
   it('builds a chat request joining non-system messages', async () => {
@@ -222,7 +218,6 @@ describe('executeTestRun – request building', () => {
     })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
     expect(mockChat).toHaveBeenCalledWith(
-      expect.any(String),
       expect.objectContaining({ input: 'Hello\nHi\nHow are you?' })
     )
   })
@@ -239,7 +234,6 @@ describe('executeTestRun – request building', () => {
     })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
     expect(mockChat).toHaveBeenCalledWith(
-      expect.any(String),
       expect.objectContaining({
         system_prompt: 'You are a helpful assistant.',
         input: 'Hello'
@@ -257,7 +251,6 @@ describe('executeTestRun – request building', () => {
     })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
     expect(mockChat).toHaveBeenCalledWith(
-      expect.any(String),
       expect.objectContaining({ temperature: 0.7, top_p: 0.9, max_output_tokens: 256 })
     )
   })
@@ -471,7 +464,7 @@ describe('executeTestRun – aggregate metrics', () => {
     const send = makeSend()
     await executeTestRun(makeRun(), makeSuite(), send)
     const modelCompletedCall = send.mock.calls.find(([ch]) => ch === RUN.MODEL_COMPLETED)
-    const aggregate = (modelCompletedCall![1] as any).aggregate
+    const aggregate = (modelCompletedCall![1] as { aggregate: AggregateMetrics }).aggregate
     expect(aggregate.avgTokensPerSecond).toBeUndefined()
     expect(aggregate.minTokensPerSecond).toBeUndefined()
     expect(aggregate.maxTokensPerSecond).toBeUndefined()

@@ -1,29 +1,9 @@
 import { Ollama } from 'ollama'
-import type { LLMProvider } from './base'
+import type { LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/lm-studio/ipc-contracts'
-
-interface ModelDetails {
-  parent_model: string
-  format: string
-  family: string
-  families: string[]
-  parameter_size: string
-  quantization_level: string
-}
-
-interface ModelResponse {
-  name: string
-  modified_at: Date
-  model: string
-  size: number
-  digest: string
-  details: ModelDetails
-  expires_at: Date
-  size_vram: number
-  context_length: number
-}
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/provider/ipc-contracts'
+import { ModelResponse } from './types'
 
 export function createOllamaProvider(instanceId: string, url: string): LLMProvider {
   const client = new Ollama({ host: url })
@@ -85,7 +65,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
       })
     },
 
-    async chat(modelId: string, request: ChatRequest): Promise<ChatResponse> {
+    async chat(request: ChatRequest): Promise<ChatResponse> {
       const messages: { role: string; content: string }[] = []
 
       if (request.system_prompt) {
@@ -103,7 +83,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
       }
 
       const ollamaBody = {
-        model: modelId,
+        model: request.model,
         messages,
         options: {
           temperature: request.temperature,
@@ -117,7 +97,7 @@ export function createOllamaProvider(instanceId: string, url: string): LLMProvid
       const response = await client.chat(ollamaBody)
 
       return {
-        model_instance_id: modelId,
+        model_instance_id: request.model,
         output: [{ type: 'message', content: response.message.content }],
         stats: {
           input_tokens: response.prompt_eval_count,

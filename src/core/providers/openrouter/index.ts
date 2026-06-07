@@ -1,6 +1,6 @@
-import type { LLMProvider } from './base'
+import type { LLMProvider } from '../base'
 import type { ExternalModel } from '@shared/provider/external-model'
-import type { Model } from '@shared/open-router/ipc-contracts'
+import type { Model } from './types'
 
 function mapToExternalModel(instanceId: string, model: Model): ExternalModel {
   return {

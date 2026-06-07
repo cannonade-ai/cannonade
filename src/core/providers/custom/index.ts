@@ -1,30 +1,7 @@
-import type { LLMProvider } from './base'
+import type { LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-
-interface OpenAIModel {
-  id: string
-  object: string
-  owned_by?: string
-}
-
-interface OpenAIModelsResponse {
-  data: OpenAIModel[]
-}
-
-interface OpenAIChatResponse {
-  id: string
-  choices: {
-    message: { role: string; content: string }
-    finish_reason: string
-  }[]
-  usage?: {
-    prompt_tokens: number
-    completion_tokens: number
-    total_tokens: number
-  }
-  model: string
-}
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import { OpenAIChatResponse, OpenAIModelsResponse } from './types'
 
 export function createCustomProvider(instanceId: string, baseUrl: string): LLMProvider {
   const normalizedBase = baseUrl.replace(/\/$/, '')
@@ -46,7 +23,7 @@ export function createCustomProvider(instanceId: string, baseUrl: string): LLMPr
     }))
   }
 
-  async function chat(modelId: string, request: ChatRequest): Promise<ChatResponse> {
+  async function chat(request: ChatRequest): Promise<ChatResponse> {
     const messages: { role: string; content: string }[] = []
 
     if (request.system_prompt) {
@@ -63,7 +40,7 @@ export function createCustomProvider(instanceId: string, baseUrl: string): LLMPr
       messages.push({ role: 'user', content: text })
     }
 
-    const body: Record<string, unknown> = { model: modelId, messages }
+    const body: Record<string, unknown> = { model: request.model, messages }
     if (request.temperature !== undefined) body.temperature = request.temperature
     if (request.top_p !== undefined) body.top_p = request.top_p
     if (request.max_output_tokens !== undefined) body.max_tokens = request.max_output_tokens

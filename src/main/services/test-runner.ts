@@ -10,7 +10,7 @@ import type {
   AggregateMetrics,
   RunConfig
 } from '@shared/app/test-suite'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 import type { LocalModel } from '@shared/provider/local-model'
 
 type SendEvent = (channel: string, payload: unknown) => void
@@ -264,7 +264,7 @@ export async function executeTestRun(
 
         try {
           if (!provider.chat) throw new Error(`${providerId}: chat not supported`)
-          const response = await provider.chat(modelKey, request)
+          const response = await provider.chat(request)
           if (!modelInstanceId) modelInstanceId = response.model_instance_id
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 

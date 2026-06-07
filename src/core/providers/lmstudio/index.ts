@@ -2,26 +2,19 @@ import { readFile, rm } from 'fs/promises'
 import { join } from 'path'
 import { homedir } from 'os'
 import { exec } from 'child_process'
-import { ProviderError, type LLMProvider } from './base'
+import { ProviderError, type LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type {
-  Model,
   DownloadModelResponse,
   DownloadStatusResponse,
   ServerStatusResponse
-} from '@shared/lm-studio/ipc-contracts'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
-
-interface LmStudioErrorBody {
-  message: string
-  type?: string
-  code?: string
-  param?: string
-}
+} from '@shared/provider/ipc-contracts'
+import type { ErrorBody, Model } from './types'
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 
 function parseError(raw: string, status: number): ProviderError {
   try {
-    const parsed = JSON.parse(raw) as { error?: LmStudioErrorBody }
+    const parsed = JSON.parse(raw) as { error?: ErrorBody }
     const err = parsed.error
     if (err) {
       const parts = [err.message]
@@ -30,8 +23,8 @@ function parseError(raw: string, status: number): ProviderError {
       if (err.param) parts.push(`param: ${err.param}`)
       return new ProviderError(parts.join(' | '), status, err.code)
     }
-  } catch {
-    //
+  } catch (e) {
+    console.error('Error ocurred during parsing lm studio error', e)
   }
   return new ProviderError(`HTTP ${status}`, status)
 }
@@ -110,8 +103,8 @@ export function createLmStudioProvider(
       return (await fetchRawModels()).map(mapToLocalModel)
     },
 
-    async chat(modelId: string, request: ChatRequest): Promise<ChatResponse> {
-      const body = { ...request, model: modelId }
+    async chat(request: ChatRequest): Promise<ChatResponse> {
+      const body = { ...request }
       console.log('[lmstudio] chat body:', JSON.stringify(body, null, 2))
       const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
