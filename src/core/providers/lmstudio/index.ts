@@ -11,7 +11,13 @@ import type {
 } from '@shared/provider/ipc-contracts'
 import type { ErrorBody, LmStudioSettings, ModelListResponse, Model } from './types'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
-import { toLocalModel, parseStatusOutput, parseStartOutput, parseStopOutput } from './mappers'
+import {
+  toLocalModel,
+  toChatRequest,
+  parseStatusOutput,
+  parseStartOutput,
+  parseStopOutput
+} from './mappers'
 
 function parseError(raw: string, status: number): ProviderError {
   try {
@@ -80,11 +86,12 @@ export function createLmStudioProvider(
     },
 
     async chat(request: ChatRequest): Promise<ChatResponse> {
-      console.log('[lmstudio] chat body:', JSON.stringify(request, null, 2))
+      const body = toChatRequest(request)
+      console.log('[lmstudio] chat body:', JSON.stringify(body, null, 2))
       const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request)
+        body: JSON.stringify(body)
       })
       return (await res.json()) as ChatResponse
     },

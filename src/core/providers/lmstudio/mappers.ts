@@ -1,6 +1,7 @@
-import type { Model } from './types'
+import type { Model, LmStudioChatRequest } from './types'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
+import type { ChatRequest } from '@shared/provider/chat'
 
 export function toLocalModel(model: Model, instanceId: string): LocalModel {
   const meta: Record<string, string | number> = {}
@@ -23,6 +24,27 @@ export function toLocalModel(model: Model, instanceId: string): LocalModel {
     capabilities: model.capabilities,
     maxContextLength: model.max_context_length,
     meta
+  }
+}
+
+export function toChatRequest(request: ChatRequest): LmStudioChatRequest {
+  return {
+    model: request.model,
+    input: request.input,
+    system_prompt: request.system_prompt,
+    integrations: request.integrations,
+    stream: request.stream,
+    temperature: request.temperature,
+    top_p: request.top_p,
+    top_k: request.top_k,
+    min_p: request.min_p,
+    repeat_penalty: request.repeat_penalty,
+    presence_penalty: request.presence_penalty,
+    max_output_tokens: request.max_output_tokens,
+    reasoning: request.reasoning,
+    context_length: request.context_length,
+    store: request.store,
+    previous_response_id: request.previous_response_id
   }
 }
 

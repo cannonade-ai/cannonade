@@ -1,3 +1,24 @@
+import type { InputItem, Integration } from '@shared/provider/chat'
+
+export interface LmStudioChatRequest {
+  model: string
+  input: string | InputItem[]
+  system_prompt?: string
+  integrations?: Integration[]
+  stream?: boolean
+  temperature?: number
+  top_p?: number
+  top_k?: number
+  min_p?: number
+  repeat_penalty?: number
+  presence_penalty?: number
+  max_output_tokens?: number
+  reasoning?: 'off' | 'low' | 'medium' | 'high' | 'on'
+  context_length?: number
+  store?: boolean
+  previous_response_id?: string
+}
+
 export interface ModelQuantization {
   name: string | null
   bits_per_weight: number | null
