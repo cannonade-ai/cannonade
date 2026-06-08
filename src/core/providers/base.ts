@@ -1,19 +1,31 @@
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 import type {
   DownloadModelResponse,
   DownloadStatusResponse,
   ServerStatusResponse
-} from '@shared/lm-studio/ipc-contracts'
+} from '@shared/provider/ipc-contracts'
+
+export class ProviderError extends Error {
+  readonly status: number
+  readonly code: string | undefined
+
+  constructor(message: string, status: number, code?: string) {
+    super(message)
+    this.name = 'ProviderError'
+    this.status = status
+    this.code = code
+  }
+}
 
 export interface LLMProvider {
   readonly id: string
   readonly capabilities: ProviderCapabilities
   fetchLocalModels?(): Promise<LocalModel[]>
   fetchExternalModels?(): Promise<ExternalModel[]>
-  chat?(modelId: string, request: ChatRequest): Promise<ChatResponse>
+  chat?(request: ChatRequest): Promise<ChatResponse>
   downloadModel?(url: string): Promise<DownloadModelResponse>
   getDownloadStatus?(jobId: string): Promise<DownloadStatusResponse>
   deleteModel?(modelId: string): Promise<void>

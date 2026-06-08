@@ -37,6 +37,9 @@ export interface ChatRequest {
   top_k?: number
   min_p?: number
   repeat_penalty?: number
+  frequency_penalty?: number
+  presence_penalty?: number
+  seed?: number
   max_output_tokens?: number
   reasoning?: 'off' | 'low' | 'medium' | 'high' | 'on'
   context_length?: number

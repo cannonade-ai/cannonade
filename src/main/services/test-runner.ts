@@ -3,8 +3,14 @@ import { saveTestRun } from '../ipc/test-run-handlers'
 import { evaluateAll } from '../eval/evaluator'
 import { RUN } from '@shared/app/ipc-channels'
 import type { TestRun, RunStatus } from '@shared/app/test-run'
-import type { TestSuite, TestCase, TestCaseResult, AggregateMetrics } from '@shared/app/test-suite'
-import type { ChatRequest, ChatResponse } from '@shared/lm-studio/chat'
+import type {
+  TestSuite,
+  TestCase,
+  TestCaseResult,
+  AggregateMetrics,
+  RunConfig
+} from '@shared/app/test-suite'
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 import type { LocalModel } from '@shared/provider/local-model'
 
 type SendEvent = (channel: string, payload: unknown) => void
@@ -83,13 +89,27 @@ async function downloadAndPoll(
   throw new Error('Aborted during download')
 }
 
-function buildRequest(testCase: TestCase, modelKey: string): ChatRequest {
-  const { input, runConfig } = testCase
+function buildRequest(
+  testCase: TestCase,
+  modelKey: string,
+  defaultRunConfig?: RunConfig
+): ChatRequest {
+  const { input } = testCase
+  const runConfig: RunConfig | undefined =
+    testCase.runConfig || defaultRunConfig
+      ? { ...defaultRunConfig, ...testCase.runConfig }
+      : undefined
   const base: Partial<ChatRequest> = {
     model: modelKey,
+    max_output_tokens: runConfig?.maxTokens,
     temperature: runConfig?.temperature,
     top_p: runConfig?.topP,
-    max_output_tokens: runConfig?.maxTokens
+    top_k: runConfig?.topK,
+    min_p: runConfig?.minP,
+    repeat_penalty: runConfig?.repeatPenalty,
+    frequency_penalty: runConfig?.frequencyPenalty,
+    presence_penalty: runConfig?.presencePenalty,
+    seed: runConfig?.seed
   }
 
   if (input.type === 'chat' && input.messages?.length) {
@@ -240,11 +260,11 @@ export async function executeTestRun(
         send(RUN.CASE_STARTED, { modelRunId: modelRun.id, testCaseId: testCase.id })
         console.log('[test-runner] Starting test case:', testCase)
 
-        const request = buildRequest(testCase, modelKey)
+        const request = buildRequest(testCase, modelKey, suite.defaultRunConfig)
 
         try {
           if (!provider.chat) throw new Error(`${providerId}: chat not supported`)
-          const response = await provider.chat(modelKey, request)
+          const response = await provider.chat(request)
           if (!modelInstanceId) modelInstanceId = response.model_instance_id
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 

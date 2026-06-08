@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 import { IconPlayerPlay, IconPlayerStop, IconRefresh } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
 import { api } from '@renderer/api'
-import type { ServerStatusResponse } from '@shared/lm-studio/ipc-contracts'
+import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import { useModelsStore } from '@renderer/stores/models'
 
 const modelsStore = useModelsStore()
@@ -18,7 +18,7 @@ const loading = ref(false)
 
 const statusLabel = computed((): string => {
   if (running.value === null) return 'Checking…'
-  if (running.value) return `Running on port ${port.value}`
+  if (running.value) return `Running ${port.value ? 'on port ' + port.value : ''}`
   return 'Not running'
 })
 

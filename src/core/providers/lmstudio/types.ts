@@ -1,3 +1,24 @@
+import type { InputItem, Integration } from '@shared/provider/chat'
+
+export interface LmStudioChatRequest {
+  model: string
+  input: string | InputItem[]
+  system_prompt?: string
+  integrations?: Integration[]
+  stream?: boolean
+  temperature?: number
+  top_p?: number
+  top_k?: number
+  min_p?: number
+  repeat_penalty?: number
+  presence_penalty?: number
+  max_output_tokens?: number
+  reasoning?: 'off' | 'low' | 'medium' | 'high' | 'on'
+  context_length?: number
+  store?: boolean
+  previous_response_id?: string
+}
+
 export interface ModelQuantization {
   name: string | null
   bits_per_weight: number | null
@@ -21,29 +42,6 @@ export interface ModelCapabilities {
   trained_for_tool_use: boolean
 }
 
-export interface DownloadModelResponse {
-  job_id: string
-  status: 'downloading' | 'paused' | 'already_downloaded' | 'failed'
-  total_size_bytes?: number
-  started_at?: string
-}
-
-export interface DownloadStatusResponse {
-  job_id: string
-  status: 'downloading' | 'paused' | 'completed' | 'already_downloaded' | 'failed'
-  downloaded_bytes?: number
-  total_size_bytes?: number
-  started_at?: string
-  completed_at?: string
-  bytes_per_second?: number
-  estimated_completion?: string
-}
-
-export interface ServerStatusResponse {
-  running: boolean
-  port: number | null
-}
-
 export interface Model {
   type: 'llm' | 'embedding'
   publisher: string
@@ -58,4 +56,19 @@ export interface Model {
   format: 'gguf' | 'mlx' | null
   capabilities?: ModelCapabilities
   description?: string | null
+}
+
+export interface ErrorBody {
+  message: string
+  type?: string
+  code?: string
+  param?: string
+}
+
+export interface ModelListResponse {
+  models: Model[]
+}
+
+export interface LmStudioSettings {
+  downloadsFolder: string
 }
