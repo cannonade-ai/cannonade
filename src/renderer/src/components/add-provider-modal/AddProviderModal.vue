@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import type { Component } from 'vue'
 import { IconServer, IconCode, IconCircleCheck, IconCircleX } from '@tabler/icons-vue'
 import Modal from '@renderer/components/ui/Modal.vue'
@@ -10,6 +10,7 @@ import Toggle from '@renderer/components/ui/Toggle.vue'
 import AddProviderModalTypeCard from './AddProviderModalTypeCard.vue'
 import { useProvidersStore } from '@renderer/stores/providers'
 import { api } from '@renderer/api'
+import type { SecretSource } from '@shared/provider/api-key'
 import {
   KNOWN_PROVIDER_DEFAULTS,
   type ProviderType,
@@ -41,13 +42,33 @@ const url = ref('')
 const isRemote = ref(false)
 const connectionStatus = ref<'idle' | 'testing' | 'ok' | 'error'>('idle')
 
+const apiKeyState = reactive(emptyApiKeyState())
+
+function emptyApiKeyState(): {
+  value: string
+  source: SecretSource
+  preview: string
+  dirty: boolean
+  cleared: boolean
+  envLabel: string
+} {
+  return { value: '', source: 'none', preview: '', dirty: false, cleared: false, envLabel: '' }
+}
+
 const isEditMode = computed(() => !!props.editProvider)
 
 const existingTypes = computed(() => new Set(providers.configuredProviders.map((p) => p.type)))
 
-const canAdd = computed(() => displayName.value.trim().length > 0 && url.value.trim().length > 0)
-
 const selectedDefinition = computed(() => KNOWN_PROVIDER_DEFAULTS[selectedType.value])
+
+const apiKeySatisfied = computed(() => {
+  if (!selectedDefinition.value.requiresApiKey) return true
+  return apiKeyState.source !== 'none' || apiKeyState.value.trim().length > 0
+})
+
+const canAdd = computed(
+  () => displayName.value.trim().length > 0 && url.value.trim().length > 0 && apiKeySatisfied.value
+)
 
 const modalTitle = computed(() => {
   if (isEditMode.value) return 'Edit Provider'
@@ -64,6 +85,7 @@ watch(
       isRemote.value = provider.isRemote ?? false
       step.value = 2
       connectionStatus.value = 'idle'
+      loadSecretInfo(provider.type)
     } else {
       reset()
     }
@@ -83,6 +105,7 @@ function selectType(type: ProviderType): void {
   url.value = defaults.defaultUrl
   isRemote.value = false
   step.value = 2
+  void loadSecretInfo(type)
 }
 
 function goBack(): void {
@@ -100,6 +123,34 @@ async function testConnection(): Promise<void> {
   }
 }
 
+async function loadSecretInfo(type: ProviderType): Promise<void> {
+  apiKeyState.value = ''
+  apiKeyState.dirty = false
+  apiKeyState.cleared = false
+  const status = await api.getSecretInfo(type)
+  apiKeyState.source = status.source
+  apiKeyState.preview = status.preview ?? ''
+  apiKeyState.envLabel = status.envName
+}
+
+function clearApiKey(): void {
+  apiKeyState.value = ''
+  apiKeyState.preview = ''
+  apiKeyState.source = 'none'
+  apiKeyState.dirty = true
+  apiKeyState.cleared = true
+}
+
+async function persistApiKey(): Promise<void> {
+  if (!apiKeyState.dirty) return
+  const value = apiKeyState.value.trim()
+  if (value.length > 0) {
+    await api.setSecret(selectedType.value, value)
+  } else if (apiKeyState.cleared) {
+    await api.deleteSecret(selectedType.value)
+  }
+}
+
 async function addProvider(): Promise<void> {
   const provider: ConfiguredProvider = {
     instanceId: crypto.randomUUID(),
@@ -110,6 +161,7 @@ async function addProvider(): Promise<void> {
     ...(selectedDefinition.value.supportsRemote && { isRemote: isRemote.value })
   }
 
+  await persistApiKey()
   await providers.addProvider(provider)
   model.value = false
   reset()
@@ -117,6 +169,7 @@ async function addProvider(): Promise<void> {
 
 async function saveProvider(): Promise<void> {
   if (!props.editProvider) return
+  await persistApiKey()
   await providers.updateProvider({
     ...props.editProvider,
     displayName: displayName.value.trim(),
@@ -133,6 +186,7 @@ function reset(): void {
   url.value = ''
   isRemote.value = false
   connectionStatus.value = 'idle'
+  Object.assign(apiKeyState, emptyApiKeyState())
 }
 
 function onClose(): void {
@@ -170,6 +224,29 @@ function onClose(): void {
 
       <Field v-if="selectedDefinition.supportsRemote" label="Remote server">
         <Toggle v-model="isRemote" />
+      </Field>
+
+      <Field label="API Key">
+        <Input v-if="apiKeyState.source === 'env'" :model-value="apiKeyState.preview" disabled />
+        <Input
+          v-else
+          v-model="apiKeyState.value"
+          type="password"
+          :placeholder="apiKeyState.source === 'store' ? apiKeyState.preview : 'Enter API key'"
+          @update:model-value="apiKeyState.dirty = true"
+        />
+        <div class="api-key-hint">
+          <span v-if="apiKeyState.source === 'env'">
+            Set via the <code>{{ apiKeyState.envLabel }}</code> environment variable.
+          </span>
+          <template v-else-if="apiKeyState.source === 'store'">
+            <span>A key is saved. Enter a new value to replace it.</span>
+            <button type="button" class="api-key-clear" @click="clearApiKey">Clear</button>
+          </template>
+          <span v-else>
+            Optional. Or set the <code>{{ apiKeyState.envLabel }}</code> environment variable.
+          </span>
+        </div>
       </Field>
 
       <div class="connection-row">
@@ -222,6 +299,33 @@ function onClose(): void {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.api-key-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+
+  code {
+    font-family: var(--font-mono, monospace);
+    color: var(--text-primary);
+  }
+}
+
+.api-key-clear {
+  padding: 0;
+  font-size: var(--text-xs);
+  color: var(--accent);
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
 .status {

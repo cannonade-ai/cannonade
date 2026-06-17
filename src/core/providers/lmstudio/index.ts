@@ -11,6 +11,7 @@ import type {
 } from '@shared/provider/ipc-contracts'
 import type { ErrorBody, LmStudioSettings, ModelListResponse, Model } from './types'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import { authHeader } from '@shared/provider/api-key'
 import {
   toLocalModel,
   toChatRequest,
@@ -57,12 +58,14 @@ function execCommand(command: string): Promise<string> {
 export function createLmStudioProvider(
   instanceId: string,
   url: string,
+  apiKey?: string,
   remote = false
 ): LLMProvider {
   const base = url.replace(/\/$/, '')
+  const auth = authHeader(apiKey)
 
   async function fetchRawModels(): Promise<Model[]> {
-    const res = await fetchOrThrow(`${base}/api/v1/models`)
+    const res = await fetchOrThrow(`${base}/api/v1/models`, { headers: { ...auth } })
     return ((await res.json()) as ModelListResponse).models
   }
 
@@ -90,7 +93,7 @@ export function createLmStudioProvider(
       console.log('[lmstudio] chat body:', JSON.stringify(body, null, 2))
       const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify(body)
       })
       return (await res.json()) as ChatResponse
@@ -99,14 +102,16 @@ export function createLmStudioProvider(
     async downloadModel(downloadUrl: string): Promise<DownloadModelResponse> {
       const res = await fetchOrThrow(`${base}/api/v1/models/download`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify({ model: downloadUrl })
       })
       return res.json() as Promise<DownloadModelResponse>
     },
 
     async getDownloadStatus(jobId: string): Promise<DownloadStatusResponse> {
-      const res = await fetchOrThrow(`${base}/api/v1/models/download/status/${jobId}`)
+      const res = await fetchOrThrow(`${base}/api/v1/models/download/status/${jobId}`, {
+        headers: { ...auth }
+      })
       return res.json() as Promise<DownloadStatusResponse>
     },
 
@@ -137,7 +142,7 @@ export function createLmStudioProvider(
     async loadModel(modelId: string): Promise<void> {
       await fetchOrThrow(`${base}/api/v1/models/load`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify({ model: modelId })
       })
     },
@@ -145,7 +150,7 @@ export function createLmStudioProvider(
     async unloadModel(loadedInstanceId: string): Promise<void> {
       await fetchOrThrow(`${base}/api/v1/models/unload`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...auth },
         body: JSON.stringify({ instance_id: loadedInstanceId })
       })
     },
