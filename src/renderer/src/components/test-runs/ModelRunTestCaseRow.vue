@@ -467,7 +467,7 @@ const hasMetrics = computed<boolean>(() => {
   .eval-result {
     background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-left-width: 3px;
+    border-left-width: 2px;
     overflow: hidden;
 
     &.passed {
