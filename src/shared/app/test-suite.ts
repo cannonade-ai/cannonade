@@ -64,7 +64,6 @@ export interface EvaluationConfig {
   type:
     | 'exact_match'
     | 'contains'
-    | 'not_contains'
     | 'json_match'
     | 'regex'
     | 'bleu'
@@ -74,6 +73,9 @@ export interface EvaluationConfig {
     | 'custom'
     | 'code_execution'
     | 'cosine_similarity'
+
+  // inverts the result: the eval passes when it would otherwise fail
+  negate?: boolean
 
   // expected output (if applicable)
   expected?: string | object

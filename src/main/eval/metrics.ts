@@ -74,27 +74,6 @@ export function evaluateContains(output: string, evaluation: EvaluationConfig): 
   }
 }
 
-export function evaluateNotContains(
-  output: string,
-  evaluation: EvaluationConfig
-): EvaluationResult {
-  const raw = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  const terms = raw
-    .split(',')
-    .map((t) => t.trim())
-    .filter(Boolean)
-  if (!terms.length) {
-    return { score: 0, passed: false, error: 'No search terms provided' }
-  }
-  const matched = terms.filter((t) => output.includes(t))
-  const score = 1 - matched.length / terms.length
-  return {
-    score,
-    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD),
-    details: `${matched.length}/${terms.length} forbidden terms found`
-  }
-}
-
 export function evaluateRouge(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (expected.length === 0) {
@@ -181,4 +160,4 @@ function collectJsonPaths(obj: unknown, prefix = '', paths = new Set<string>()):
   return paths
 }
 
-const PASS_THRESHOLD = 0.9
+export const PASS_THRESHOLD = 0.9

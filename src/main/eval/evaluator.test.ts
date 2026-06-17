@@ -5,13 +5,13 @@ import type { EvaluationConfig } from '@shared/app/test-suite'
 vi.mock('./metrics', () => ({
   evaluateExactMatch: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
   evaluateContains: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
-  evaluateNotContains: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
   evaluateRegex: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
   evaluateRouge: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
   evaluateLevenshtein: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
   evaluateF1: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
   evaluateJsonMatch: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
-  evaluateBleu: vi.fn().mockResolvedValue({ passed: true, score: 1 })
+  evaluateBleu: vi.fn().mockResolvedValue({ passed: true, score: 1 }),
+  PASS_THRESHOLD: 0.9
 }))
 
 vi.mock('./customValidator', () => ({
@@ -25,7 +25,6 @@ vi.mock('./cosineSimilarity', () => ({
 import {
   evaluateExactMatch,
   evaluateContains,
-  evaluateNotContains,
   evaluateRegex,
   evaluateRouge,
   evaluateLevenshtein,
@@ -46,7 +45,6 @@ describe('evaluate routing', () => {
   const cases: Array<[EvaluationConfig['type'], unknown]> = [
     ['exact_match', evaluateExactMatch],
     ['contains', evaluateContains],
-    ['not_contains', evaluateNotContains],
     ['regex', evaluateRegex],
     ['rouge', evaluateRouge],
     ['levenshtein', evaluateLevenshtein],
@@ -70,5 +68,47 @@ describe('evaluate routing', () => {
     const result = await evaluate(OUTPUT, config)
     expect(result.passed).toBe(false)
     expect(result.error).toBeTruthy()
+  })
+})
+
+describe('negate', () => {
+  it('inverts a passing result into a failing one', async () => {
+    vi.mocked(evaluateRegex).mockResolvedValueOnce({ passed: true, score: 1 })
+    const result = await evaluate(OUTPUT, { type: 'regex', negate: true })
+    expect(result.score).toBe(0)
+    expect(result.passed).toBe(false)
+  })
+
+  it('inverts a failing result into a passing one', async () => {
+    vi.mocked(evaluateRegex).mockResolvedValueOnce({ passed: false, score: 0 })
+    const result = await evaluate(OUTPUT, { type: 'regex', negate: true })
+    expect(result.score).toBe(1)
+    expect(result.passed).toBe(true)
+  })
+
+  it('recomputes passed against the threshold for similarity scores', async () => {
+    vi.mocked(evaluateContains).mockResolvedValueOnce({ passed: false, score: 0.5 })
+    const result = await evaluate(OUTPUT, { type: 'contains', negate: true })
+    expect(result.score).toBe(0.5)
+    expect(result.passed).toBe(false)
+  })
+
+  it('uses a provided threshold when negating', async () => {
+    vi.mocked(evaluateContains).mockResolvedValueOnce({ passed: false, score: 0.5 })
+    const result = await evaluate(OUTPUT, { type: 'contains', negate: true, threshold: 0.4 })
+    expect(result.score).toBe(0.5)
+    expect(result.passed).toBe(true)
+  })
+
+  it('does not negate a result that errored', async () => {
+    vi.mocked(evaluateRegex).mockResolvedValueOnce({
+      passed: false,
+      score: 0,
+      error: 'Invalid regex pattern'
+    })
+    const result = await evaluate(OUTPUT, { type: 'regex', negate: true })
+    expect(result.error).toBeTruthy()
+    expect(result.passed).toBe(false)
+    expect(result.score).toBe(0)
   })
 })
