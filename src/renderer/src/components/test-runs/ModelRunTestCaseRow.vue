@@ -195,17 +195,18 @@ const hasMetrics = computed<boolean>(() => {
                   <span :title="fullExpectedForEval(i) ?? undefined">{{ expectedForEval(i) }}</span>
                 </CopyButton>
               </div>
-              <span v-if="er.details" class="eval-result__cell eval-result__detail">{{
-                er.details
-              }}</span>
-              <span v-if="er.error" class="eval-result__cell eval-result__error">{{
-                er.error
-              }}</span>
+              <span v-if="er.details" class="eval-result__cell eval-result__detail">
+                {{ er.details }}
+              </span>
+              <span v-if="er.error" class="eval-result__cell eval-result__error">
+                {{ er.error }}
+              </span>
               <span
                 class="eval-result__cell eval-result__score"
-                :class="er.passed ? 'is-pass' : 'is-fail'"
-                >{{ (er.score * 100).toFixed(0) }}%</span
+                :class="er.passed ? 'pass' : 'fail'"
               >
+                {{ (er.score * 100).toFixed(0) }}%
+              </span>
             </div>
           </div>
         </div>
@@ -521,10 +522,10 @@ const hasMetrics = computed<boolean>(() => {
       font-weight: 700;
       font-family: var(--font-headline);
 
-      &.is-pass {
+      &.pass {
         color: #22c55e;
       }
-      &.is-fail {
+      &.fail {
         color: #ef4444;
       }
     }
