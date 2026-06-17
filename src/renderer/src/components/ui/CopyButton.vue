@@ -18,7 +18,13 @@ async function copy(): Promise<void> {
 <template>
   <div class="copy-wrap">
     <slot />
-    <button type="button" class="copy-btn" :class="{ 'copy-btn--inset': inset }" @click.stop="copy">
+    <button
+      v-if="value"
+      type="button"
+      class="copy-btn"
+      :class="{ 'copy-btn--inset': inset }"
+      @click.stop="copy"
+    >
       <IconCheck v-if="copied" :size="13" :stroke-width="2.5" />
       <IconCopy v-else :size="13" :stroke-width="2" />
     </button>
@@ -40,8 +46,9 @@ async function copy(): Promise<void> {
   right: 6px;
 
   &--inset {
-    top: 0;
+    top: 50%;
     right: 0;
+    transform: translateY(-50%);
   }
   display: flex;
   align-items: center;

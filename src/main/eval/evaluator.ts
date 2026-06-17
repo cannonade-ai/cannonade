@@ -7,9 +7,9 @@ import {
   evaluateF1,
   evaluateJsonMatch,
   evaluateLevenshtein,
-  evaluateNotContains,
   evaluateRegex,
-  evaluateRouge
+  evaluateRouge,
+  PASS_THRESHOLD
 } from './metrics'
 import { runCustomValidator } from './customValidator'
 import { runCosineSimilarity } from './cosineSimilarity'
@@ -50,13 +50,16 @@ export async function evaluate(
   output: string,
   evaluation: EvaluationConfig
 ): Promise<EvaluationResult> {
+  const result = await runMetric(output, evaluation)
+  return evaluation.negate ? negateResult(result, evaluation) : result
+}
+
+async function runMetric(output: string, evaluation: EvaluationConfig): Promise<EvaluationResult> {
   switch (evaluation.type) {
     case 'exact_match':
       return evaluateExactMatch(output, evaluation)
     case 'contains':
       return evaluateContains(output, evaluation)
-    case 'not_contains':
-      return evaluateNotContains(output, evaluation)
     case 'regex':
       return evaluateRegex(output, evaluation)
     case 'rouge':
@@ -79,5 +82,17 @@ export async function evaluate(
         passed: false,
         error: `Unsupported eval type: ${(evaluation as EvaluationConfig).type}`
       }
+  }
+}
+
+function negateResult(result: EvaluationResult, evaluation: EvaluationConfig): EvaluationResult {
+  if (result.error) {
+    return result
+  }
+  const score = 1 - result.score
+  return {
+    ...result,
+    score,
+    passed: score >= (evaluation.threshold ?? PASS_THRESHOLD)
   }
 }

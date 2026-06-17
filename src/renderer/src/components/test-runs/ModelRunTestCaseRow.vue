@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Chevron, CopyButton, Textarea } from '@renderer/components/ui'
+import { Badge, Chevron, CopyButton, Textarea } from '@renderer/components/ui'
 import type { TestCaseRun } from '@shared/app/test-run'
 import type { ChatMessage, TestCase, TestCaseResult } from '@shared/app/test-suite'
 import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
@@ -48,10 +48,15 @@ function expectedForEval(index: number): string | null {
   return str.length > 20 ? str.slice(0, 20) + '…' : str
 }
 
+function isNegated(index: number): boolean {
+  return props.testCase.evaluations[index]?.negate === true
+}
+
 function fullExpectedForEval(index: number): string | null {
   const exp = props.testCase.evaluations[index]?.expected
   if (exp == null) return null
-  return typeof exp === 'string' ? exp : JSON.stringify(exp, null, 2)
+  const str = typeof exp === 'string' ? exp : JSON.stringify(exp)
+  return str.length < 20 ? null : str
 }
 
 function formatMetricValue(value: number | undefined, suffix: string): string {
@@ -181,15 +186,26 @@ const hasMetrics = computed<boolean>(() => {
             :class="er.passed ? 'passed' : 'failed'"
           >
             <div class="eval-result__row">
-              <span class="eval-result__type">{{ er.type.replace(/_/g, ' ') }}</span>
-              <CopyButton :value="fullExpectedForEval(i) ?? ''" inset>
-                <span class="eval-result__expected" :title="fullExpectedForEval(i) ?? undefined">{{
-                  expectedForEval(i)
-                }}</span>
-              </CopyButton>
-              <span v-if="er.details" class="eval-result__detail">{{ er.details }}</span>
-              <span v-if="er.error" class="eval-result__error">{{ er.error }}</span>
-              <span class="eval-result__score">{{ (er.score * 100).toFixed(0) }}%</span>
+              <div class="eval-result__cell eval-result__type">
+                <Badge v-if="isNegated(i)" type="info" square>Negated</Badge>
+                <span>{{ er.type.replace(/_/g, ' ') }}</span>
+              </div>
+              <div v-if="expectedForEval(i)" class="eval-result__cell eval-result__expected">
+                <CopyButton :value="fullExpectedForEval(i) ?? ''" inset>
+                  <span :title="fullExpectedForEval(i) ?? undefined">{{ expectedForEval(i) }}</span>
+                </CopyButton>
+              </div>
+              <span v-if="er.details" class="eval-result__cell eval-result__detail">{{
+                er.details
+              }}</span>
+              <span v-if="er.error" class="eval-result__cell eval-result__error">{{
+                er.error
+              }}</span>
+              <span
+                class="eval-result__cell eval-result__score"
+                :class="er.passed ? 'is-pass' : 'is-fail'"
+                >{{ (er.score * 100).toFixed(0) }}%</span
+              >
             </div>
           </div>
         </div>
@@ -448,11 +464,10 @@ const hasMetrics = computed<boolean>(() => {
   }
 
   .eval-result {
-    display: flex;
-    flex-direction: column;
-    padding: 0.5rem 0.75rem;
-    border-left: 2px solid transparent;
     background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-left-width: 3px;
+    overflow: hidden;
 
     &.passed {
       border-left-color: #22c55e;
@@ -463,8 +478,19 @@ const hasMetrics = computed<boolean>(() => {
 
     &__row {
       display: flex;
+      align-items: stretch;
+      min-width: 0;
+      height: 100%;
+    }
+
+    &__cell {
+      display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 6px;
+      padding: 0.35rem 0.55rem;
+      min-width: 0;
+      white-space: nowrap;
+      border-right: 1px solid var(--border);
     }
 
     &__type {
@@ -472,34 +498,35 @@ const hasMetrics = computed<boolean>(() => {
       font-weight: 600;
       color: var(--text-primary);
       text-transform: capitalize;
-      white-space: nowrap;
     }
 
     &__expected {
       font-size: var(--text-xs);
       color: var(--text-muted);
       font-family: var(--font-mono, monospace);
-      white-space: nowrap;
     }
 
     &__detail {
       font-size: var(--text-xs);
       color: var(--text-secondary);
-      white-space: nowrap;
     }
 
     &__error {
       font-size: var(--text-xs);
       color: #ef4444;
-      white-space: nowrap;
     }
 
     &__score {
       font-size: var(--text-xs);
       font-weight: 700;
       font-family: var(--font-headline);
-      color: var(--text-secondary);
-      white-space: nowrap;
+
+      &.is-pass {
+        color: #22c55e;
+      }
+      &.is-fail {
+        color: #ef4444;
+      }
     }
   }
 

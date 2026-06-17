@@ -61,7 +61,8 @@ export const DEFAULT_SUITE: TestSuite = {
           expected: '.*9.*'
         },
         {
-          type: 'not_contains',
+          type: 'contains',
+          negate: true,
           expected: '17,8'
         }
       ]
