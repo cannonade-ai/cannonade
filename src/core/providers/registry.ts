@@ -1,7 +1,17 @@
 import type { LLMProvider } from './base'
-import type { ConfiguredProvider } from '@shared/provider/configured-provider'
+import {
+  KNOWN_PROVIDER_DEFAULTS,
+  type ConfiguredProvider,
+  type ProviderType
+} from '@shared/provider/configured-provider'
+import { getSecret } from '../../main/secrets/secret-store'
 
-type ProviderFactory = (instanceId: string, url: string, remote: boolean) => LLMProvider
+type ProviderFactory = (
+  instanceId: string,
+  url: string,
+  apiKey?: string,
+  remote?: boolean
+) => LLMProvider
 
 const registry = new Map<string, LLMProvider>()
 const factories = new Map<string, ProviderFactory>()
@@ -10,10 +20,10 @@ export function registerProviderFactory(type: string, factory: ProviderFactory):
   factories.set(type, factory)
 }
 
-export function createProbeProvider(type: string, url: string): LLMProvider {
+export function createProbeProvider(type: ProviderType, url: string): LLMProvider {
   const factory = factories.get(type) ?? factories.get('custom')
   if (!factory) throw new Error(`No factory registered for provider type: ${type}`)
-  return factory('__probe__', url, false)
+  return factory('__probe__', url, getSecret(KNOWN_PROVIDER_DEFAULTS[type].apiKeyEnvNames), false)
 }
 
 function validateProvider(id: string, p: LLMProvider): void {
@@ -42,6 +52,7 @@ export function buildRegistry(configuredProviders: ConfiguredProvider[]): void {
     const provider = factory(
       providerConfig.instanceId,
       providerConfig.url,
+      getSecret(KNOWN_PROVIDER_DEFAULTS[providerConfig.type].apiKeyEnvNames),
       providerConfig.isRemote ?? false
     )
     validateProvider(providerConfig.instanceId, provider)

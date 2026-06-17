@@ -6,6 +6,7 @@ import type { TestSuite } from '@shared/app/test-suite'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
+import type { SecretInfo } from '@shared/provider/api-key'
 import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
 import type { TestCaseResult } from '@shared/app/test-suite'
 
@@ -62,6 +63,9 @@ export interface AppAPI {
   testConnection(instanceId: string): Promise<boolean>
   testConnectionUrl(type: ProviderType, url: string): Promise<boolean>
   syncProviders(providers: ConfiguredProvider[]): Promise<void>
+  getSecretInfo(type: ProviderType): Promise<SecretInfo>
+  setSecret(type: ProviderType, value: string): Promise<void>
+  deleteSecret(type: ProviderType): Promise<void>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>

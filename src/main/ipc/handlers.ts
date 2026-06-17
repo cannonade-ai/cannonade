@@ -9,12 +9,14 @@ import { registerSuiteHandlers } from './suite-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
 import { registerRunHandlers } from './run-handlers'
+import { registerSecretHandlers } from './secret-handlers'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
   registerSettingsHandlers()
   registerTestRunHandlers()
   registerRunHandlers()
+  registerSecretHandlers()
 
   ipcMain.handle(
     PROVIDER.GET_CAPABILITIES,

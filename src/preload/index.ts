@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { PROVIDER } from '@shared/provider/ipc-channels'
+import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
 import { APP, SUITES, SETTINGS, TEST_RUNS, RUN } from '@shared/app/ipc-channels'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
@@ -27,6 +27,9 @@ const api = {
   testConnectionUrl: (type: ProviderType, url: string) =>
     ipcRenderer.invoke(PROVIDER.TEST_CONNECTION_URL, type, url),
   syncProviders: (providers: ConfiguredProvider[]) => ipcRenderer.invoke(PROVIDER.SYNC, providers),
+  getSecretInfo: (type: ProviderType) => ipcRenderer.invoke(SECRETS.GET_INFO, type),
+  setSecret: (type: ProviderType, value: string) => ipcRenderer.invoke(SECRETS.SET, type, value),
+  deleteSecret: (type: ProviderType) => ipcRenderer.invoke(SECRETS.DELETE, type),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),

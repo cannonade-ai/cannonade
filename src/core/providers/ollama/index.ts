@@ -4,10 +4,15 @@ import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/provider/ipc-contracts'
 
+import { authHeader } from '@shared/provider/api-key'
 import { toLocalModel, toChatRequest, toChatResponse, toDownloadProgress } from './mappers'
 
-export function createOllamaProvider(instanceId: string, url: string): LLMProvider {
-  const client = new Ollama({ host: url })
+export function createOllamaProvider(
+  instanceId: string,
+  url: string,
+  apiKey?: string
+): LLMProvider {
+  const client = new Ollama({ host: url, headers: authHeader(apiKey) })
   const downloadJobs = new Map<string, DownloadStatusResponse>()
 
   return {

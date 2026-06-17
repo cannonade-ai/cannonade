@@ -3,6 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerHandlers } from './ipc/handlers'
 import { initAppSettings } from './ipc/settings-handlers'
+import { initSecrets } from './secrets/secret-store'
 import icon from '../../resources/icon.png?asset'
 
 function createWindow(): void {
@@ -53,6 +54,7 @@ app.whenReady().then(async () => {
     optimizer.watchWindowShortcuts(window)
   })
 
+  await initSecrets()
   await initAppSettings()
   registerHandlers()
   createWindow()

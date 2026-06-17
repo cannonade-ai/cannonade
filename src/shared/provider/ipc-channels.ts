@@ -16,3 +16,9 @@ export const PROVIDER = {
   TEST_CONNECTION_URL: 'provider:testConnectionUrl',
   SYNC: 'provider:sync'
 } as const
+
+export const SECRETS = {
+  GET_INFO: 'secrets:getInfo',
+  SET: 'secrets:set',
+  DELETE: 'secrets:delete'
+} as const

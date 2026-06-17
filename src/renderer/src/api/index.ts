@@ -5,6 +5,7 @@ import type { TestSuite } from '@shared/app/test-suite'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
+import type { SecretInfo } from '@shared/provider/api-key'
 import type { TestRun } from '@shared/app/test-run'
 import type {
   RunStartedPayload,
@@ -40,6 +41,10 @@ export const api = {
     window.api.testConnectionUrl(type, url),
   syncProviders: (providers: ConfiguredProvider[]): Promise<void> =>
     window.api.syncProviders(providers),
+  getSecretInfo: (type: ProviderType): Promise<SecretInfo> => window.api.getSecretInfo(type),
+  setSecret: (type: ProviderType, value: string): Promise<void> =>
+    window.api.setSecret(type, value),
+  deleteSecret: (type: ProviderType): Promise<void> => window.api.deleteSecret(type),
   getAppVersion: (): Promise<string> => window.api.getAppVersion(),
   getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
   getRunsDir: (): Promise<string> => window.api.getRunsDir(),

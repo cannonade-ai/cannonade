@@ -5,7 +5,9 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     defaultUrl: 'http://localhost:1234',
     singleton: false,
     supportsRemote: true,
-    isExternal: false
+    isExternal: false,
+    requiresApiKey: false,
+    apiKeyEnvNames: ['LMSTUDIO_API_KEY', 'LM_API_TOKEN']
   },
   ollama: {
     displayName: 'Ollama',
@@ -13,7 +15,9 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     defaultUrl: 'http://localhost:11434',
     singleton: false,
     supportsRemote: true,
-    isExternal: false
+    isExternal: false,
+    requiresApiKey: false,
+    apiKeyEnvNames: ['OLLAMA_API_KEY']
   },
   custom: {
     displayName: 'Custom',
@@ -21,7 +25,9 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     defaultUrl: '',
     singleton: false,
     supportsRemote: false,
-    isExternal: false
+    isExternal: false,
+    requiresApiKey: false,
+    apiKeyEnvNames: ['CUSTOM_API_KEY']
   },
   openrouter: {
     displayName: 'OpenRouter',
@@ -29,7 +35,9 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     defaultUrl: 'https://openrouter.ai/api/v1',
     singleton: true,
     supportsRemote: false,
-    isExternal: true
+    isExternal: true,
+    requiresApiKey: true,
+    apiKeyEnvNames: ['OPENROUTER_API_KEY']
   }
 } as const
 
