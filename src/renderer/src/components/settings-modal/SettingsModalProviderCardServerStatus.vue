@@ -69,11 +69,11 @@ onMounted(refresh)
       Stop
     </Button>
     <Button
+      v-tooltip="'Refresh status'"
       type="icon"
       :icon="IconRefresh"
       :icon-size="13"
       :disabled="loading"
-      title="Refresh status"
       @click="refresh"
     />
   </div>

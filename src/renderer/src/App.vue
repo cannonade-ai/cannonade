@@ -50,6 +50,7 @@ const viewComponent = computed(() => {
 @import './styles/colors.scss';
 @import './styles/variables.scss';
 @import './styles/animations.scss';
+@import './styles/tooltip.scss';
 
 *,
 *::before,
