@@ -192,7 +192,15 @@ const hasMetrics = computed<boolean>(() => {
               </div>
               <div v-if="expectedForEval(i)" class="eval-result__cell eval-result__expected">
                 <CopyButton :value="fullExpectedForEval(i) ?? ''" inset>
-                  <span :title="fullExpectedForEval(i) ?? undefined">{{ expectedForEval(i) }}</span>
+                  <span
+                    v-tooltip="{
+                      content: fullExpectedForEval(i) ?? '',
+                      interactive: true,
+                      delay: 200
+                    }"
+                  >
+                    {{ expectedForEval(i) }}
+                  </span>
                 </CopyButton>
               </div>
               <span v-if="er.details" class="eval-result__cell eval-result__detail">

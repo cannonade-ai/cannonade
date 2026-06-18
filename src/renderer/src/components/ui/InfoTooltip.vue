@@ -8,16 +8,18 @@ withDefaults(
     content: string
     placement?: TooltipPlacement
     size?: number
+    delay?: number
   }>(),
   {
     placement: 'top',
-    size: 14
+    size: 14,
+    delay: 100
   }
 )
 </script>
 
 <template>
-  <span v-tooltip="{ content, placement }" class="info-tooltip" tabindex="0">
+  <span v-tooltip="{ content, placement, delay }" class="info-tooltip" tabindex="0">
     <IconInfoCircle :size="size" :stroke-width="2" />
   </span>
 </template>
