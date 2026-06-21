@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import type { Component } from 'vue'
-import { IconServer, IconCode, IconCircleCheck, IconCircleX } from '@tabler/icons-vue'
+import { IconServer, IconCode, IconCircleCheck, IconCircleX, IconX } from '@tabler/icons-vue'
 import Modal from '@renderer/components/ui/Modal.vue'
 import Button from '@renderer/components/ui/Button.vue'
 import Field from '@renderer/components/ui/Field.vue'
@@ -60,6 +60,14 @@ const isEditMode = computed(() => !!props.editProvider)
 const existingTypes = computed(() => new Set(providers.configuredProviders.map((p) => p.type)))
 
 const selectedDefinition = computed(() => KNOWN_PROVIDER_DEFAULTS[selectedType.value])
+
+const apiKeyHint = computed(() => {
+  const envPart = apiKeyState.envLabel
+    ? ` Alternatively, set the ${apiKeyState.envLabel} environment variable.`
+    : ''
+  const base = `Stored securely on this device.${envPart}`
+  return selectedDefinition.value.requiresApiKey ? base : `Optional. ${base}`
+})
 
 const apiKeySatisfied = computed(() => {
   if (!selectedDefinition.value.requiresApiKey) return true
@@ -198,6 +206,7 @@ function onClose(): void {
   <Modal
     v-model="model"
     :title="modalTitle"
+    hint="A provider is a local or external LLM server that Cannonade sends test prompts to."
     size="sm"
     :close-on-backdrop="true"
     @update:model-value="onClose"
@@ -218,35 +227,42 @@ function onClose(): void {
       <Field label="Name">
         <Input v-model="displayName" placeholder="My Provider" :maxlength="25" />
       </Field>
-      <Field label="URL">
+      <Field
+        label="URL"
+        hint="The address where your provider is running. Provider's API endpoint."
+      >
         <Input v-model="url" placeholder="http://localhost:1234" type="url" />
       </Field>
 
-      <Field v-if="selectedDefinition.supportsRemote" label="Remote server">
-        <Toggle v-model="isRemote" />
+      <Field label="API Key" :hint="apiKeyHint">
+        <div class="api-key-input">
+          <Input v-if="apiKeyState.source === 'env'" :model-value="apiKeyState.preview" disabled />
+          <Input
+            v-else
+            v-model="apiKeyState.value"
+            type="password"
+            :placeholder="apiKeyState.source === 'store' ? apiKeyState.preview : 'Enter API key'"
+            @update:model-value="apiKeyState.dirty = true"
+          />
+          <Button
+            v-if="apiKeyState.source === 'store'"
+            v-tooltip="'Clear saved key'"
+            type="icon"
+            :icon="IconX"
+            :icon-size="13"
+            class="api-key-clear-btn"
+            @click="clearApiKey"
+          />
+        </div>
       </Field>
 
-      <Field label="API Key">
-        <Input v-if="apiKeyState.source === 'env'" :model-value="apiKeyState.preview" disabled />
-        <Input
-          v-else
-          v-model="apiKeyState.value"
-          type="password"
-          :placeholder="apiKeyState.source === 'store' ? apiKeyState.preview : 'Enter API key'"
-          @update:model-value="apiKeyState.dirty = true"
-        />
-        <div class="api-key-hint">
-          <span v-if="apiKeyState.source === 'env'">
-            Set via the <code>{{ apiKeyState.envLabel }}</code> environment variable.
-          </span>
-          <template v-else-if="apiKeyState.source === 'store'">
-            <span>A key is saved. Enter a new value to replace it.</span>
-            <button type="button" class="api-key-clear" @click="clearApiKey">Clear</button>
-          </template>
-          <span v-else>
-            Optional. Or set the <code>{{ apiKeyState.envLabel }}</code> environment variable.
-          </span>
-        </div>
+      <Field
+        v-if="selectedDefinition.supportsRemote"
+        label="Remote server"
+        inline
+        hint="Enable if this provider is served on your network, not on this machine."
+      >
+        <Toggle v-model="isRemote" />
       </Field>
 
       <div class="connection-row">
@@ -301,31 +317,19 @@ function onClose(): void {
   gap: 10px;
 }
 
-.api-key-hint {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-  font-size: var(--text-xs);
-  color: var(--text-muted);
+.api-key-input {
+  position: relative;
 
-  code {
-    font-family: var(--font-mono, monospace);
-    color: var(--text-primary);
+  :deep(.input) {
+    padding-right: 28px;
   }
 }
 
-.api-key-clear {
-  padding: 0;
-  font-size: var(--text-xs);
-  color: var(--accent);
-  background: none;
-  border: none;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
+.api-key-clear-btn {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .status {

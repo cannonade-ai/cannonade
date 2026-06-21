@@ -154,14 +154,17 @@ async function onDelete(): Promise<void> {
             <span class="section-title">Input</span>
           </div>
           <div class="section-body">
-            <Field label="System Prompt">
+            <Field
+              label="System Prompt"
+              hint="Instructions that set the model's role and behavior before it sees the user input."
+            >
               <Textarea
                 v-model="systemPrompt"
                 :rows="4"
                 placeholder="System instructions for the model..."
               />
             </Field>
-            <Field label="User Input">
+            <Field label="User Input" hint="The user message sent to the model for this test case.">
               <Textarea
                 v-model="userInput"
                 :error="errors.userInput"

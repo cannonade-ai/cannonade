@@ -52,22 +52,20 @@ onMounted(refresh)
     <span class="server-status__label">{{ statusLabel }}</span>
     <Button
       v-if="running === false"
-      size="xs"
+      v-tooltip="'Start server'"
+      type="icon"
       :icon="IconPlayerPlay"
       :disabled="loading"
       @click="start"
-    >
-      Start
-    </Button>
+    />
     <Button
       v-if="running === true"
-      size="xs"
+      v-tooltip="'Stop server'"
+      type="icon"
       :icon="IconPlayerStop"
       :disabled="loading"
       @click="stop"
-    >
-      Stop
-    </Button>
+    />
     <Button
       v-tooltip="'Refresh status'"
       type="icon"

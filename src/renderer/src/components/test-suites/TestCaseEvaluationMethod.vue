@@ -1,5 +1,13 @@
 <script setup lang="ts">
-import { Field, NumberInput, Select, Textarea, Button, Toggle } from '@renderer/components/ui'
+import {
+  Field,
+  InfoTooltip,
+  NumberInput,
+  Select,
+  Textarea,
+  Button,
+  Toggle
+} from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import type { EvaluationConfig } from '@shared/app/test-suite'
 import { IconTrash } from '@tabler/icons-vue'
@@ -28,6 +36,22 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'code_execution', label: 'Code Execution' },
   { value: 'cosine_similarity', label: 'Cosine Similarity' }
 ]
+
+const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
+  exact_match:
+    'Passes only if the output matches the expected text exactly, character for character.',
+  contains: 'Passes if the output contains the expected text. Accepts comma-separated values.',
+  regex: 'Passes if the output matches the given regular expression pattern.',
+  rouge: 'Scores how much the output overlaps with the expected text. Often used for summaries.',
+  levenshtein: 'Scores how few character edits it takes to turn the output into the expected text.',
+  f1: 'Balances how much of the expected text was found against how much extra was added.',
+  json_match: 'Passes if the output is valid JSON that matches the expected structure.',
+  bleu: 'Scores word overlap with the expected text. Commonly used for translations.',
+  custom: 'Run your own JavaScript function to score the output however you like.',
+  code_execution: 'Runs the output as code and checks whether it executes successfully.',
+  cosine_similarity:
+    'Compares the meaning of the output and expected text. Uses a small built-in LLM to create embeddings.'
+}
 
 const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
   'bleu',
@@ -66,6 +90,7 @@ watch(
   }
 )
 
+const typeHint = computed(() => TYPE_HINTS[type.value])
 const showThreshold = computed(() => THRESHOLD_TYPES.includes(type.value))
 const showExpected = computed(() => type.value !== 'custom')
 const showNegate = computed(() => !NON_NEGATABLE_TYPES.includes(type.value))
@@ -90,6 +115,7 @@ watch([type, expected, threshold, negate, customCode], () => {
     <div class="eval-method__body">
       <div class="eval-method__type-row">
         <Select v-model="type" :options="evaluationTypes" class="eval-method__select" />
+        <InfoTooltip :content="typeHint" placement="left" />
         <Button type="icon" :icon="IconTrash" @click="emit('remove')" />
       </div>
       <Field v-if="showExpected" :label="expectedLabel">
@@ -110,13 +136,21 @@ watch([type, expected, threshold, negate, customCode], () => {
           class="eval-method__code"
         />
       </Field>
-      <Field v-if="showThreshold" label="Threshold (0 – 1)">
+      <Field
+        v-if="showThreshold"
+        label="Threshold (0 – 1)"
+        hint="The minimum score the output must reach to pass. Higher values are stricter."
+      >
         <NumberInput v-model="threshold" :min="0" :max="1" :step="0.05" placeholder="0.0 – 1.0" />
       </Field>
-      <label v-if="showNegate" class="eval-method__negate">
-        <span>Negate (invert pass/fail result)</span>
+      <Field
+        v-if="showNegate"
+        label="Negate"
+        hint="Makes the eval check for absence instead of presence of the expected value. 'contains' eval becomes 'not contains' if negate is enabled."
+        inline
+      >
         <Toggle v-model="negate" />
-      </label>
+      </Field>
     </div>
   </div>
 </template>
@@ -161,16 +195,6 @@ watch([type, expected, threshold, negate, customCode], () => {
   &__code {
     font-family: monospace;
     font-size: var(--text-xs);
-  }
-
-  &__negate {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    cursor: pointer;
   }
 
   &__remove {
