@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from 'vue'
+import InfoTooltip from './InfoTooltip.vue'
 
 const props = withDefaults(
   defineProps<{
     modelValue: boolean
     title?: string
+    hint?: string
     size?: 'sm' | 'md' | 'lg'
     closeOnBackdrop?: boolean
   }>(),
@@ -40,7 +42,10 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
       <div v-if="modelValue" class="modal-backdrop" @click.self="onBackdropClick">
         <div class="modal-panel" :class="`modal-panel--${size}`" role="dialog" aria-modal="true">
           <div v-if="title" class="modal-header">
-            <h2 class="modal-title">{{ title }}</h2>
+            <h2 class="modal-title">
+              {{ title }}
+              <InfoTooltip v-if="hint" :content="hint" :size="13" placement="right" />
+            </h2>
           </div>
           <div class="modal-body">
             <slot />
@@ -103,6 +108,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 }
 
 .modal-title {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-family: var(--font-headline);
   font-size: var(--text-base);
   font-weight: 600;
