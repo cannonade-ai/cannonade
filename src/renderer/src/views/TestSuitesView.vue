@@ -59,7 +59,7 @@ async function onNewSuite(): Promise<void> {
           <Badge>{{ suites.length }}</Badge>
         </template>
         <template #header-right>
-          <Button type="icon" title="Open suites folder" @click="openSuitesFolder">
+          <Button v-tooltip="'Open suites folder'" type="icon" @click="openSuitesFolder">
             <IconFolderOpen :size="15" />
           </Button>
         </template>

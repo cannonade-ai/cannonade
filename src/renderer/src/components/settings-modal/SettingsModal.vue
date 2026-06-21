@@ -7,6 +7,7 @@ import SettingsModalGeneral from './SettingsModalGeneral.vue'
 import SettingsModalProviders from './SettingsModalProviders.vue'
 import SettingsModalAppearance from './SettingsModalAppearance.vue'
 import SettingsModalTestRuns from './SettingsModalTestRuns.vue'
+import InfoTooltip from '@renderer/components/ui/InfoTooltip.vue'
 
 type SectionId = 'general' | 'providers' | 'appearance' | 'test-runs'
 
@@ -18,12 +19,19 @@ const activeSection = computed({
   }
 })
 
-const sections: { id: SectionId; label: string; icon: unknown }[] = [
+const sections: { id: SectionId; label: string; icon: unknown; info?: string }[] = [
   { id: 'general', label: 'General', icon: IconAdjustments },
-  { id: 'providers', label: 'Providers', icon: IconServer },
+  {
+    id: 'providers',
+    label: 'Providers',
+    icon: IconServer,
+    info: 'Configure the AI providers and local servers used to run your models.'
+  },
   { id: 'test-runs', label: 'Test Runs', icon: IconTestPipe },
   { id: 'appearance', label: 'Appearance', icon: IconPalette }
 ]
+
+const activeSectionMeta = computed(() => sections.find((s) => s.id === activeSection.value))
 
 const sectionComponents: Record<SectionId, unknown> = {
   general: SettingsModalGeneral,
@@ -53,7 +61,12 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
           <div class="settings-content">
             <div class="settings-content-header">
               <h2 class="settings-content-title">
-                {{ sections.find((s) => s.id === activeSection)?.label }}
+                {{ activeSectionMeta?.label }}
+                <InfoTooltip
+                  v-if="activeSectionMeta?.info"
+                  :content="activeSectionMeta.info"
+                  placement="bottom"
+                />
               </h2>
               <button class="settings-close" @click="nav.closeSettings">
                 <IconX :size="16" />
@@ -133,6 +146,9 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
 }
 
 .settings-content-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-headline);
   font-size: var(--text);
   font-weight: 600;

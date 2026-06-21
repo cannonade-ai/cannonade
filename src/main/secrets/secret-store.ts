@@ -13,7 +13,7 @@ function credentialsPath(): string {
 
 function maskSecret(value: string): string {
   const visible = value.slice(-4)
-  return `${'•'.repeat(8)}${value.length > 4 ? visible : ''}`
+  return `${'•'.repeat(5)}${value.length > 4 ? visible : ''}`
 }
 
 export async function initSecrets(): Promise<void> {

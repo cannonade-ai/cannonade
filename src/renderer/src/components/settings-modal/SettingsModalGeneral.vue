@@ -40,9 +40,9 @@ async function handleReset(): Promise<void> {
       <div class="path-row">
         <span class="path-value">{{ settings.suitesDir }}</span>
         <Button
+          v-tooltip="'Open suites folder'"
           type="icon"
           :icon="IconFolderOpen"
-          title="Open suites folder"
           @click="openSuitesFolder"
         />
       </div>

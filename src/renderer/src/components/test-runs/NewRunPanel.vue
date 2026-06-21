@@ -183,7 +183,11 @@ function onSubmit(): void {
       <Select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
     </Field>
 
-    <Field v-if="allProviderOptions.length > 0" label="Provider">
+    <Field
+      v-if="allProviderOptions.length > 0"
+      label="Provider"
+      hint="Where the models run: a local app on your own computer, or an external online service."
+    >
       <div class="provider-groups">
         <div v-if="localProviderOptions.length > 0" class="provider-group">
           <span class="group-label">Local</span>
@@ -206,26 +210,37 @@ function onSubmit(): void {
 
     <div class="divider" />
 
-    <Field label="Options">
-      <div class="options-list">
-        <label v-if="capabilities?.loadModel" class="toggle-row">
-          <span class="toggle-label">Unload other models before run</span>
-          <Toggle v-model="form.unloadModelsBeforeRun" />
-        </label>
-        <label v-if="capabilities?.loadModel" class="toggle-row">
-          <span class="toggle-label">Unload model after each run</span>
-          <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
-        </label>
-        <label v-if="capabilities?.downloadModel && capabilities.deleteModel" class="toggle-row">
-          <span class="toggle-label">Delete <b>auto-downloaded</b> models after run</span>
-          <Toggle v-model="form.deleteAutoDownloadedModels" />
-        </label>
-
-        <label v-if="capabilities && !capabilities.localModels" class="toggle-row">
-          <span class="toggle-label">Parallel run</span>
-          <Toggle v-model="form.parallelRun" />
-        </label>
-      </div>
+    <Field
+      v-if="capabilities?.loadModel"
+      inline
+      label="Unload other models before run"
+      hint="Frees up memory by unloading any other loaded models before this run starts."
+    >
+      <Toggle v-model="form.unloadModelsBeforeRun" />
+    </Field>
+    <Field
+      v-if="capabilities?.loadModel"
+      inline
+      label="Unload model after each run"
+      hint="Frees up memory by unloading the model once its run finishes."
+    >
+      <Toggle v-model="form.unloadModelsAfterRun" :disabled="form.deleteAutoDownloadedModels" />
+    </Field>
+    <Field
+      v-if="capabilities?.downloadModel && capabilities.deleteModel"
+      inline
+      label="Delete auto-downloaded models after run"
+      hint="Removes models that were downloaded automatically for this run. Models you installed yourself are kept."
+    >
+      <Toggle v-model="form.deleteAutoDownloadedModels" />
+    </Field>
+    <Field
+      v-if="capabilities?.externalModels"
+      inline
+      label="Parallel run"
+      hint="Sends requests to multiple models at the same time to finish the run faster."
+    >
+      <Toggle v-model="form.parallelRun" />
     </Field>
 
     <template #footer>
@@ -280,24 +295,5 @@ function onSubmit(): void {
   font-weight: 500;
   min-width: 52px;
   flex-shrink: 0;
-}
-
-.options-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  cursor: pointer;
-
-  .toggle-label {
-    font-size: var(--text-sm);
-    color: var(--text-secondary);
-  }
 }
 </style>

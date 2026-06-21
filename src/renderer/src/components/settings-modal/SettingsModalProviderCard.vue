@@ -64,24 +64,24 @@ onMounted(async () => {
     <div class="provider-card__actions">
       <Button
         v-if="showSetDefault && !provider.isDefault"
+        v-tooltip="'Set as default'"
         type="icon"
         :icon="IconStar"
         :icon-size="15"
-        title="Set as default"
         @click="setDefault"
       />
       <Button
+        v-tooltip="'Edit provider'"
         type="icon"
         :icon="IconPencil"
         :icon-size="15"
-        title="Edit provider"
         @click="emit('edit', provider)"
       />
       <Button
+        v-tooltip="'Remove provider'"
         type="icon"
         :icon="IconTrash"
         :icon-size="15"
-        title="Remove provider"
         @click="remove"
       />
     </div>

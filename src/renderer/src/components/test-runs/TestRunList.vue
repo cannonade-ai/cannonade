@@ -31,7 +31,7 @@ function modelCount(run: TestRun): string {
       <Badge>{{ runs.length }}</Badge>
     </template>
     <template #header-right>
-      <Button type="icon" title="Open runs folder" @click="openRunsFolder">
+      <Button v-tooltip="'Open runs folder'" type="icon" @click="openRunsFolder">
         <IconFolderOpen :size="15" />
       </Button>
     </template>

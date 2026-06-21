@@ -1,14 +1,30 @@
 <script setup lang="ts">
-import { Badge, Input } from '@renderer/components/ui'
+import { Badge, InfoTooltip, Input } from '@renderer/components/ui'
 import type { ModelRef } from '@shared/app/test-run'
-import { IconLoader2, IconPlus, IconCloudDownload, IconCircleCheck } from '@tabler/icons-vue'
-import { ref } from 'vue'
+import {
+  IconLoader2,
+  IconPlus,
+  IconCloudDownload,
+  IconCircleCheck,
+  IconExternalLink
+} from '@tabler/icons-vue'
+import { useProvidersStore } from '@renderer/stores/providers'
+import { computed, ref } from 'vue'
 
 const props = defineProps<{
   modelValue: ModelRef[]
   installedModels: Array<{ key: string; label: string; loaded: boolean }>
   loadingModels: boolean
 }>()
+
+const providersStore = useProvidersStore()
+
+const hfUrl = computed<string>(() => {
+  const type = providersStore.getProvider(providersStore.activeLocalProvider)?.type
+  const hfSupportedApps = ['lmstudio', 'ollama']
+  let appParam = type && hfSupportedApps.includes(type) ? `?apps=${type}` : ''
+  return 'https://huggingface.co/models' + appParam
+})
 
 const emit = defineEmits<{
   'update:model-value': [models: ModelRef[]]
@@ -109,9 +125,32 @@ function onHfKeydown(e: KeyboardEvent): void {
     </div>
 
     <div class="sub-section">
-      <span class="sub-label">HuggingFace Model</span>
+      <span class="sub-label-row">
+        <span class="sub-label">HuggingFace Model</span>
+        <InfoTooltip interactive>
+          <p class="hf-tooltip__text">
+            Search
+            <a
+              :href="hfUrl ?? 'https://huggingface.co/models'"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              huggingface.co
+            </a>
+            for a model, then paste either its ID (publisher/model-name) or its full page URL.
+          </p>
+          <a class="hf-tooltip__docs" href="#" target="_blank" rel="noopener noreferrer">
+            Docs
+            <IconExternalLink :size="12" :stroke-width="2" />
+          </a>
+        </InfoTooltip>
+      </span>
       <div class="hf-input-row">
-        <Input v-model="hfInput" placeholder="publisher/model-name" @keydown="onHfKeydown" />
+        <Input
+          v-model="hfInput"
+          placeholder="publisher/model-name or model card URL"
+          @keydown="onHfKeydown"
+        />
         <button class="btn-add-hf" :disabled="!hfInput.trim()" @click="addHuggingFace">
           <IconPlus :size="13" :stroke-width="2.5" />
         </button>
@@ -243,6 +282,17 @@ function onHfKeydown(e: KeyboardEvent): void {
   :deep(.input) {
     flex: 1;
   }
+}
+
+.hf-tooltip__text {
+  margin: 0 0 6px;
+}
+
+.hf-tooltip__docs {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
 }
 
 .btn-add-hf {
