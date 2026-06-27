@@ -6,7 +6,9 @@ import {
   IconPlus,
   IconCloudDownload,
   IconCircleCheck,
-  IconExternalLink
+  IconExternalLink,
+  IconPackageImport,
+  type Icon
 } from '@tabler/icons-vue'
 import { useProvidersStore } from '@renderer/stores/providers'
 import { computed, ref } from 'vue'
@@ -19,18 +21,17 @@ const props = defineProps<{
 
 const providersStore = useProvidersStore()
 
-const hfUrl = computed<string>(() => {
-  const type = providersStore.getProvider(providersStore.activeLocalProvider)?.type
-  const hfSupportedApps = ['lmstudio', 'ollama']
-  let appParam = type && hfSupportedApps.includes(type) ? `?apps=${type}` : ''
-  return 'https://huggingface.co/models' + appParam
-})
+const hfUrl = computed<string>(() => providersStore.activeCapabilities?.huggingFaceModelsUrl ?? '')
+const registryUrl = computed<string>(
+  () => providersStore.activeCapabilities?.modelRegistryUrl ?? ''
+)
 
 const emit = defineEmits<{
   'update:model-value': [models: ModelRef[]]
 }>()
 
 const hfInput = ref('')
+const registryInput = ref('')
 
 function isChecked(key: string): boolean {
   return props.modelValue.some((m) => m.source === 'installed' && m.modelKey === key)
@@ -45,13 +46,27 @@ function toggleInstalled(key: string): void {
   }
 }
 
-function addHuggingFace(): void {
+function addHuggingFaceModel(): void {
   const raw = hfInput.value.trim()
   const id = raw.includes('https://') ? raw.split('/').slice(-2).join('/') : raw
   if (!id) return
   if (props.modelValue.some((m) => m.source === 'huggingface' && m.modelId === id)) return
   emit('update:model-value', [...props.modelValue, { source: 'huggingface', modelId: id }])
   hfInput.value = ''
+}
+
+function addRegistryModel(): void {
+  const id = registryInput.value.trim()
+  if (!id) return
+  if (props.modelValue.some((m) => m.source === 'registry' && m.modelId === id)) return
+  emit('update:model-value', [...props.modelValue, { source: 'registry', modelId: id }])
+  registryInput.value = ''
+}
+
+function badgeIcon(ref: ModelRef): Icon {
+  if (ref.source === 'installed') return IconCircleCheck
+  if (ref.source === 'registry') return IconPackageImport
+  return IconCloudDownload
 }
 
 function removeModel(index: number): void {
@@ -63,13 +78,6 @@ function removeModel(index: number): void {
 function modelChipLabel(ref: ModelRef): string {
   return ref.source === 'installed' ? ref.modelKey : ref.modelId
 }
-
-function onHfKeydown(e: KeyboardEvent): void {
-  if (e.key === 'Enter') {
-    e.preventDefault()
-    addHuggingFace()
-  }
-}
 </script>
 
 <template>
@@ -79,7 +87,7 @@ function onHfKeydown(e: KeyboardEvent): void {
         v-for="(m, i) in modelValue"
         :key="i"
         :type="m.source === 'installed' ? 'secondary' : 'default'"
-        :icon="m.source === 'installed' ? IconCircleCheck : IconCloudDownload"
+        :icon="badgeIcon(m)"
         removable
         @remove="removeModel(i)"
       >
@@ -126,18 +134,48 @@ function onHfKeydown(e: KeyboardEvent): void {
 
     <div class="sub-section">
       <span class="sub-label-row">
+        <span class="sub-label">Registry Model</span>
+        <InfoTooltip interactive>
+          <p class="hf-tooltip__text">
+            Pull a model directly from the provider's own registry
+            <a v-if="registryUrl" :href="registryUrl" target="_blank" rel="noopener noreferrer">
+              {{ registryUrl.replace('https://', '') }}
+            </a>
+            . Paste the model name exactly as the provider lists it (e.g. publisher/model-name).
+          </p>
+        </InfoTooltip>
+      </span>
+      <div class="hf-input-row">
+        <Input
+          v-model="registryInput"
+          placeholder="publisher/model-name"
+          :disabled="!registryUrl"
+          @submit="addRegistryModel"
+        />
+        <button
+          class="btn-add-hf"
+          :disabled="!registryUrl || !registryInput.trim()"
+          @click="addRegistryModel"
+        >
+          <IconPlus :size="13" :stroke-width="2.5" />
+        </button>
+      </div>
+    </div>
+
+    <div class="sub-section">
+      <span class="sub-label-row">
         <span class="sub-label">HuggingFace Model</span>
         <InfoTooltip interactive>
           <p class="hf-tooltip__text">
             Search
             <a
-              :href="hfUrl ?? 'https://huggingface.co/models'"
+              :href="hfUrl ? hfUrl : 'https://huggingface.co/models'"
               target="_blank"
               rel="noopener noreferrer"
             >
               huggingface.co
             </a>
-            for a model, then paste either its ID (publisher/model-name) or its full page URL.
+            for a model, then paste either its ID (publisher/model-name) or its model card URL.
           </p>
           <a class="hf-tooltip__docs" href="#" target="_blank" rel="noopener noreferrer">
             Docs
@@ -149,9 +187,14 @@ function onHfKeydown(e: KeyboardEvent): void {
         <Input
           v-model="hfInput"
           placeholder="publisher/model-name or model card URL"
-          @keydown="onHfKeydown"
+          :disabled="!hfUrl"
+          @submit="addHuggingFaceModel"
         />
-        <button class="btn-add-hf" :disabled="!hfInput.trim()" @click="addHuggingFace">
+        <button
+          class="btn-add-hf"
+          :disabled="!hfUrl || !hfInput.trim()"
+          @click="addHuggingFaceModel"
+        >
           <IconPlus :size="13" :stroke-width="2.5" />
         </button>
       </div>

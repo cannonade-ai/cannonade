@@ -3,6 +3,10 @@ import { ref } from 'vue'
 
 const model = defineModel<string>({ required: true })
 
+const emit = defineEmits<{
+  submit: []
+}>()
+
 withDefaults(
   defineProps<{
     placeholder?: string
@@ -25,6 +29,13 @@ const validationError = ref(false)
 function onInput(): void {
   validationError.value = inputRef.value ? !inputRef.value.checkValidity() : false
 }
+
+function onKeydown(e: KeyboardEvent): void {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    emit('submit')
+  }
+}
 </script>
 
 <template>
@@ -38,6 +49,7 @@ function onInput(): void {
     :disabled="disabled"
     :maxlength="maxlength"
     @input="onInput"
+    @keydown="onKeydown"
   />
 </template>
 
