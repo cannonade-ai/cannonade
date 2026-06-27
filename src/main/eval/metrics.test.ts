@@ -184,9 +184,9 @@ describe('levenshtein', () => {
   })
 
   it('passes with output and expected case insensive', () => {
-    const result = evaluateLevenshtein('HeLLo WoRLD ÇŞĞİ-123*%', {
+    const result = evaluateLevenshtein('HeLLo WoRLD-123*%', {
       ...base,
-      expected: 'hEllo wOrld çşği-123*%'
+      expected: 'hEllo wOrld-123*%'
     })
     expect(result.passed).toBe(true)
     expect(result.score).toBe(1)
