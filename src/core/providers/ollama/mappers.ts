@@ -6,7 +6,7 @@ import type {
   ChatRequest as OllamaChatRequest
 } from 'ollama'
 import type { LocalModel } from '@shared/provider/local-model'
-import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import type { ChatRequest, ChatResponse, OutputItem } from '@shared/provider/chat'
 import type { DownloadStatusResponse } from '@shared/provider/ipc-contracts'
 import type { ModelResponse } from './types'
 
@@ -82,9 +82,15 @@ export function toChatRequest(request: ChatRequest): OllamaChatRequest & { strea
 }
 
 export function toChatResponse(response: OllamaChatResponse): ChatResponse {
+  const output: OutputItem[] = []
+  if (response.message.thinking) {
+    output.push({ type: 'reasoning', content: response.message.thinking })
+  }
+  output.push({ type: 'message', content: response.message.content })
+
   return {
     model_instance_id: response.model,
-    output: [{ type: 'message', content: response.message.content }],
+    output,
     stats: {
       input_tokens: response.prompt_eval_count,
       total_output_tokens: response.eval_count,

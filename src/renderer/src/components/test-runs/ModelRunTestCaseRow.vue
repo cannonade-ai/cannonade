@@ -161,6 +161,17 @@ const hasMetrics = computed<boolean>(() => {
         />
       </div>
 
+      <div v-if="caseRun.result.reasoning" class="detail-block">
+        <span class="detail-label">Thinking</span>
+        <Textarea
+          :model-value="caseRun.result.reasoning"
+          variant="display"
+          readonly
+          copyable
+          class="field-textarea"
+        />
+      </div>
+
       <div class="outputs-grid">
         <div v-if="caseRun.result.output" class="output-col">
           <span class="detail-label">Actual Output</span>

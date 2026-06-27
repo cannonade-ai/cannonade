@@ -374,6 +374,72 @@ describe('executeTestRun – case result construction', () => {
   })
 })
 
+describe('executeTestRun – reasoning extraction', () => {
+  it('sets result reasoning from reasoning output items', async () => {
+    mockChat.mockResolvedValue({
+      ...makeChatResponse(''),
+      output: [
+        { type: 'reasoning', content: 'let me think' },
+        { type: 'message', content: 'final answer' }
+      ]
+    })
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.CASE_COMPLETED,
+      expect.objectContaining({
+        result: expect.objectContaining({ output: 'final answer', reasoning: 'let me think' })
+      })
+    )
+  })
+
+  it('joins multiple reasoning items with newline', async () => {
+    mockChat.mockResolvedValue({
+      ...makeChatResponse(''),
+      output: [
+        { type: 'reasoning', content: 'step one' },
+        { type: 'reasoning', content: 'step two' },
+        { type: 'message', content: 'final answer' }
+      ]
+    })
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.CASE_COMPLETED,
+      expect.objectContaining({
+        result: expect.objectContaining({ reasoning: 'step one\nstep two' })
+      })
+    )
+  })
+
+  it('trims surrounding whitespace from reasoning', async () => {
+    mockChat.mockResolvedValue({
+      ...makeChatResponse('answer'),
+      output: [
+        { type: 'reasoning', content: '\n  let me think\n' },
+        { type: 'message', content: 'answer' }
+      ]
+    })
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(
+      RUN.CASE_COMPLETED,
+      expect.objectContaining({
+        result: expect.objectContaining({ reasoning: 'let me think' })
+      })
+    )
+  })
+
+  it('leaves reasoning undefined when no reasoning output is present', async () => {
+    mockChat.mockResolvedValue(makeChatResponse('plain answer'))
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    const call = send.mock.calls.find(([channel]) => channel === RUN.CASE_COMPLETED)
+    expect(call?.[1]).toMatchObject({ result: { output: 'plain answer' } })
+    expect((call?.[1] as { result: { reasoning?: string } }).result.reasoning).toBeUndefined()
+  })
+})
+
 describe('executeTestRun – error handling', () => {
   it('records per-case API error and continues to next case', async () => {
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]

@@ -139,6 +139,8 @@ export interface TestCaseResult {
 
   output: string
 
+  reasoning?: string
+
   metrics: {
     tokensPerSecond?: number
     timeToFirstTokenMs?: number
