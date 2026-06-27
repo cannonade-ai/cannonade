@@ -57,7 +57,7 @@ async function resolveModelKey(providerId: string, hfModelId: string): Promise<s
 async function downloadAndPoll(
   providerId: string,
   modelRunId: string,
-  hfModelId: string,
+  downloadTarget: string,
   send: SendEvent,
   signal: AbortSignal
 ): Promise<boolean> {
@@ -65,8 +65,7 @@ async function downloadAndPoll(
   if (!provider.downloadModel) throw new Error(`${providerId}: downloadModel not supported`)
   if (!provider.getDownloadStatus) throw new Error(`${providerId}: getDownloadStatus not supported`)
 
-  const modelUrl = toHuggingFaceUrl(hfModelId)
-  const response = await provider.downloadModel(modelUrl)
+  const response = await provider.downloadModel(downloadTarget)
 
   if (response.status === 'already_downloaded') {
     return false
@@ -77,7 +76,7 @@ async function downloadAndPoll(
   while (!signal.aborted) {
     const status = await provider.getDownloadStatus!(jobId)
     if (status.status === 'completed') return true
-    if (status.status === 'failed') throw new Error(`Download failed for ${hfModelId}`)
+    if (status.status === 'failed') throw new Error(`Download failed for ${downloadTarget}`)
     send(RUN.MODEL_DOWNLOADING, {
       modelRunId,
       downloadedBytes: status.downloaded_bytes ?? 0,
@@ -210,10 +209,23 @@ export async function executeTestRun(
     let autoDownloaded = false
 
     try {
-      if (capabilities.downloadModel && modelRun.modelRef.source === 'huggingface') {
+      const ref = modelRun.modelRef
+      if (
+        capabilities.downloadModel &&
+        (ref.source === 'huggingface' || ref.source === 'registry')
+      ) {
         modelRunState.status = 'downloading'
-        const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
-        autoDownloaded = await downloadAndPoll(providerId, modelRun.id, hfModelId, send, signal)
+        const downloadTarget =
+          ref.source === 'huggingface'
+            ? toHuggingFaceUrl(extractHfModelId(ref.modelId))
+            : ref.modelId
+        autoDownloaded = await downloadAndPoll(
+          providerId,
+          modelRun.id,
+          downloadTarget,
+          send,
+          signal
+        )
       }
     } catch (err) {
       fatalError = err instanceof Error ? err.message : String(err)
@@ -242,8 +254,11 @@ export async function executeTestRun(
     if (modelRun.modelRef.source === 'installed') {
       modelKey = modelRun.modelRef.modelKey
     } else {
-      const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
-      modelKey = await resolveModelKey(providerId, hfModelId)
+      const downloadId =
+        modelRun.modelRef.source === 'huggingface'
+          ? extractHfModelId(modelRun.modelRef.modelId)
+          : modelRun.modelRef.modelId
+      modelKey = await resolveModelKey(providerId, downloadId)
     }
 
     console.log('[test-runner] Starting model run:', modelRun)
@@ -352,17 +367,19 @@ export async function executeTestRun(
       }
     }
 
-    if (
-      capabilities.deleteModel &&
-      autoDownloaded &&
-      run.config.deleteAutoDownloadedModels &&
-      modelRun.modelRef.source === 'huggingface'
-    ) {
-      const hfModelId = extractHfModelId(modelRun.modelRef.modelId)
+    if (capabilities.deleteModel && autoDownloaded && run.config.deleteAutoDownloadedModels) {
+      const ref = modelRun.modelRef
       try {
-        if (!provider.deleteModelByHfId)
-          throw new Error(`${providerId}: deleteModelByHfId not supported`)
-        await provider.deleteModelByHfId(hfModelId)
+        if (ref.source === 'huggingface') {
+          if (!provider.deleteModel) throw new Error(`${providerId}: deleteModel not supported`)
+          await provider.deleteModel(modelKey)
+          //if (!provider.deleteModelByHfId)
+          //  throw new Error(`${providerId}: deleteModelByHfId not supported`)
+          //await provider.deleteModelByHfId(extractHfModelId(ref.modelId))
+        } else if (ref.source === 'registry') {
+          if (!provider.deleteModel) throw new Error(`${providerId}: deleteModel not supported`)
+          await provider.deleteModel(modelKey)
+        }
       } catch (err) {
         console.error('[test-runner] Failed to delete auto-downloaded model:', err)
       }

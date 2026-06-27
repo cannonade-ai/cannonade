@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import type { Component } from 'vue'
-import { IconServer, IconCode, IconCircleCheck, IconCircleX, IconX } from '@tabler/icons-vue'
+import {
+  IconServer,
+  IconCode,
+  IconCloud,
+  IconCircleCheck,
+  IconCircleX,
+  IconX
+} from '@tabler/icons-vue'
 import Modal from '@renderer/components/ui/Modal.vue'
 import Button from '@renderer/components/ui/Button.vue'
 import Field from '@renderer/components/ui/Field.vue'
@@ -17,15 +24,18 @@ import {
   type ConfiguredProvider
 } from '@shared/provider/configured-provider'
 
-const TYPE_ICONS: Record<string, Component> = {
-  lmstudio: IconServer,
-  ollama: IconServer,
-  custom: IconCode
+function iconFor(type: ProviderType, isExternal: boolean): Component {
+  if (type === 'custom') return IconCode
+  if (isExternal) return IconCloud
+  return IconServer
 }
 
-const providerEntries = Object.entries(KNOWN_PROVIDER_DEFAULTS) as Array<
-  [ProviderType, (typeof KNOWN_PROVIDER_DEFAULTS)[ProviderType]]
->
+const knownProviders = computed(() =>
+  Object.entries(KNOWN_PROVIDER_DEFAULTS).map(([type, def]) => ({
+    type: type as ProviderType,
+    ...def
+  }))
+)
 
 const model = defineModel<boolean>({ required: true })
 
@@ -213,13 +223,13 @@ function onClose(): void {
   >
     <div v-if="step === 1" class="type-list">
       <AddProviderModalTypeCard
-        v-for="[type, def] in providerEntries"
-        :key="type"
-        :icon="TYPE_ICONS[type] ?? IconCode"
-        :label="def.displayName"
-        :description="def.description"
-        :disabled="isDisabled(type)"
-        @click="selectType(type)"
+        v-for="provider in knownProviders"
+        :key="provider.type"
+        :icon="iconFor(provider.type, provider.isExternal)"
+        :label="provider.displayName"
+        :description="provider.description"
+        :disabled="isDisabled(provider.type)"
+        @click="selectType(provider.type)"
       />
     </div>
 

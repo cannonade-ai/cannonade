@@ -8,4 +8,6 @@ export interface ProviderCapabilities {
   loadModel: boolean
   serverControl: boolean
   requiresApiKey: boolean
+  modelRegistryUrl?: string
+  huggingFaceModelsUrl?: string
 }

@@ -31,7 +31,14 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
 <template>
   <div class="view">
     <SectionHeader v-if="hasProviders">
-      <Button type="primary" :icon="IconPlayerPlay" @click="store.startNewRun"> New Run </Button>
+      <Button
+        type="primary"
+        :icon="IconPlayerPlay"
+        :disabled="store.isCreatingNew"
+        @click="store.startNewRun"
+      >
+        New Run
+      </Button>
     </SectionHeader>
 
     <div v-if="!hasProviders" class="no-providers">

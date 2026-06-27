@@ -34,7 +34,9 @@ const capabilities = {
   deleteModel: true,
   loadModel: true,
   serverControl: true,
-  requiresApiKey: false
+  requiresApiKey: false,
+  modelRegistryUrl: '',
+  huggingFaceModelsUrl: 'https://huggingface.co/models'
 }
 
 type SendMock = ReturnType<typeof vi.fn> & ((channel: string, payload: unknown) => void)
@@ -195,6 +197,28 @@ describe('executeTestRun – model key resolution', () => {
     const modelRun = makeModelRun({ modelRef: { source: 'huggingface', modelId: 'meta/llama-3' } })
     await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
     expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ model: 'meta/llama-3' }))
+  })
+
+  it('downloads the raw model id and resolves the key for registry model refs', async () => {
+    mockFetchLocalModels.mockResolvedValue([
+      {
+        id: 'liquid/lfm2-350m',
+        name: 'lfm2-350m',
+        providerId: 'lmstudio',
+        sizeBytes: 0,
+        type: 'llm',
+        loadedInstances: [],
+        meta: {}
+      }
+    ])
+    mockDownloadModel.mockResolvedValue({ job_id: 'job-1', status: 'downloading' })
+    mockGetDownloadStatus.mockResolvedValue({ job_id: 'job-1', status: 'completed' })
+    const modelRun = makeModelRun({
+      modelRef: { source: 'registry', modelId: 'liquid/lfm2-350m' }
+    })
+    await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
+    expect(mockDownloadModel).toHaveBeenCalledWith('liquid/lfm2-350m')
+    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ model: 'liquid/lfm2-350m' }))
   })
 })
 

@@ -27,7 +27,9 @@ export function createOllamaProvider(
       deleteModel: true,
       loadModel: true,
       serverControl: false,
-      requiresApiKey: false
+      requiresApiKey: false,
+      modelRegistryUrl: 'https://ollama.com/library',
+      huggingFaceModelsUrl: 'https://huggingface.co/models?apps=ollama'
     },
 
     async fetchLocalModels(): Promise<LocalModel[]> {
@@ -57,7 +59,8 @@ export function createOllamaProvider(
             downloadJobs.set(jobId, toDownloadProgress(jobId, chunk))
           }
           downloadJobs.set(jobId, { job_id: jobId, status: 'completed' })
-        } catch {
+        } catch (err) {
+          console.error(`[ollama] Download failed for model ${modelName}`, err)
           downloadJobs.set(jobId, { job_id: jobId, status: 'failed' })
         }
       })()

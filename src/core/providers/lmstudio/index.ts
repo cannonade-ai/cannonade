@@ -1,4 +1,6 @@
 import { readFile, rm } from 'fs/promises'
+import { existsSync } from 'fs'
+import { LMStudioClient } from '@lmstudio/sdk'
 import { join } from 'path'
 import { homedir } from 'os'
 import { exec } from 'child_process'
@@ -64,6 +66,12 @@ export function createLmStudioProvider(
   const base = url.replace(/\/$/, '')
   const auth = authHeader(apiKey)
 
+  let sdkClient: LMStudioClient | null = null
+  function getSdkClient(): LMStudioClient {
+    if (!sdkClient) sdkClient = new LMStudioClient({ baseUrl: `ws://${new URL(base).host}` })
+    return sdkClient
+  }
+
   async function fetchRawModels(): Promise<Model[]> {
     const res = await fetchOrThrow(`${base}/api/v1/models`, { headers: { ...auth } })
     return ((await res.json()) as ModelListResponse).models
@@ -81,7 +89,9 @@ export function createLmStudioProvider(
       deleteModel: !remote,
       loadModel: true,
       serverControl: !remote,
-      requiresApiKey: false
+      requiresApiKey: false,
+      modelRegistryUrl: 'https://lmstudio.ai/models',
+      huggingFaceModelsUrl: 'https://huggingface.co/models?apps=lmstudio'
     },
 
     async fetchLocalModels(): Promise<LocalModel[]> {
@@ -116,14 +126,22 @@ export function createLmStudioProvider(
     },
 
     async deleteModel(modelId: string): Promise<void> {
-      const models = await fetchRawModels()
-      const model = models.find((m) => m.key === modelId)
-      if (!model) throw new Error(`Model not found: ${modelId}`)
       const lmSettingsPath = join(homedir(), '.lmstudio', 'settings.json')
       const raw = await readFile(lmSettingsPath, 'utf-8')
       const lmSettings = JSON.parse(raw) as LmStudioSettings
-      const folderName = `${model.key}-${(model.format ?? '').toUpperCase()}`
-      const modelPath = join(lmSettings.downloadsFolder, model.publisher, folderName)
+
+      const downloaded = await getSdkClient().system.listDownloadedModels()
+      const match = downloaded.find((m) => m.modelKey === modelId)
+      if (!match) throw new ProviderError(`Model not found: ${modelId}`, 404)
+
+      const modelPath = join(lmSettings.downloadsFolder, match.path)
+      if (!existsSync(modelPath)) {
+        throw new ProviderError(
+          `Cannot delete "${modelId}": files not found on disk. Note: LM Studio Hub models cannot be deleted from Cannonade.`,
+          400
+        )
+      }
+
       await rm(modelPath, { recursive: true, force: true })
     },
 

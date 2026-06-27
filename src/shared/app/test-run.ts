@@ -17,7 +17,12 @@ export interface HuggingFaceModelRef {
   modelId: string
 }
 
-export type ModelRef = InstalledModelRef | HuggingFaceModelRef
+export interface RegistryModelRef {
+  source: 'registry'
+  modelId: string
+}
+
+export type ModelRef = InstalledModelRef | HuggingFaceModelRef | RegistryModelRef
 
 export interface TestRunConfig {
   suiteId: string

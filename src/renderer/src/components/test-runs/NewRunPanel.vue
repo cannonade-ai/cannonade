@@ -246,7 +246,7 @@ function onSubmit(): void {
     <template #footer>
       <Button @click="emit('cancel')">Cancel</Button>
       <Button type="primary" :disabled="!canSubmit" :icon="IconPlayerPlay" @click="onSubmit">
-        Run
+        Start Run
       </Button>
     </template>
   </Panel>

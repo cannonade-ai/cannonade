@@ -70,7 +70,12 @@ export function useModelMenus(): {
               await api.unloadModel(providerId, instance.id)
             }
           }
-          await api.deleteModel(providerId, model.id)
+          try {
+            await api.deleteModel(providerId, model.id)
+          } catch (e) {
+            console.error('Failed to delete model:', e)
+            return
+          }
           for (let i = 0; i < 10; i++) {
             await new Promise((resolve) => setTimeout(resolve, 500))
             await modelsStore.loadLocalModels()

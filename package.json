@@ -1,6 +1,6 @@
 {
   "name": "cannonade",
-  "version": "0.3.3",
+  "version": "0.3.5",
   "description": "Simplest LLM Evaluation Tool",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -8,6 +8,7 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
+    "lint:fix": "eslint --cache . --fix",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json --composite false",
     "typecheck:web": "vue-tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
@@ -26,6 +27,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@huggingface/transformers": "^4.2.0",
+    "@lmstudio/sdk": "^1.5.0",
     "@tabler/icons-vue": "^3.44.0",
     "bleu-score": "^1.0.4",
     "electron-updater": "^6.8.3",
