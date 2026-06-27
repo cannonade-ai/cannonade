@@ -10,7 +10,7 @@ import type {
   AggregateMetrics,
   RunConfig
 } from '@shared/app/test-suite'
-import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import type { ChatRequest, OutputItem } from '@shared/provider/chat'
 import type { LocalModel } from '@shared/provider/local-model'
 
 type SendEvent = (channel: string, payload: unknown) => void
@@ -124,11 +124,20 @@ function buildRequest(
   return { ...base, model: modelKey, input: input.prompt ?? '' }
 }
 
-function extractTextOutput(output: ChatResponse['output']): string {
+function extractTextOutput(output: OutputItem[]): string {
   return output
     .filter((o) => o.type === 'message')
     .map((o) => (o as { type: 'message'; content: string }).content)
     .join('\n')
+}
+
+function extractReasoningOutput(output: OutputItem[]): string | undefined {
+  const reasoning = output
+    .filter((o) => o.type === 'reasoning')
+    .map((o) => (o as { type: 'reasoning'; content: string }).content)
+    .join('\n')
+    .trim()
+  return reasoning || undefined
 }
 
 function computeAggregate(results: TestCaseResult[], testCases?: TestCase[]): AggregateMetrics {
@@ -284,10 +293,12 @@ export async function executeTestRun(
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
           const output = extractTextOutput(response.output)
+          const reasoning = extractReasoningOutput(response.output)
           const evaluation = await evaluateAll(output, testCase)
           const result: TestCaseResult = {
             testCaseId: testCase.id,
             output,
+            reasoning,
             metrics: {
               tokensPerSecond: response.stats.tokens_per_second,
               timeToFirstTokenMs: response.stats.time_to_first_token_seconds * 1000,
