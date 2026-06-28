@@ -37,7 +37,7 @@ export const useModelsStore = defineStore('models', () => {
       if (e instanceof Error) {
         const providerName = providersStore.getProvider(instanceId)?.displayName ?? instanceId
         if (e.message.includes('fetch failed')) {
-          error.value = `Cannot connect to ${providerName}. Make sure the service is running and the server URL is correct.`
+          error.value = `Cannot connect to "${providerName}". Make sure the service is running and the server URL is correct.`
         } else {
           error.value = e.message
         }

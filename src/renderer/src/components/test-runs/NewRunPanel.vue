@@ -6,6 +6,7 @@ import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
 import { useProvidersStore } from '@renderer/stores/providers'
 import { useNavigationStore } from '@renderer/stores/navigation'
+import { useToastStore } from '@renderer/stores/toast'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
@@ -26,6 +27,7 @@ const modelsStore = useModelsStore()
 const settingsStore = useSettingsStore()
 const providersStore = useProvidersStore()
 const navigationStore = useNavigationStore()
+const toastStore = useToastStore()
 
 function editSelectedSuite(): void {
   if (form.suiteId) navigationStore.openTestSuite(form.suiteId)
@@ -97,14 +99,19 @@ watch(
     if (!capabilities.value.localModels) form.parallelRun = false
     if (isLocalProvider(next)) {
       providersStore.setLocalProvider(next)
-      modelsStore.loadLocalModels()
+      await modelsStore.loadLocalModels()
     } else {
       modelsStore.externalProvider = next
-      modelsStore.loadExternalModels()
+      await modelsStore.loadExternalModels()
+    }
+    if (modelsStore.error) {
+      toastStore.error(modelsStore.error, { title: 'Failed to load models' })
     }
   },
   { immediate: true }
 )
+
+const modelsLoadFailed = computed(() => modelsStore.error !== null)
 
 watch(
   () => providersStore.getProvider(form.provider),
@@ -219,6 +226,7 @@ function onSubmit(): void {
         v-model="form.models"
         :installed-models="installedModels"
         :loading-models="modelsStore.loading"
+        :load-failed="modelsLoadFailed"
       />
     </Field>
 

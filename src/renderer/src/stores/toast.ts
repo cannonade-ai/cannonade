@@ -38,6 +38,9 @@ export const useToastStore = defineStore('toast', () => {
   }
 
   function error(message: string, options: Omit<ToastOptions, 'message' | 'type'> = {}): number {
+    if (!options.duration) {
+      options.duration = 0
+    }
     return show({ ...options, message, type: 'error' })
   }
 

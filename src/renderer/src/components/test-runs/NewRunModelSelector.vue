@@ -17,6 +17,7 @@ const props = defineProps<{
   modelValue: ModelRef[]
   installedModels: Array<{ key: string; label: string; loaded: boolean }>
   loadingModels: boolean
+  loadFailed: boolean
 }>()
 
 const providersStore = useProvidersStore()
@@ -153,12 +154,12 @@ function modelChipLabel(ref: ModelRef): string {
         <Input
           v-model="registryInput"
           placeholder="publisher/model-name"
-          :disabled="!registryUrl"
+          :disabled="!registryUrl || loadFailed"
           @submit="addRegistryModel"
         />
         <button
           class="btn-add-hf"
-          :disabled="!registryUrl || !registryInput.trim()"
+          :disabled="!registryUrl || loadFailed || !registryInput.trim()"
           @click="addRegistryModel"
         >
           <IconPlus :size="13" :stroke-width="2.5" />
@@ -191,12 +192,12 @@ function modelChipLabel(ref: ModelRef): string {
         <Input
           v-model="hfInput"
           placeholder="publisher/model-name or model card URL"
-          :disabled="!hfUrl"
+          :disabled="!hfUrl || loadFailed"
           @submit="addHuggingFaceModel"
         />
         <button
           class="btn-add-hf"
-          :disabled="!hfUrl || !hfInput.trim()"
+          :disabled="!hfUrl || loadFailed || !hfInput.trim()"
           @click="addHuggingFaceModel"
         >
           <IconPlus :size="13" :stroke-width="2.5" />
