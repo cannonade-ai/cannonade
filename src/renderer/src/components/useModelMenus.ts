@@ -2,6 +2,7 @@ import { IconPlayerPlay, IconPlayerStop, IconTrash } from '@tabler/icons-vue'
 import type { ContextMenuItem } from '@renderer/stores/context-menu'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { useModelsStore } from '@renderer/stores/models'
+import { useToastStore } from '@renderer/stores/toast'
 
 import { api } from '@renderer/api'
 import type { LocalModel } from '@shared/provider/local-model'
@@ -14,6 +15,7 @@ export function useModelMenus(): {
 } {
   const confirmStore = useConfirmStore()
   const modelsStore = useModelsStore()
+  const toastStore = useToastStore()
 
   function modelMenuItems(
     model: LocalModel,
@@ -34,6 +36,11 @@ export function useModelMenus(): {
             try {
               await api.loadModel(providerId, model.id)
               await modelsStore.loadLocalModels()
+              toastStore.success(`${model.name} loaded successfully.`, { title: 'Model loaded' })
+            } catch (e) {
+              toastStore.error(e instanceof Error ? e.message : `Failed to load ${model.name}.`, {
+                title: 'Load failed'
+              })
             } finally {
               modelsStore.setModelOperation(model.id, null)
             }

@@ -7,6 +7,7 @@ import AppSidebar from '@renderer/components/AppSidebar.vue'
 import AppTitleBar from '@renderer/components/AppTitleBar.vue'
 import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
 import ContextMenu from '@renderer/components/ui/ContextMenu.vue'
+import ToastContainer from '@renderer/components/ui/ToastContainer.vue'
 import SettingsModal from '@renderer/components/settings-modal/SettingsModal.vue'
 import { LocalModelsView, TestSuitesView, TestRunsView, OnboardingView } from '@renderer/views'
 
@@ -42,6 +43,7 @@ const viewComponent = computed(() => {
       </template>
       <OnboardingView v-else />
     </div>
+    <ToastContainer />
   </div>
 </template>
 
