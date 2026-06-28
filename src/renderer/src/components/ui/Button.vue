@@ -112,7 +112,7 @@ const rawIcon = computed(() => (props.icon ? toRaw(props.icon) : undefined))
     min-width: auto;
     min-height: auto;
     color: var(--text-secondary);
-    padding: 4px 2px;
+    padding: 4px 6px;
 
     &:not(:disabled):hover {
       background: var(--surface-elevated);

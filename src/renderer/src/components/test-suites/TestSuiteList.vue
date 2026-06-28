@@ -29,6 +29,7 @@ const { suiteMenuItems } = useTestSuiteMenus()
         class="suite-item"
         :class="{ active: selectedId === suite.id }"
         @click="emit('select-suite', suite.id)"
+        @contextmenu.prevent="contextMenuStore.open(suiteMenuItems(suite.id), $event)"
       >
         <div class="suite-main">
           <span class="suite-name">{{ suite.name }}</span>

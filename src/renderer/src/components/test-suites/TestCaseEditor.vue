@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { Button, Field, Input, Panel, Select, SplitPane, Textarea } from '@renderer/components/ui'
+import {
+  Button,
+  Field,
+  InfoTooltip,
+  Input,
+  Panel,
+  Select,
+  SplitPane,
+  Textarea
+} from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
@@ -183,6 +192,9 @@ async function onDelete(): Promise<void> {
             <span class="section-title">
               Evaluation Methods
               <span class="eval-count">{{ evaluations.length }}</span>
+              <InfoTooltip
+                content="Evaluation methods check the language model's output against rules you define and mark it pass or fail."
+              />
             </span>
             <Button
               type="secondary"

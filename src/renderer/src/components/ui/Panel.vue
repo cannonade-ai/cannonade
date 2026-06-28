@@ -16,8 +16,13 @@ defineProps<{
       </div>
     </div>
 
-    <div v-if="$slots.toolbar" class="panel__toolbar">
-      <slot name="toolbar" />
+    <div v-if="$slots['toolbar-left'] || $slots['toolbar-right']" class="panel__toolbar">
+      <div class="panel__toolbar-left">
+        <slot name="toolbar-left" />
+      </div>
+      <div class="panel__toolbar-right">
+        <slot name="toolbar-right" />
+      </div>
     </div>
 
     <div class="panel__body">
@@ -76,10 +81,18 @@ defineProps<{
 
   &__toolbar {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
     padding: 8px 14px;
     border-bottom: 1px solid var(--border);
     flex-shrink: 0;
+    gap: 0.5rem;
+  }
+
+  &__toolbar-left,
+  &__toolbar-right {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
   }
 

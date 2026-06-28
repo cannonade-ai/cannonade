@@ -4,9 +4,8 @@
 
 **Cannonade** is a cross-platform desktop application built with Electron + Vue 3 + TypeScript + Vite + Pinia store + sass. The project uses npm as the package manager.
 
-```
 ## Commands
-```
+```bash
 npm run build
 npm run lint:fix
 npm test
@@ -29,4 +28,5 @@ npm test
 - Use production grade best practises
 - Prefer explicit named types (e.g. `OutputItem[]`) over indexed access types (e.g. `ChatResponse['output']`).
 - You can use icons from tabler: `import { IconTank } from '@tabler/icons-vue'`;
-- Do not run TypeScript type checks, build the project instead.
+- Never run TypeScript type checks, build the project instead.
+- Never use `title:"some text"` on components, use `v-tooltip="'some text'"` instead.

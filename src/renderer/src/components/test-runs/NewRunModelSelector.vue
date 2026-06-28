@@ -30,6 +30,10 @@ const emit = defineEmits<{
   'update:model-value': [models: ModelRef[]]
 }>()
 
+const sortedInstalledModels = computed<typeof props.installedModels>(() =>
+  [...props.installedModels].sort((a, b) => Number(b.loaded) - Number(a.loaded))
+)
+
 const hfInput = ref('')
 const registryInput = ref('')
 
@@ -108,7 +112,7 @@ function modelChipLabel(ref: ModelRef): string {
       </div>
       <ul v-else-if="installedModels.length > 0" class="installed-list">
         <li
-          v-for="m in installedModels"
+          v-for="m in sortedInstalledModels"
           :key="m.key"
           class="installed-item"
           :class="{ checked: isChecked(m.key) }"
@@ -224,6 +228,7 @@ function modelChipLabel(ref: ModelRef): string {
   align-items: center;
   font-size: var(--text-xs);
   color: var(--text-muted);
+  padding: 4px 8px;
 }
 
 .sub-section {

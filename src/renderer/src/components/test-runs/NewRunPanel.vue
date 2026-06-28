@@ -5,11 +5,12 @@ import NewRunModelSelector from '@renderer/components/test-runs/NewRunModelSelec
 import { useModelsStore } from '@renderer/stores/models'
 import { useSettingsStore } from '@renderer/stores/settings'
 import { useProvidersStore } from '@renderer/stores/providers'
+import { useNavigationStore } from '@renderer/stores/navigation'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { KNOWN_PROVIDER_DEFAULTS } from '@shared/provider/configured-provider'
-import { IconPlayerPlay, IconX } from '@tabler/icons-vue'
+import { IconEdit, IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
 
 const props = defineProps<{
@@ -24,6 +25,11 @@ const emit = defineEmits<{
 const modelsStore = useModelsStore()
 const settingsStore = useSettingsStore()
 const providersStore = useProvidersStore()
+const navigationStore = useNavigationStore()
+
+function editSelectedSuite(): void {
+  if (form.suiteId) navigationStore.openTestSuite(form.suiteId)
+}
 
 const capabilities = ref<ProviderCapabilities | null>(null)
 
@@ -174,13 +180,21 @@ function onSubmit(): void {
 <template>
   <Panel title="New Run">
     <template #header-right>
-      <button class="btn-close" @click="emit('cancel')">
-        <IconX :size="14" :stroke-width="2.5" />
-      </button>
+      <Button type="icon" :icon="IconX" :icon-stroke-width="3" @click="emit('cancel')" />
     </template>
 
     <Field label="Test Suite">
-      <Select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
+      <div class="suite-row">
+        <Select v-model="form.suiteId" :options="suiteOptions" placeholder="Select a suite…" />
+        <Button
+          v-tooltip="'Edit test suite'"
+          type="icon"
+          :icon="IconEdit"
+          :icon-size="16"
+          :disabled="!form.suiteId"
+          @click="editSelectedSuite"
+        />
+      </div>
     </Field>
 
     <Field
@@ -253,22 +267,13 @@ function onSubmit(): void {
 </template>
 
 <style scoped lang="scss">
-.btn-close {
+.suite-row {
   display: flex;
   align-items: center;
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  color: var(--text-muted);
-  border-radius: var(--radius-lg);
-  transition:
-    color 0.15s,
-    background 0.15s;
+  gap: 6px;
 
-  &:hover {
-    color: var(--text-primary);
-    background: var(--surface-hover);
+  :deep(.select) {
+    flex: 1;
   }
 }
 

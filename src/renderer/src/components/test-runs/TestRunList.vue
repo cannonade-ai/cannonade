@@ -4,6 +4,8 @@ import { Badge, Panel, Button } from '@renderer/components/ui'
 import { formatDate } from '@renderer/utils/format'
 import { IconFolderOpen } from '@tabler/icons-vue'
 import { api } from '@renderer/api'
+import { useContextMenuStore } from '@renderer/stores/context-menu'
+import { useTestRunMenus } from './useTestRunMenus'
 
 async function openRunsFolder(): Promise<void> {
   const dir = await api.getRunsDir()
@@ -23,6 +25,9 @@ function modelCount(run: TestRun): string {
   const n = run.config.models.length
   return n === 1 ? '1 model' : `${n} models`
 }
+
+const contextMenuStore = useContextMenuStore()
+const { runMenuItems } = useTestRunMenus()
 </script>
 
 <template>
@@ -44,6 +49,7 @@ function modelCount(run: TestRun): string {
         class="run-item"
         :class="{ active: selectedId === run.id }"
         @click="emit('select-run', run.id)"
+        @contextmenu.prevent="contextMenuStore.open(runMenuItems(run), $event)"
       >
         <div class="run-info">
           <span class="run-suite">{{ run.suiteName }}</span>

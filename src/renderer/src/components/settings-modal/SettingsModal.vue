@@ -2,6 +2,7 @@
 import { computed, onMounted, onUnmounted } from 'vue'
 import { IconX, IconAdjustments, IconServer, IconPalette, IconTestPipe } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
+import { Button } from '@renderer/components/ui'
 import SettingsModalNav from './SettingsModalNav.vue'
 import SettingsModalGeneral from './SettingsModalGeneral.vue'
 import SettingsModalProviders from './SettingsModalProviders.vue'
@@ -68,9 +69,13 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
                   placement="bottom"
                 />
               </h2>
-              <button class="settings-close" @click="nav.closeSettings">
-                <IconX :size="16" />
-              </button>
+              <Button
+                type="icon"
+                :icon="IconX"
+                :icon-size="18"
+                :icon-stroke-width="3"
+                @click="nav.closeSettings"
+              />
             </div>
             <div class="settings-content-body">
               <component :is="sectionComponents[activeSection]" />
@@ -153,27 +158,6 @@ onUnmounted(() => document.removeEventListener('keydown', onKeydown))
   font-size: var(--text);
   font-weight: 600;
   color: var(--text-primary);
-}
-
-.settings-close {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition:
-    background 0.12s,
-    color 0.12s;
-
-  &:hover {
-    background: var(--surface-elevated);
-    color: var(--text-primary);
-  }
 }
 
 .settings-content-body {
