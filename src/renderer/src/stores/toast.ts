@@ -15,7 +15,7 @@ export interface Toast extends Required<Omit<ToastOptions, 'title'>> {
   title?: string
 }
 
-const DEFAULT_DURATION = 5000
+const DEFAULT_DURATION = 3000
 
 export const useToastStore = defineStore('toast', () => {
   const toasts = ref<Toast[]>([])

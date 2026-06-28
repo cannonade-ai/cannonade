@@ -24,12 +24,13 @@ const store = useToastStore()
 <style scoped lang="scss">
 .toast-container {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  top: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 1200;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
   pointer-events: none;
 }
@@ -42,7 +43,7 @@ const store = useToastStore()
   &-enter-from,
   &-leave-to {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateY(-24px);
   }
 }
 </style>

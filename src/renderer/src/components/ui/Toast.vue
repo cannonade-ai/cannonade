@@ -1,14 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
-import {
-  Icon,
-  IconCircleCheck,
-  IconCircleX,
-  IconInfoCircle,
-  IconAlertTriangle,
-  IconBell,
-  IconX
-} from '@tabler/icons-vue'
+import { IconX } from '@tabler/icons-vue'
 import type { ToastType } from '@renderer/stores/toast'
 import Button from './Button.vue'
 
@@ -23,15 +15,6 @@ const emit = defineEmits<{
   dismiss: []
 }>()
 
-const iconMap: Record<ToastType, Icon> = {
-  success: IconCircleCheck,
-  error: IconCircleX,
-  info: IconInfoCircle,
-  warning: IconAlertTriangle,
-  default: IconBell
-}
-
-const icon = computed(() => iconMap[props.type])
 const isSticky = computed(() => props.duration <= 0)
 
 let timer: ReturnType<typeof setTimeout> | null = null
@@ -67,13 +50,11 @@ onBeforeUnmount(clearTimer)
 
 <template>
   <div class="toast" :class="type" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
-    <component :is="icon" class="toast-icon" :size="18" :stroke-width="2.25" />
     <div class="toast-content">
       <p v-if="title" class="toast-title">{{ title }}</p>
       <p class="toast-message">{{ message }}</p>
     </div>
     <Button
-      v-tooltip="'Close'"
       type="icon"
       :icon="IconX"
       :icon-stroke-width="2.5"
@@ -86,11 +67,10 @@ onBeforeUnmount(clearTimer)
 <style scoped lang="scss">
 .toast {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
-  width: 320px;
-  max-width: calc(100vw - 2rem);
-  padding: 12px 12px 12px 14px;
+  max-width: 50vw;
+  padding: 6px 6px 6px 12px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-left-width: 3px;
@@ -144,6 +124,8 @@ onBeforeUnmount(clearTimer)
 .toast-content {
   flex: 1;
   min-width: 0;
+  max-height: 6rem;
+  overflow: auto;
 }
 
 .toast-title {
@@ -151,17 +133,18 @@ onBeforeUnmount(clearTimer)
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .toast-message {
   font-size: var(--text-sm);
-  line-height: 1.45;
   color: var(--text-secondary);
   word-break: break-word;
 }
 
 .toast-close {
   flex-shrink: 0;
-  align-self: flex-start;
 }
 </style>

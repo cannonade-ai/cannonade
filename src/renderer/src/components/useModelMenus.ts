@@ -36,11 +36,11 @@ export function useModelMenus(): {
             try {
               await api.loadModel(providerId, model.id)
               await modelsStore.loadLocalModels()
-              toastStore.success(`${model.name} loaded successfully.`, { title: 'Model loaded' })
+              toastStore.success(`${model.name} loaded successfully.`)
             } catch (e) {
-              toastStore.error(e instanceof Error ? e.message : `Failed to load ${model.name}.`, {
-                title: 'Load failed'
-              })
+              const message = `Failed to load ${model.name}. ${e instanceof Error ? e.message : ''}`
+              toastStore.error(message, { title: 'Model load failed', duration: 0 })
+              console.error(message)
             } finally {
               modelsStore.setModelOperation(model.id, null)
             }
@@ -91,8 +91,10 @@ export function useModelMenus(): {
             }
             try {
               await api.deleteModel(providerId, model.id)
+              toastStore.success(`${model.name} deleted successfully.`)
             } catch (e) {
               console.error('Failed to delete model:', e)
+              toastStore.error(`${model.name} Failed to delete model. ${e}`)
               return
             }
             for (let i = 0; i < 10; i++) {
