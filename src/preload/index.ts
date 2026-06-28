@@ -57,6 +57,9 @@ const api = {
   onModelDownloading: (cb: (payload: unknown) => void): void => {
     ipcRenderer.on(RUN.MODEL_DOWNLOADING, (_e, payload) => cb(payload))
   },
+  onModelLoading: (cb: (payload: unknown) => void): void => {
+    ipcRenderer.on(RUN.MODEL_LOADING, (_e, payload) => cb(payload))
+  },
   onModelStarted: (cb: (payload: unknown) => void): void => {
     ipcRenderer.on(RUN.MODEL_STARTED, (_e, payload) => cb(payload))
   },

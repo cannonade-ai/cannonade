@@ -8,9 +8,21 @@ export const useNavigationStore = defineStore('navigation', () => {
   const current = ref<View>('local-models')
   const settingsOpen = ref(false)
   const settingsSection = ref<SettingsSection>('general')
+  const pendingSuiteId = ref<string | null>(null)
 
   function navigate(view: View): void {
     current.value = view
+  }
+
+  function openTestSuite(id: string): void {
+    pendingSuiteId.value = id
+    current.value = 'test-suites'
+  }
+
+  function getPendingSuiteId(): string | null {
+    const id = pendingSuiteId.value
+    pendingSuiteId.value = null
+    return id
   }
 
   function openSettings(section: SettingsSection = 'general'): void {
@@ -22,5 +34,14 @@ export const useNavigationStore = defineStore('navigation', () => {
     settingsOpen.value = false
   }
 
-  return { current, navigate, settingsOpen, settingsSection, openSettings, closeSettings }
+  return {
+    current,
+    navigate,
+    openTestSuite,
+    consumePendingSuiteId: getPendingSuiteId,
+    settingsOpen,
+    settingsSection,
+    openSettings,
+    closeSettings
+  }
 })

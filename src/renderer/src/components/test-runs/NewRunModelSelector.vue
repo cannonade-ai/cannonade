@@ -17,6 +17,7 @@ const props = defineProps<{
   modelValue: ModelRef[]
   installedModels: Array<{ key: string; label: string; loaded: boolean }>
   loadingModels: boolean
+  loadFailed: boolean
 }>()
 
 const providersStore = useProvidersStore()
@@ -29,6 +30,10 @@ const registryUrl = computed<string>(
 const emit = defineEmits<{
   'update:model-value': [models: ModelRef[]]
 }>()
+
+const sortedInstalledModels = computed<typeof props.installedModels>(() =>
+  [...props.installedModels].sort((a, b) => Number(b.loaded) - Number(a.loaded))
+)
 
 const hfInput = ref('')
 const registryInput = ref('')
@@ -108,7 +113,7 @@ function modelChipLabel(ref: ModelRef): string {
       </div>
       <ul v-else-if="installedModels.length > 0" class="installed-list">
         <li
-          v-for="m in installedModels"
+          v-for="m in sortedInstalledModels"
           :key="m.key"
           class="installed-item"
           :class="{ checked: isChecked(m.key) }"
@@ -149,12 +154,12 @@ function modelChipLabel(ref: ModelRef): string {
         <Input
           v-model="registryInput"
           placeholder="publisher/model-name"
-          :disabled="!registryUrl"
+          :disabled="!registryUrl || loadFailed"
           @submit="addRegistryModel"
         />
         <button
           class="btn-add-hf"
-          :disabled="!registryUrl || !registryInput.trim()"
+          :disabled="!registryUrl || loadFailed || !registryInput.trim()"
           @click="addRegistryModel"
         >
           <IconPlus :size="13" :stroke-width="2.5" />
@@ -187,12 +192,12 @@ function modelChipLabel(ref: ModelRef): string {
         <Input
           v-model="hfInput"
           placeholder="publisher/model-name or model card URL"
-          :disabled="!hfUrl"
+          :disabled="!hfUrl || loadFailed"
           @submit="addHuggingFaceModel"
         />
         <button
           class="btn-add-hf"
-          :disabled="!hfUrl || !hfInput.trim()"
+          :disabled="!hfUrl || loadFailed || !hfInput.trim()"
           @click="addHuggingFaceModel"
         >
           <IconPlus :size="13" :stroke-width="2.5" />
@@ -224,6 +229,7 @@ function modelChipLabel(ref: ModelRef): string {
   align-items: center;
   font-size: var(--text-xs);
   color: var(--text-muted);
+  padding: 4px 8px;
 }
 
 .sub-section {

@@ -270,6 +270,42 @@ export async function executeTestRun(
       modelKey = await resolveModelKey(providerId, downloadId)
     }
 
+    if (capabilities.loadModel && capabilities.localModels && provider.loadModel) {
+      let alreadyLoaded = false
+      if (provider.fetchLocalModels) {
+        try {
+          const localModels = await provider.fetchLocalModels()
+          alreadyLoaded = localModels.some((m) => m.id === modelKey && m.loadedInstances.length > 0)
+        } catch (err) {
+          console.error('[test-runner] Failed to check loaded models:', err)
+        }
+      }
+
+      if (!alreadyLoaded) {
+        modelRunState.status = 'loading'
+        send(RUN.MODEL_LOADING, { modelRunId: modelRun.id })
+        try {
+          await provider.loadModel(modelKey)
+        } catch (err) {
+          fatalError = err instanceof Error ? err.message : String(err)
+          overallFailed = true
+          modelRunState.status = signal.aborted ? 'cancelled' : 'failed'
+          modelRunState.completedAt = new Date().toISOString()
+          modelRunState.aggregate = computeAggregate(results, suite.testCases)
+          modelRunState.error = fatalError
+          send(RUN.MODEL_COMPLETED, {
+            modelRunId: modelRun.id,
+            status: modelRunState.status,
+            aggregate: modelRunState.aggregate,
+            error: fatalError
+          })
+          continue
+        }
+        if (signal.aborted) break
+        modelRunState.status = 'running'
+      }
+    }
+
     console.log('[test-runner] Starting model run:', modelRun)
 
     let modelInstanceId: string | undefined
@@ -282,7 +318,7 @@ export async function executeTestRun(
         caseRunState.status = 'running'
         caseRunState.startedAt = new Date().toISOString()
         send(RUN.CASE_STARTED, { modelRunId: modelRun.id, testCaseId: testCase.id })
-        console.log('[test-runner] Starting test case:', testCase)
+        console.log('[test-runner] Starting test case: ', testCase.name)
 
         const request = buildRequest(testCase, modelKey, suite.defaultRunConfig)
 

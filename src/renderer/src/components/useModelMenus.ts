@@ -2,6 +2,7 @@ import { IconPlayerPlay, IconPlayerStop, IconTrash } from '@tabler/icons-vue'
 import type { ContextMenuItem } from '@renderer/stores/context-menu'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { useModelsStore } from '@renderer/stores/models'
+import { useToastStore } from '@renderer/stores/toast'
 
 import { api } from '@renderer/api'
 import type { LocalModel } from '@shared/provider/local-model'
@@ -14,6 +15,7 @@ export function useModelMenus(): {
 } {
   const confirmStore = useConfirmStore()
   const modelsStore = useModelsStore()
+  const toastStore = useToastStore()
 
   function modelMenuItems(
     model: LocalModel,
@@ -30,8 +32,18 @@ export function useModelMenus(): {
           label: 'Load',
           icon: IconPlayerPlay,
           action: async (): Promise<void> => {
-            await api.loadModel(providerId, model.id)
-            await modelsStore.loadLocalModels()
+            modelsStore.setModelOperation(model.id, 'loading')
+            try {
+              await api.loadModel(providerId, model.id)
+              await modelsStore.loadLocalModels()
+              toastStore.success(`${model.name} loaded successfully.`)
+            } catch (e) {
+              const message = `Failed to load ${model.name}. ${e instanceof Error ? e.message : ''}`
+              toastStore.error(message, { title: 'Model load failed', duration: 0 })
+              console.error(message)
+            } finally {
+              modelsStore.setModelOperation(model.id, null)
+            }
           }
         })
       }
@@ -41,10 +53,15 @@ export function useModelMenus(): {
           label: 'Unload',
           icon: IconPlayerStop,
           action: async (): Promise<void> => {
-            for (const instance of model.loadedInstances) {
-              await api.unloadModel(providerId, instance.id)
+            modelsStore.setModelOperation(model.id, 'unloading')
+            try {
+              for (const instance of model.loadedInstances) {
+                await api.unloadModel(providerId, instance.id)
+              }
+              await modelsStore.loadLocalModels()
+            } finally {
+              modelsStore.setModelOperation(model.id, null)
             }
-            await modelsStore.loadLocalModels()
           }
         })
       }
@@ -65,21 +82,28 @@ export function useModelMenus(): {
             danger: true
           })
           if (!ok) return
-          if (isLoaded) {
-            for (const instance of model.loadedInstances) {
-              await api.unloadModel(providerId, instance.id)
-            }
-          }
+          modelsStore.setModelOperation(model.id, 'deleting')
           try {
-            await api.deleteModel(providerId, model.id)
-          } catch (e) {
-            console.error('Failed to delete model:', e)
-            return
-          }
-          for (let i = 0; i < 10; i++) {
-            await new Promise((resolve) => setTimeout(resolve, 500))
-            await modelsStore.loadLocalModels()
-            if (!modelsStore.localModels.some((m) => m.id === model.id)) break
+            if (isLoaded) {
+              for (const instance of model.loadedInstances) {
+                await api.unloadModel(providerId, instance.id)
+              }
+            }
+            try {
+              await api.deleteModel(providerId, model.id)
+              toastStore.success(`${model.name} deleted successfully.`)
+            } catch (e) {
+              console.error('Failed to delete model:', e)
+              toastStore.error(`${model.name} Failed to delete model. ${e}`)
+              return
+            }
+            for (let i = 0; i < 10; i++) {
+              await new Promise((resolve) => setTimeout(resolve, 500))
+              await modelsStore.loadLocalModels()
+              if (!modelsStore.localModels.some((m) => m.id === model.id)) break
+            }
+          } finally {
+            modelsStore.setModelOperation(model.id, null)
           }
         }
       })

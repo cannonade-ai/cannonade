@@ -6,10 +6,12 @@ import SectionHeader from '@renderer/components/SectionHeader.vue'
 import { Button, Panel, Badge } from '@renderer/components/ui'
 import { storeToRefs } from 'pinia'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
+import { useNavigationStore } from '@renderer/stores/navigation'
 import { api } from '@renderer/api'
 import { TestSuiteList, TestSuiteDetail } from '@renderer/components/test-suites'
 
 const store = useTestSuitesStore()
+const navigation = useNavigationStore()
 const { suites } = storeToRefs(store)
 const selectedId = ref<string | null>(null)
 
@@ -17,7 +19,11 @@ const selectedSuite = computed<TestSuite | null>(
   () => suites.value.find((s) => s.id === selectedId.value) ?? null
 )
 
-onMounted(() => store.load())
+onMounted(async () => {
+  await store.load()
+  const pendingId = navigation.consumePendingSuiteId()
+  if (pendingId) selectedId.value = pendingId
+})
 
 function onSelectSuite(id: string): void {
   selectedId.value = id

@@ -4,6 +4,10 @@ import { l as rougeL } from 'js-rouge'
 import { distance as levenshteinDistance } from 'fastest-levenshtein'
 import { bleu } from 'bleu-score'
 
+function normalizeCase(text: string, caseSensitive: boolean | undefined): string {
+  return caseSensitive ? text : text.toLowerCase()
+}
+
 export function evaluateBleu(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   if (!expected) {
@@ -12,15 +16,19 @@ export function evaluateBleu(output: string, evaluation: EvaluationConfig): Eval
   if (output.length === 0) {
     return { score: 0, passed: false, error: 'Model output was empty' }
   }
-  const score = bleu(expected, output, 2)
+  const score = bleu(
+    normalizeCase(expected, evaluation.caseSensitive),
+    normalizeCase(output, evaluation.caseSensitive),
+    2
+  )
   return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
 }
 
 export function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
 
-  const predSet = new Set(output.toLowerCase().split(' '))
-  const refSet = new Set(expected.toLowerCase().split(' '))
+  const predSet = new Set(normalizeCase(output, evaluation.caseSensitive).split(' '))
+  const refSet = new Set(normalizeCase(expected, evaluation.caseSensitive).split(' '))
   const common = [...predSet].filter((t) => refSet.has(t))
 
   const precision = common.length / predSet.size
@@ -35,7 +43,9 @@ export function evaluateF1(output: string, evaluation: EvaluationConfig): Evalua
 
 export function evaluateExactMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
-  const matched = output.trim() === expected.trim()
+  const caseSensitive = evaluation.caseSensitive ?? true
+  const matched =
+    normalizeCase(output.trim(), caseSensitive) === normalizeCase(expected.trim(), caseSensitive)
   const score = matched ? 1 : 0
   return { score, passed: matched }
 }
@@ -47,7 +57,7 @@ export function evaluateRegex(output: string, evaluation: EvaluationConfig): Eva
   }
   let regex: RegExp
   try {
-    regex = new RegExp(pattern)
+    regex = new RegExp(pattern, evaluation.caseSensitive ? '' : 'i')
   } catch {
     return { score: 0, passed: false, error: `Invalid regex pattern: ${pattern}` }
   }
@@ -65,7 +75,9 @@ export function evaluateContains(output: string, evaluation: EvaluationConfig): 
   if (!terms.length) {
     return { score: 0, passed: false, error: 'No search terms provided' }
   }
-  const matched = terms.filter((t) => output.includes(t))
+  const caseSensitive = evaluation.caseSensitive
+  const haystack = normalizeCase(output, caseSensitive)
+  const matched = terms.filter((t) => haystack.includes(normalizeCase(t, caseSensitive)))
   const score = matched.length / terms.length
   return {
     score,
@@ -82,7 +94,7 @@ export function evaluateRouge(output: string, evaluation: EvaluationConfig): Eva
   if (output.length === 0) {
     return { score: 0, passed: false, error: 'Model output was empty' }
   }
-  const score = rougeL(output, expected, { caseSensitive: false })
+  const score = rougeL(output, expected, { caseSensitive: evaluation.caseSensitive ?? false })
   return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
 }
 
@@ -97,7 +109,10 @@ export function evaluateLevenshtein(
   if (output.length === 0) {
     return { score: 0, passed: false, error: 'Model output was empty' }
   }
-  const distance = levenshteinDistance(output.toLocaleLowerCase(), expected.toLocaleLowerCase())
+  const distance = levenshteinDistance(
+    normalizeCase(output, evaluation.caseSensitive),
+    normalizeCase(expected, evaluation.caseSensitive)
+  )
   const score = 1 - distance / Math.max(output.length, expected.length)
   return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
 }

@@ -9,7 +9,7 @@ import {
   Toggle
 } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
-import type { EvaluationConfig } from '@shared/app/test-suite'
+import { CASE_SENSITIVE_METRICS, type EvaluationConfig } from '@shared/app/test-suite'
 import { IconTrash } from '@tabler/icons-vue'
 import { computed, ref, watch } from 'vue'
 
@@ -77,6 +77,7 @@ const type = ref<EvaluationConfig['type']>(props.evaluation.type)
 const expected = ref(typeof props.evaluation.expected === 'string' ? props.evaluation.expected : '')
 const threshold = ref(props.evaluation.threshold ?? 0.9)
 const negate = ref(props.evaluation.negate ?? false)
+const caseSensitive = ref(props.evaluation.caseSensitive ?? props.evaluation.type === 'exact_match')
 const customCode = ref(props.evaluation.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER)
 
 watch(
@@ -86,6 +87,7 @@ watch(
     expected.value = typeof e.expected === 'string' ? e.expected : ''
     threshold.value = e.threshold ?? 0.9
     negate.value = e.negate ?? false
+    caseSensitive.value = e.caseSensitive ?? e.type === 'exact_match'
     customCode.value = e.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER
   }
 )
@@ -94,15 +96,21 @@ const typeHint = computed(() => TYPE_HINTS[type.value])
 const showThreshold = computed(() => THRESHOLD_TYPES.includes(type.value))
 const showExpected = computed(() => type.value !== 'custom')
 const showNegate = computed(() => !NON_NEGATABLE_TYPES.includes(type.value))
+const showCaseSensitive = computed(() => CASE_SENSITIVE_METRICS.includes(type.value))
 const expectedLabel = computed(() => (type.value === 'regex' ? 'Pattern' : 'Expected'))
 
-watch([type, expected, threshold, negate, customCode], () => {
+watch(type, (t) => {
+  caseSensitive.value = t === 'exact_match'
+})
+
+watch([type, expected, threshold, negate, caseSensitive, customCode], () => {
   emit('update', {
     ...props.evaluation,
     type: type.value,
     expected: showExpected.value ? expected.value || undefined : undefined,
     threshold: showThreshold.value ? threshold.value : undefined,
     negate: showNegate.value && negate.value ? true : undefined,
+    caseSensitive: showCaseSensitive.value ? caseSensitive.value : undefined,
     customValidator:
       type.value === 'custom' ? { language: 'javascript', code: customCode.value } : undefined
   })
@@ -142,6 +150,14 @@ watch([type, expected, threshold, negate, customCode], () => {
         hint="The minimum score the output must reach to pass. Higher values are stricter."
       >
         <NumberInput v-model="threshold" :min="0" :max="1" :step="0.05" placeholder="0.0 – 1.0" />
+      </Field>
+      <Field
+        v-if="showCaseSensitive"
+        label="Case sensitive"
+        hint="When enabled, matching distinguishes uppercase and lowercase letters."
+        inline
+      >
+        <Toggle v-model="caseSensitive" />
       </Field>
       <Field
         v-if="showNegate"

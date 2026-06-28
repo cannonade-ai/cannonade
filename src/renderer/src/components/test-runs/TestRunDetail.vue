@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { IconPlayerStop, IconTrash } from '@tabler/icons-vue'
+import { IconPlayerStop, IconTrash, IconEdit } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
 import { Button, Panel } from '@renderer/components/ui'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useConfirmStore } from '@renderer/stores/confirm'
+import { useNavigationStore } from '@renderer/stores/navigation'
 import { formatDate } from '@renderer/utils/format'
 
 const props = defineProps<{
@@ -14,6 +15,11 @@ const props = defineProps<{
 
 const store = useTestRunsStore()
 const confirm = useConfirmStore()
+const navigation = useNavigationStore()
+
+function editTestSuite(): void {
+  navigation.openTestSuite(props.run.config.suiteId)
+}
 
 const isActive = computed(() => props.run.status === 'running' || props.run.status === 'pending')
 
@@ -47,7 +53,11 @@ async function showDeleteConfirm(): Promise<void> {
       <span class="meta-date">{{ formatDate(run.createdAt) }}</span>
     </template>
 
-    <template #toolbar>
+    <template #toolbar-left>
+      <Button type="secondary" :icon="IconEdit" @click="editTestSuite">Edit Test Suite</Button>
+    </template>
+
+    <template #toolbar-right>
       <Button v-if="isActive" type="danger-outline" :icon="IconPlayerStop" @click="showStopConfirm">
         Stop
       </Button>
@@ -96,5 +106,9 @@ async function showDeleteConfirm(): Promise<void> {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+
+:deep(.panel__body) {
+  scrollbar-gutter: stable;
 }
 </style>

@@ -11,6 +11,7 @@ import type {
   RunStartedPayload,
   RunCompletedPayload,
   ModelDownloadingPayload,
+  ModelLoadingPayload,
   ModelStartedPayload,
   ModelCompletedPayload,
   CaseStartedPayload,
@@ -66,6 +67,8 @@ export const api = {
     window.api.onRunCompleted(cb),
   onModelDownloading: (cb: (payload: ModelDownloadingPayload) => void): void =>
     window.api.onModelDownloading(cb),
+  onModelLoading: (cb: (payload: ModelLoadingPayload) => void): void =>
+    window.api.onModelLoading(cb),
   onModelStarted: (cb: (payload: ModelStartedPayload) => void): void =>
     window.api.onModelStarted(cb),
   onModelCompleted: (cb: (payload: ModelCompletedPayload) => void): void =>
