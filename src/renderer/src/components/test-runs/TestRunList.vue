@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TestRun } from '@shared/app/test-run'
-import { Badge, Panel, Button } from '@renderer/components/ui'
+import { Badge, Panel, Button, ScrollArea } from '@renderer/components/ui'
 import { formatDate } from '@renderer/utils/format'
 import { IconFolderOpen } from '@tabler/icons-vue'
 import { api } from '@renderer/api'
@@ -42,28 +42,32 @@ const { runMenuItems } = useTestRunMenus()
     </template>
 
     <div v-if="runs.length === 0" class="empty">No runs yet.</div>
-    <ul v-else class="run-list">
-      <li
-        v-for="run in runs"
-        :key="run.id"
-        class="run-item"
-        :class="{ active: selectedId === run.id }"
-        @click="emit('select-run', run.id)"
-        @contextmenu.prevent="contextMenuStore.open(runMenuItems(run), $event)"
-      >
-        <div class="run-info">
-          <span class="run-suite">{{ run.suiteName }}</span>
-          <span class="run-meta">
-            <span class="provider-name">{{ run.config.providerName ?? run.config.provider }}</span>
-            &middot; {{ modelCount(run) }}
-          </span>
-        </div>
-        <div class="run-aside">
-          <Badge :status="run.status">{{ run.status }}</Badge>
-          <span class="run-date">{{ formatDate(run.createdAt) }}</span>
-        </div>
-      </li>
-    </ul>
+    <ScrollArea v-else>
+      <ul class="run-list">
+        <li
+          v-for="run in runs"
+          :key="run.id"
+          class="run-item"
+          :class="{ active: selectedId === run.id }"
+          @click="emit('select-run', run.id)"
+          @contextmenu.prevent="contextMenuStore.open(runMenuItems(run), $event)"
+        >
+          <div class="run-info">
+            <span class="run-suite">{{ run.suiteName }}</span>
+            <span class="run-meta">
+              <span class="provider-name">{{
+                run.config.providerName ?? run.config.provider
+              }}</span>
+              &middot; {{ modelCount(run) }}
+            </span>
+          </div>
+          <div class="run-aside">
+            <Badge :status="run.status">{{ run.status }}</Badge>
+            <span class="run-date">{{ formatDate(run.createdAt) }}</span>
+          </div>
+        </li>
+      </ul>
+    </ScrollArea>
   </Panel>
 </template>
 
@@ -71,6 +75,7 @@ const { runMenuItems } = useTestRunMenus()
 .runs-panel {
   :deep(.panel__body) {
     padding: 0;
+    overflow: hidden;
   }
 }
 
