@@ -32,6 +32,21 @@ describe('exact_match', () => {
     expect(result.passed).toBe(false)
     expect(result.score).toBe(0)
   })
+
+  it('is case sensitive by default', () => {
+    const result = evaluateExactMatch('Hello World', { ...base, expected: 'hello world' })
+    expect(result.passed).toBe(false)
+  })
+
+  it('ignores case when caseSensitive is false', () => {
+    const result = evaluateExactMatch('Hello World', {
+      ...base,
+      expected: 'hello world',
+      caseSensitive: false
+    })
+    expect(result.passed).toBe(true)
+    expect(result.score).toBe(1)
+  })
 })
 
 describe('contains', () => {
@@ -66,6 +81,26 @@ describe('contains', () => {
     const result = evaluateContains('hello', { ...base, expected: '' })
     expect(result.passed).toBe(false)
     expect(result.error).toBeTruthy()
+  })
+
+  it('matches terms regardless of case by default', () => {
+    const result = evaluateContains('The ocean breathes beneath the Silver moon', {
+      ...base,
+      expected: 'ocean, silver, moon'
+    })
+    expect(result.passed).toBe(true)
+    expect(result.score).toBe(1)
+    expect(result.details).toBe('3/3 terms found')
+  })
+
+  it('respects case when caseSensitive is true', () => {
+    const result = evaluateContains('The ocean beneath the Silver moon', {
+      ...base,
+      expected: 'ocean, silver, moon',
+      caseSensitive: true
+    })
+    expect(result.passed).toBe(false)
+    expect(result.details).toBe('2/3 terms found')
   })
 })
 
@@ -105,6 +140,20 @@ describe('regex', () => {
     expect(result.passed).toBe(false)
     expect(result.error).toBeTruthy()
   })
+
+  it('matches case-insensitively by default', () => {
+    const result = evaluateRegex('ORDER-1234', { ...base, expected: '^order-\\d+$' })
+    expect(result.passed).toBe(true)
+  })
+
+  it('respects case when caseSensitive is true', () => {
+    const result = evaluateRegex('ORDER-1234', {
+      ...base,
+      expected: '^order-\\d+$',
+      caseSensitive: true
+    })
+    expect(result.passed).toBe(false)
+  })
 })
 
 describe('rouge', () => {
@@ -128,6 +177,16 @@ describe('rouge', () => {
     })
     expect(result.passed).toBe(true)
     expect(result.score).toBe(1)
+  })
+
+  it('penalizes case differences when caseSensitive is true', () => {
+    const result = evaluateRouge('THE QUICK BROWN FOX', {
+      ...base,
+      expected: 'the quick brown fox',
+      caseSensitive: true
+    })
+    expect(result.passed).toBe(false)
+    expect(result.score).toBe(0)
   })
 
   it('returns partial score for partially overlapping output', () => {
@@ -196,6 +255,17 @@ describe('levenshtein', () => {
     const result = evaluateLevenshtein('hello world', { ...base, expected: 'hello worlt' })
     expect(result.passed).toBe(true)
     expect(result.score).toBeCloseTo(0.909, 3)
+  })
+
+  it('penalizes case differences when caseSensitive is true', () => {
+    const result = evaluateLevenshtein('HELLOWORLD', {
+      ...base,
+      expected: 'helloworld',
+      caseSensitive: true
+    })
+    console.log(result)
+    expect(result.passed).toBe(false)
+    expect(result.score).toBe(0)
   })
 
   it('passes when output is long and very close to expected', () => {
@@ -279,6 +349,16 @@ describe('f1', () => {
     })
     expect(result.passed).toBe(true)
     expect(result.score).toBe(1)
+  })
+
+  it('penalizes case differences when caseSensitive is true', () => {
+    const result = evaluateF1('THE QUICK BROWN FOX', {
+      ...base,
+      expected: 'the quick brown fox',
+      caseSensitive: true
+    })
+    expect(result.passed).toBe(false)
+    expect(result.score).toBe(0)
   })
 
   it('returns partial score when some words overlap', () => {
@@ -424,6 +504,25 @@ describe('bleu', () => {
     })
     expect(result.passed).toBe(false)
     expect(result.score).toBeCloseTo(0.632, 3)
+  })
+
+  it('ignores case by default', () => {
+    const result = evaluateBleu('THE QUICK BROWN FOX JUMPS', {
+      ...base,
+      expected: 'the quick brown fox jumps'
+    })
+    expect(result.passed).toBe(true)
+    expect(result.score).toBe(1)
+  })
+
+  it('penalizes case differences when caseSensitive is true', () => {
+    const result = evaluateBleu('THE QUICK BROWN FOX JUMPS', {
+      ...base,
+      expected: 'the quick brown fox jumps',
+      caseSensitive: true
+    })
+    expect(result.passed).toBe(false)
+    expect(result.score).toBe(0)
   })
 
   it('returns low score for completely different output', () => {

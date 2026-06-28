@@ -77,6 +77,9 @@ export interface EvaluationConfig {
   // inverts the result: the eval passes when it would otherwise fail
   negate?: boolean
 
+  // for text-comparison metrics: whether matching distinguishes letter case
+  caseSensitive?: boolean
+
   // expected output (if applicable)
   expected?: string | object
 
@@ -89,6 +92,16 @@ export interface EvaluationConfig {
   // for type: code_execution
   codeExecution?: CodeExecutionConfig
 }
+
+export const CASE_SENSITIVE_METRICS: EvaluationConfig['type'][] = [
+  'exact_match',
+  'contains',
+  'regex',
+  'rouge',
+  'levenshtein',
+  'f1',
+  'bleu'
+]
 
 export interface CustomValidator {
   language: 'javascript'
