@@ -30,8 +30,13 @@ export function useModelMenus(): {
           label: 'Load',
           icon: IconPlayerPlay,
           action: async (): Promise<void> => {
-            await api.loadModel(providerId, model.id)
-            await modelsStore.loadLocalModels()
+            modelsStore.setModelOperation(model.id, 'loading')
+            try {
+              await api.loadModel(providerId, model.id)
+              await modelsStore.loadLocalModels()
+            } finally {
+              modelsStore.setModelOperation(model.id, null)
+            }
           }
         })
       }
@@ -41,10 +46,15 @@ export function useModelMenus(): {
           label: 'Unload',
           icon: IconPlayerStop,
           action: async (): Promise<void> => {
-            for (const instance of model.loadedInstances) {
-              await api.unloadModel(providerId, instance.id)
+            modelsStore.setModelOperation(model.id, 'unloading')
+            try {
+              for (const instance of model.loadedInstances) {
+                await api.unloadModel(providerId, instance.id)
+              }
+              await modelsStore.loadLocalModels()
+            } finally {
+              modelsStore.setModelOperation(model.id, null)
             }
-            await modelsStore.loadLocalModels()
           }
         })
       }
@@ -65,21 +75,26 @@ export function useModelMenus(): {
             danger: true
           })
           if (!ok) return
-          if (isLoaded) {
-            for (const instance of model.loadedInstances) {
-              await api.unloadModel(providerId, instance.id)
-            }
-          }
+          modelsStore.setModelOperation(model.id, 'deleting')
           try {
-            await api.deleteModel(providerId, model.id)
-          } catch (e) {
-            console.error('Failed to delete model:', e)
-            return
-          }
-          for (let i = 0; i < 10; i++) {
-            await new Promise((resolve) => setTimeout(resolve, 500))
-            await modelsStore.loadLocalModels()
-            if (!modelsStore.localModels.some((m) => m.id === model.id)) break
+            if (isLoaded) {
+              for (const instance of model.loadedInstances) {
+                await api.unloadModel(providerId, instance.id)
+              }
+            }
+            try {
+              await api.deleteModel(providerId, model.id)
+            } catch (e) {
+              console.error('Failed to delete model:', e)
+              return
+            }
+            for (let i = 0; i < 10; i++) {
+              await new Promise((resolve) => setTimeout(resolve, 500))
+              await modelsStore.loadLocalModels()
+              if (!modelsStore.localModels.some((m) => m.id === model.id)) break
+            }
+          } finally {
+            modelsStore.setModelOperation(model.id, null)
           }
         }
       })

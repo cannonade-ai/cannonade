@@ -5,6 +5,8 @@ import { useProvidersStore } from './providers'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 
+export type ModelOperation = 'loading' | 'unloading' | 'deleting'
+
 export const useModelsStore = defineStore('models', () => {
   const providersStore = useProvidersStore()
 
@@ -13,6 +15,15 @@ export const useModelsStore = defineStore('models', () => {
   const externalModels = ref<ExternalModel[]>([])
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const modelOperations = ref<Record<string, ModelOperation>>({})
+
+  function setModelOperation(modelId: string, operation: ModelOperation | null): void {
+    if (operation) {
+      modelOperations.value[modelId] = operation
+    } else {
+      delete modelOperations.value[modelId]
+    }
+  }
 
   async function loadLocalModels(): Promise<void> {
     const instanceId = providersStore.activeLocalProvider
@@ -63,6 +74,8 @@ export const useModelsStore = defineStore('models', () => {
     externalModels,
     loading,
     error,
+    modelOperations,
+    setModelOperation,
     loadLocalModels,
     loadExternalModels
   }

@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { IconDotsVertical } from '@tabler/icons-vue'
+import { IconDotsVertical, IconLoader2 } from '@tabler/icons-vue'
 import { formatBytes, formatContext } from '../utils/format'
 import Badge from './ui/Badge.vue'
 import Button from './ui/Button.vue'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
+import { useModelsStore } from '@renderer/stores/models'
 import { useModelMenus } from './useModelMenus'
 
 const props = defineProps<{
@@ -18,12 +19,14 @@ const loadedInstances = computed(() => props.model.loadedInstances)
 const isLoaded = computed(() => loadedInstances.value.length > 0)
 
 const contextMenuStore = useContextMenuStore()
+const modelsStore = useModelsStore()
 const { modelMenuItems } = useModelMenus()
 
+const operation = computed(() => modelsStore.modelOperations[props.model.id] ?? null)
 const menuItems = computed(() => modelMenuItems(props.model, props.capabilities))
 
 function onContextMenu(event: MouseEvent): void {
-  if (!menuItems.value.length) return
+  if (operation.value || !menuItems.value.length) return
   contextMenuStore.open(menuItems.value, event)
 }
 
@@ -33,15 +36,23 @@ function onMenuButton(event: MouseEvent): void {
 </script>
 
 <template>
-  <div class="model-card" :class="{ loaded: isLoaded }" @contextmenu.prevent="onContextMenu">
+  <div
+    class="model-card"
+    :class="{ loaded: isLoaded, busy: !!operation }"
+    @contextmenu.prevent="onContextMenu"
+  >
     <div class="card-header">
       <h3 class="model-name">{{ model.name }}</h3>
       <div class="card-header-actions">
-        <Badge v-if="isLoaded" type="success">Loaded</Badge>
+        <Badge v-if="operation" type="secondary" :icon="IconLoader2" icon-animation="spin">
+          {{ operation }}
+        </Badge>
+        <Badge v-else-if="isLoaded" type="success">Loaded</Badge>
         <Button
           v-if="menuItems.length"
           type="icon"
           :icon="IconDotsVertical"
+          :disabled="!!operation"
           @click.stop="onMenuButton"
         />
       </div>
@@ -82,19 +93,21 @@ function onMenuButton(event: MouseEvent): void {
       </span>
     </div>
 
-    <div v-if="model.capabilities" class="card-capabilities">
-      <Badge :type="model.capabilities.vision ? 'success' : 'default'" square>Vision</Badge>
-      <Badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
-        Tool use
-      </Badge>
-    </div>
+    <div v-if="model.capabilities || isLoaded" class="card-footer">
+      <template v-if="model.capabilities">
+        <Badge :type="model.capabilities.vision ? 'success' : 'default'" square>Vision</Badge>
+        <Badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
+          Tool use
+        </Badge>
+      </template>
 
-    <div v-if="isLoaded" class="loaded-instances">
-      <div v-for="(instance, i) in loadedInstances" :key="instance.id ?? i" class="instance">
-        <span class="instance-dot" />
-        <span v-if="instance.config?.context_length" class="instance-label">
-          {{ formatContext(instance.config.context_length) }} ctx
-        </span>
+      <div v-if="isLoaded" class="loaded-instances">
+        <div v-for="(instance, i) in loadedInstances" :key="instance.id ?? i" class="instance">
+          <span class="instance-dot" />
+          <span v-if="instance.config?.context_length" class="instance-label">
+            {{ formatContext(instance.config.context_length) }} ctx
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -120,6 +133,11 @@ function onMenuButton(event: MouseEvent): void {
 
   &.loaded {
     border-color: var(--accent-dim);
+  }
+
+  &.busy {
+    opacity: 0.7;
+    pointer-events: none;
   }
 }
 
@@ -184,9 +202,11 @@ function onMenuButton(event: MouseEvent): void {
   }
 }
 
-.card-capabilities {
+.card-footer {
   margin-top: 0.5rem;
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
 }
 
@@ -195,7 +215,7 @@ function onMenuButton(event: MouseEvent): void {
   flex-direction: column;
   align-items: end;
   gap: 4px;
-  margin-top: 0.5rem;
+  margin-left: auto;
 }
 
 .instance {
