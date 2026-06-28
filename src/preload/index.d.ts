@@ -26,6 +26,10 @@ export interface ModelDownloadingPayload {
   estimatedCompletion?: string
 }
 
+export interface ModelLoadingPayload {
+  modelRunId: string
+}
+
 export interface ModelStartedPayload {
   modelRunId: string
   autoDownloaded: boolean
@@ -85,6 +89,7 @@ export interface AppAPI {
   onRunStarted(cb: (payload: RunStartedPayload) => void): void
   onRunCompleted(cb: (payload: RunCompletedPayload) => void): void
   onModelDownloading(cb: (payload: ModelDownloadingPayload) => void): void
+  onModelLoading(cb: (payload: ModelLoadingPayload) => void): void
   onModelStarted(cb: (payload: ModelStartedPayload) => void): void
   onModelCompleted(cb: (payload: ModelCompletedPayload) => void): void
   onCaseStarted(cb: (payload: CaseStartedPayload) => void): void

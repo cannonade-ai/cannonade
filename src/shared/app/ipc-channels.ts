@@ -30,6 +30,7 @@ export const RUN = {
   STARTED: 'run:started',
   COMPLETED: 'run:completed',
   MODEL_DOWNLOADING: 'run:model:downloading',
+  MODEL_LOADING: 'run:model:loading',
   MODEL_STARTED: 'run:model:started',
   MODEL_COMPLETED: 'run:model:completed',
   CASE_STARTED: 'run:case:started',

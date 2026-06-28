@@ -43,6 +43,19 @@ function modelLabel(ref: ModelRef): string {
   return key.replace(/^(huggingface\.co|hf\.co)\//, '').replace(/:latest$/, '')
 }
 
+const currentAction = computed<string | null>(() => {
+  const mr = props.modelRun
+  if (mr.status === 'downloading') return 'Downloading model'
+  if (mr.status === 'loading') return 'Loading model'
+  if (mr.status === 'running') {
+    const runningCase = mr.caseRuns.find((cr) => cr.status === 'running')
+    if (!runningCase) return null
+    const testCase = props.testCases.find((tc) => tc.id === runningCase.testCaseId)
+    return `Running case "${testCase?.name ?? ''}"`
+  }
+  return null
+})
+
 function duration(mr: PerModelRun): string {
   if (!mr.startedAt || !mr.completedAt) return '—'
   const ms = new Date(mr.completedAt).getTime() - new Date(mr.startedAt).getTime()
@@ -70,6 +83,22 @@ const downloadProgress = computed<number>(() => {
   return Math.min(downloadedBytes / totalBytes, 1)
 })
 
+const isActive = computed<boolean>(
+  () =>
+    props.modelRun.status === 'running' ||
+    props.modelRun.status === 'downloading' ||
+    props.modelRun.status === 'loading'
+)
+
+const runProgress = computed<number>(() => {
+  const mr = props.modelRun
+  if (mr.status === 'downloading') return downloadProgress.value
+  const total = mr.caseRuns.length
+  if (!total) return 0
+  const done = mr.caseRuns.filter((cr) => cr.status === 'completed').length
+  return done / total
+})
+
 function remainingTime(estimatedCompletion: string): string {
   const estCompletion = new Date(estimatedCompletion).getTime()
   const now = Date.now()
@@ -85,53 +114,61 @@ function remainingTime(estimatedCompletion: string): string {
 <template>
   <div class="model-run-row" :class="modelRun.status">
     <button class="row-summary" @click="toggle">
-      <div class="summary-left">
-        <span class="status-icon" :class="modelRun.status">
-          <IconCheck v-if="modelRun.status === 'completed'" :size="14" :stroke-width="2.5" />
-          <IconX
-            v-else-if="modelRun.status === 'failed' || modelRun.status === 'cancelled'"
-            :size="14"
-            :stroke-width="2.5"
-          />
-          <IconLoader2
-            v-else-if="modelRun.status === 'running'"
-            :size="14"
-            :stroke-width="2"
-            class="spin"
-          />
-          <IconClock v-else-if="modelRun.status === 'pending'" :size="14" :stroke-width="2" />
-          <IconCloudDownload
-            v-else-if="modelRun.status === 'downloading'"
-            :size="14"
-            :stroke-width="2"
-          />
-          <IconMinus v-else :size="14" :stroke-width="2" />
-        </span>
-        <span class="model-name">{{ modelLabel(modelRun.modelRef) }}</span>
+      <div class="summary-top">
+        <div class="summary-left">
+          <span class="status-icon" :class="modelRun.status">
+            <IconCheck v-if="modelRun.status === 'completed'" :size="14" :stroke-width="2.5" />
+            <IconX
+              v-else-if="modelRun.status === 'failed' || modelRun.status === 'cancelled'"
+              :size="14"
+              :stroke-width="2.5"
+            />
+            <IconLoader2
+              v-else-if="modelRun.status === 'running' || modelRun.status === 'loading'"
+              :size="14"
+              :stroke-width="2"
+              class="spin"
+            />
+            <IconClock v-else-if="modelRun.status === 'pending'" :size="14" :stroke-width="2" />
+            <IconCloudDownload
+              v-else-if="modelRun.status === 'downloading'"
+              :size="14"
+              :stroke-width="2"
+            />
+            <IconMinus v-else :size="14" :stroke-width="2" />
+          </span>
+          <span class="model-name">{{ modelLabel(modelRun.modelRef) }}</span>
 
-        <span class="summary-stat">
-          <span class="stat-label">Pass</span>
-          <span class="stat-value">{{ passRate(modelRun) }}</span>
-        </span>
-        <span class="summary-stat">
-          <span class="stat-label">Score</span>
-          <span class="stat-value">{{ score(modelRun) }}</span>
-        </span>
+          <span class="summary-stat">
+            <span class="stat-label">Pass</span>
+            <span class="stat-value">{{ passRate(modelRun) }}</span>
+          </span>
+          <span class="summary-stat">
+            <span class="stat-label">Score</span>
+            <span class="stat-value">{{ score(modelRun) }}</span>
+          </span>
+        </div>
+
+        <div class="summary-right">
+          <template v-if="modelRun.status === 'downloading'">
+            <span v-if="modelRun.estimatedCompletion" class="download-eta">
+              {{ remainingTime(modelRun.estimatedCompletion) }}
+            </span>
+            <span class="download-progress">
+              <CircleProgress :progress="downloadProgress" :size="22" :stroke-width="2" />
+            </span>
+          </template>
+          <span v-else class="stat-duration">{{ duration(modelRun) }}</span>
+          <Chevron :expanded="expanded" />
+        </div>
       </div>
 
-      <div class="summary-right">
-        <template v-if="modelRun.status === 'downloading'">
-          <span v-if="modelRun.estimatedCompletion" class="download-eta">
-            {{ remainingTime(modelRun.estimatedCompletion) }}
-          </span>
-          <span class="download-progress">
-            <CircleProgress :progress="downloadProgress" :size="22" :stroke-width="2" />
-          </span>
-        </template>
-        <span v-else class="stat-duration">{{ duration(modelRun) }}</span>
-        <Chevron :expanded="expanded" />
-      </div>
+      <div v-if="currentAction" class="row-action">{{ currentAction }}</div>
     </button>
+
+    <div v-if="isActive" class="row-progress">
+      <div class="row-progress-fill" :style="{ width: `${runProgress * 100}%` }" />
+    </div>
 
     <div v-if="expanded" class="row-details">
       <div v-if="modelRun.aggregate && !modelRun.error" class="metrics-grid">
@@ -216,20 +253,48 @@ function remainingTime(estimatedCompletion: string): string {
 
   .row-summary {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    flex-direction: column;
+    gap: 4px;
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px;
     background: none;
     border: none;
     cursor: pointer;
     transition: background 0.15s;
-    height: 3.5rem;
-
     &:hover {
       background: var(--surface-hover, rgba(255, 255, 255, 0.04));
     }
+  }
+
+  .row-progress {
+    width: 100%;
+    height: 3px;
+    background: var(--border);
+    overflow: hidden;
+
+    .row-progress-fill {
+      height: 100%;
+      background: var(--accent);
+      transition: width 0.2s var(--ease-out);
+    }
+  }
+
+  .summary-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .row-action {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 4px;
   }
 
   .summary-left {
@@ -253,7 +318,8 @@ function remainingTime(estimatedCompletion: string): string {
     &.cancelled {
       color: var(--error);
     }
-    &.running {
+    &.running,
+    &.loading {
       color: var(--accent);
     }
     &.downloading {

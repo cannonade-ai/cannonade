@@ -24,6 +24,7 @@ const mockChat = vi.fn()
 const mockFetchLocalModels = vi.fn()
 const mockDownloadModel = vi.fn()
 const mockGetDownloadStatus = vi.fn()
+const mockLoadModel = vi.fn()
 
 const capabilities = {
   chat: true,
@@ -121,13 +122,15 @@ beforeEach(() => {
   mockChat.mockResolvedValue(makeChatResponse('hello'))
   mockFetchLocalModels.mockResolvedValue([])
   mockDownloadModel.mockResolvedValue({ job_id: '', status: 'already_downloaded' })
+  mockLoadModel.mockResolvedValue(undefined)
   mockGetProvider.mockReturnValue({
     id: 'lmstudio',
     capabilities: capabilities,
     chat: mockChat,
     fetchLocalModels: mockFetchLocalModels,
     downloadModel: mockDownloadModel,
-    getDownloadStatus: mockGetDownloadStatus
+    getDownloadStatus: mockGetDownloadStatus,
+    loadModel: mockLoadModel
   })
 })
 
@@ -153,6 +156,39 @@ describe('executeTestRun – callback sequence', () => {
     })
     const modelStartedCalls = send.mock.calls.filter(([ch]) => ch === RUN.MODEL_STARTED)
     expect(modelStartedCalls).toHaveLength(2)
+  })
+
+  it('loads the model and emits MODEL_LOADING before running cases', async () => {
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(mockLoadModel).toHaveBeenCalledWith('llama-3')
+    expect(send).toHaveBeenCalledWith(RUN.MODEL_LOADING, { modelRunId: 'mr-1' })
+    const channels = send.mock.calls.map(([ch]) => ch)
+    expect(channels.indexOf(RUN.MODEL_LOADING)).toBeLessThan(channels.indexOf(RUN.CASE_STARTED))
+  })
+
+  it('skips loading when the model already has a loaded instance', async () => {
+    mockFetchLocalModels.mockResolvedValue([
+      { id: 'llama-3', loadedInstances: [{ id: 'inst-1' }] }
+    ])
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(mockLoadModel).not.toHaveBeenCalled()
+    const channels = send.mock.calls.map(([ch]) => ch)
+    expect(channels).not.toContain(RUN.MODEL_LOADING)
+  })
+
+  it('fails the model run when loading the model throws', async () => {
+    mockLoadModel.mockRejectedValue(new Error('out of memory'))
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(mockChat).not.toHaveBeenCalled()
+    expect(send).toHaveBeenCalledWith(RUN.MODEL_COMPLETED, {
+      modelRunId: 'mr-1',
+      status: 'failed',
+      aggregate: expect.any(Object),
+      error: 'out of memory'
+    })
   })
 
   it('calls onCaseComplete once per test case per model run', async () => {

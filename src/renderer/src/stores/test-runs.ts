@@ -65,6 +65,12 @@ export const useTestRunsStore = defineStore('test-runs', () => {
       modelRun.estimatedCompletion = estimatedCompletion
     })
 
+    api.onModelLoading(({ modelRunId }) => {
+      const modelRun = findModelRun(modelRunId)
+      if (!modelRun) return
+      modelRun.status = 'loading'
+    })
+
     api.onModelStarted(({ modelRunId, autoDownloaded }) => {
       const modelRun = findModelRun(modelRunId)
       if (!modelRun) return
@@ -76,7 +82,8 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     api.onCaseStarted(({ modelRunId, testCaseId }) => {
       const modelRun = findModelRun(modelRunId)
       const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
-      if (!caseRun) return
+      if (!modelRun || !caseRun) return
+      modelRun.status = 'running'
       caseRun.status = 'running'
       caseRun.startedAt = new Date().toISOString()
     })

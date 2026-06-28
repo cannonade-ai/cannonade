@@ -35,7 +35,14 @@ export interface TestRunConfig {
   parallelRun?: boolean
 }
 
-export type RunStatus = 'pending' | 'downloading' | 'running' | 'completed' | 'failed' | 'cancelled'
+export type RunStatus =
+  | 'pending'
+  | 'downloading'
+  | 'loading'
+  | 'running'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
 
 export interface TestCaseRun {
   testCaseId: string

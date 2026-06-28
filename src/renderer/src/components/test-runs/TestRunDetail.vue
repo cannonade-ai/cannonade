@@ -107,4 +107,8 @@ async function showDeleteConfirm(): Promise<void> {
   flex-direction: column;
   gap: 6px;
 }
+
+:deep(.panel__body) {
+  scrollbar-gutter: stable;
+}
 </style>
