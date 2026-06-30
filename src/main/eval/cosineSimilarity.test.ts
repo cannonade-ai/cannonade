@@ -3,7 +3,8 @@ import type { EvaluationConfig } from '@shared/app/test-suite'
 import { EvaluationResult } from '@shared/app/test-run'
 
 vi.mock('@huggingface/transformers', () => ({
-  pipeline: vi.fn()
+  pipeline: vi.fn(),
+  env: {}
 }))
 
 function embed(...values: number[]): { data: Float32Array } {
