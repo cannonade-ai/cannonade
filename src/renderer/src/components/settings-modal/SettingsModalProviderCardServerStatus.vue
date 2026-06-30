@@ -17,7 +17,6 @@ const port = ref<number | null>(null)
 const loading = ref(false)
 
 const statusLabel = computed((): string => {
-  if (running.value === null) return 'Checking…'
   if (running.value) return `Running ${port.value ? 'on port ' + port.value : ''}`
   return 'Not running'
 })
@@ -47,7 +46,11 @@ onMounted(refresh)
   <div class="server-status">
     <span
       class="server-status__dot"
-      :class="{ running: running === true, stopped: running === false }"
+      :class="{
+        loading: loading,
+        running: !loading && running === true,
+        stopped: !loading && running === false
+      }"
     />
     <span class="server-status__label">{{ statusLabel }}</span>
     <Button
@@ -90,6 +93,7 @@ onMounted(refresh)
     border-radius: 50%;
     background: var(--border);
     flex-shrink: 0;
+    transition: background-color 0.2s ease;
 
     &.running {
       background: var(--success, #4caf50);
@@ -97,6 +101,10 @@ onMounted(refresh)
 
     &.stopped {
       background: var(--text-muted);
+    }
+
+    &.loading {
+      background: var(--accent);
     }
   }
 

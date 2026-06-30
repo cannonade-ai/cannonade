@@ -149,7 +149,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     if (index === -1) return
     testRuns.value.splice(index, 1)
     if (selectedRunId.value === id) {
-      selectedRunId.value = testRuns.value[0]?.id ?? null
+      selectedRunId.value = (testRuns.value[index] ?? testRuns.value[index - 1])?.id ?? null
     }
     await api.deleteTestRun(id)
   }

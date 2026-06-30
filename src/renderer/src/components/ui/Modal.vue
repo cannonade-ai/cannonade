@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
 import InfoTooltip from './InfoTooltip.vue'
+import { useShortcut } from '@renderer/composables/useShortcut'
 
 const props = withDefaults(
   defineProps<{
@@ -28,12 +28,9 @@ function onBackdropClick(): void {
   if (props.closeOnBackdrop) close()
 }
 
-function onKeydown(e: KeyboardEvent): void {
-  if (e.key === 'Escape' && props.modelValue) close()
-}
-
-onMounted(() => document.addEventListener('keydown', onKeydown))
-onUnmounted(() => document.removeEventListener('keydown', onKeydown))
+useShortcut('Escape', () => {
+  if (props.modelValue) close()
+})
 </script>
 
 <template>

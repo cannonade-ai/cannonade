@@ -2,6 +2,7 @@
 import { Button, Select } from '@renderer/components/ui'
 import { IconRefresh, IconSettings, IconAlertCircle } from '@tabler/icons-vue'
 import { computed, watch } from 'vue'
+import { useShortcut } from '@renderer/composables/useShortcut'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import LocalModelCard from '@renderer/components/LocalModelCard.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
@@ -50,6 +51,8 @@ watch(
   },
   { immediate: true }
 )
+
+useShortcut('F5', () => store.loadLocalModels(), { preventDefault: true })
 </script>
 
 <template>

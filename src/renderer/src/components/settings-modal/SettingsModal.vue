@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted } from 'vue'
+import { computed } from 'vue'
 import { IconX, IconAdjustments, IconServer, IconPalette, IconTestPipe } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { Button } from '@renderer/components/ui'
+import { useShortcut } from '@renderer/composables/useShortcut'
 import SettingsModalNav from './SettingsModalNav.vue'
 import SettingsModalGeneral from './SettingsModalGeneral.vue'
 import SettingsModalProviders from './SettingsModalProviders.vue'
@@ -41,12 +42,9 @@ const sectionComponents: Record<SectionId, unknown> = {
   appearance: SettingsModalAppearance
 }
 
-function onKeydown(e: KeyboardEvent): void {
-  if (e.key === 'Escape' && nav.settingsOpen) nav.closeSettings()
-}
-
-onMounted(() => document.addEventListener('keydown', onKeydown))
-onUnmounted(() => document.removeEventListener('keydown', onKeydown))
+useShortcut('Escape', () => {
+  if (nav.settingsOpen) nav.closeSettings()
+})
 </script>
 
 <template>

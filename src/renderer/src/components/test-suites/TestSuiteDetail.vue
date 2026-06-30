@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { IconArrowLeft } from '@tabler/icons-vue'
 import { Button } from '@renderer/components/ui'
+import { useShortcut } from '@renderer/composables/useShortcut'
 import type { TestSuite, TestCase } from '@shared/app/test-suite'
 import TestSuiteInfoPanel from './TestSuiteInfoPanel.vue'
 import TestSuiteRunConfigPanel from './TestSuiteRunConfigPanel.vue'
@@ -84,12 +85,7 @@ watch(
 watch([() => suite.value.name, () => suite.value.description], scheduleSave)
 watch(() => suite.value.defaultRunConfig, scheduleSave, { deep: true })
 
-function onKeyDown(e: KeyboardEvent): void {
-  if (e.key === 'Escape') emit('back')
-}
-
-onMounted(() => window.addEventListener('keydown', onKeyDown))
-onUnmounted(() => window.removeEventListener('keydown', onKeyDown))
+useShortcut('Escape', () => emit('back'))
 </script>
 
 <template>
