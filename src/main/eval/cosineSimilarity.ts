@@ -1,4 +1,6 @@
-﻿import type { FeatureExtractionPipeline } from '@huggingface/transformers'
+﻿import { app } from 'electron'
+import { join } from 'node:path'
+import type { FeatureExtractionPipeline } from '@huggingface/transformers'
 import type { EvaluationConfig } from '@shared/app/test-suite'
 import type { EvaluationResult } from '@shared/app/test-run'
 
@@ -8,7 +10,8 @@ let extractor: FeatureExtractionPipeline | null = null
 
 async function getExtractor(): Promise<FeatureExtractionPipeline> {
   if (!extractor) {
-    const { pipeline } = await import('@huggingface/transformers')
+    const { pipeline, env } = await import('@huggingface/transformers')
+    env.cacheDir = join(app.getPath('userData'), 'models')
     extractor = (await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
       dtype: 'q8'
     })) as FeatureExtractionPipeline

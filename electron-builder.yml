@@ -3,22 +3,28 @@ productName: Cannonade
 directories:
   buildResources: build
 files:
+  - '!dist/**'
   - '!**/.vscode/*'
   - '!src/*'
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - '!node_modules/onnxruntime-web/**'
 asarUnpack:
   - resources/**
 win:
   executableName: Cannonade
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,linux}/**'
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
@@ -29,6 +35,8 @@ mac:
 dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
+  files:
+    - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,darwin}/**'
   target:
     - AppImage
     - snap
