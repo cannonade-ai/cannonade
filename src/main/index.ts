@@ -4,15 +4,20 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerHandlers } from './ipc/handlers'
 import { initAppSettings } from './ipc/settings-handlers'
 import { initSecrets } from './secrets/secret-store'
+import { createWindowStateManager } from './window-state'
 import icon from '../../resources/icon.png?asset'
 
 const MIN_ZOOM = -3.0
 const MAX_ZOOM = 3.0
 
 function createWindow(): BrowserWindow {
+  const windowState = createWindowStateManager()
+
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    x: windowState.bounds.x,
+    y: windowState.bounds.y,
+    width: windowState.bounds.width,
+    height: windowState.bounds.height,
     minWidth: 1024,
     minHeight: 576,
     show: false,
@@ -25,6 +30,8 @@ function createWindow(): BrowserWindow {
       sandbox: false
     }
   })
+
+  windowState.manage(mainWindow)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
