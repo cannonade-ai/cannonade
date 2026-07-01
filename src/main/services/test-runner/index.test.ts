@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { executeTestRun } from './test-runner'
+import { executeTestRun } from './index'
 import { RUN } from '@shared/app/ipc-channels'
 import type { TestRun, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type {
@@ -10,12 +10,12 @@ import type {
 } from '@shared/app/test-suite'
 import type { ChatResponse } from '@shared/provider/chat'
 
-vi.mock('../../core/providers/registry')
-vi.mock('../eval/evaluator')
-vi.mock('../ipc/test-run-handlers', () => ({ saveTestRun: vi.fn() }))
+vi.mock('../../../core/providers/registry')
+vi.mock('../../eval/evaluator')
+vi.mock('../../ipc/test-run-handlers', () => ({ saveTestRun: vi.fn() }))
 
-import { getProvider } from '../../core/providers/registry'
-import { evaluateAll } from '../eval/evaluator'
+import { getProvider } from '../../../core/providers/registry'
+import { evaluateAll } from '../../eval/evaluator'
 
 const mockGetProvider = vi.mocked(getProvider)
 const mockEvaluate = vi.mocked(evaluateAll)
