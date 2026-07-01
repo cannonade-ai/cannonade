@@ -50,6 +50,7 @@ export interface CaseStartedPayload {
 export interface CaseCompletedPayload {
   modelRunId: string
   testCaseId: string
+  status?: RunStatus
   result: TestCaseResult
   aggregate: AggregateMetrics
 }

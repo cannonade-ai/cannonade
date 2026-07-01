@@ -177,7 +177,8 @@ function onSubmit(): void {
       unloadModelsBeforeRun: capabilities.value?.loadModel ? form.unloadModelsBeforeRun : undefined,
       unloadModelsAfterRun: capabilities.value?.loadModel ? form.unloadModelsAfterRun : undefined,
       parallelRun:
-        capabilities.value && !capabilities.value.localModels ? form.parallelRun : undefined
+        capabilities.value && !capabilities.value.localModels ? form.parallelRun : undefined,
+      defaultTestCaseTimeout: settingsStore.defaultTestCaseTimeout
     },
     suite
   )

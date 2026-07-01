@@ -64,10 +64,11 @@ function toChatMessages(request: ChatRequest): Message[] {
   return messages
 }
 
-export function toChatRequest(request: ChatRequest): OllamaChatRequest & { stream?: false } {
+export function toChatRequest(request: ChatRequest): OllamaChatRequest & { stream: true } {
   return {
     model: request.model,
     messages: toChatMessages(request),
+    stream: true,
     options: {
       temperature: request.temperature,
       top_p: request.top_p,
@@ -81,22 +82,26 @@ export function toChatRequest(request: ChatRequest): OllamaChatRequest & { strea
   }
 }
 
-export function toChatResponse(response: OllamaChatResponse): ChatResponse {
+export function toChatResponse(
+  finalChunk: OllamaChatResponse,
+  content: string,
+  thinking: string
+): ChatResponse {
   const output: OutputItem[] = []
-  if (response.message.thinking) {
-    output.push({ type: 'reasoning', content: response.message.thinking })
+  if (thinking) {
+    output.push({ type: 'reasoning', content: thinking })
   }
-  output.push({ type: 'message', content: response.message.content })
+  output.push({ type: 'message', content })
 
   return {
-    model_instance_id: response.model,
+    model_instance_id: finalChunk.model,
     output,
     stats: {
-      input_tokens: response.prompt_eval_count,
-      total_output_tokens: response.eval_count,
+      input_tokens: finalChunk.prompt_eval_count,
+      total_output_tokens: finalChunk.eval_count,
       reasoning_output_tokens: 0,
-      tokens_per_second: response.eval_count / (response.eval_duration / 1e9),
-      time_to_first_token_seconds: response.prompt_eval_duration / 1e9
+      tokens_per_second: finalChunk.eval_count / (finalChunk.eval_duration / 1e9),
+      time_to_first_token_seconds: finalChunk.prompt_eval_duration / 1e9
     }
   }
 }

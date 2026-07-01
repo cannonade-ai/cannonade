@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { executeTestRun } from './test-runner'
+import { executeTestRun } from './index'
 import { RUN } from '@shared/app/ipc-channels'
 import type { TestRun, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type {
@@ -10,12 +10,12 @@ import type {
 } from '@shared/app/test-suite'
 import type { ChatResponse } from '@shared/provider/chat'
 
-vi.mock('../../core/providers/registry')
-vi.mock('../eval/evaluator')
-vi.mock('../ipc/test-run-handlers', () => ({ saveTestRun: vi.fn() }))
+vi.mock('../../../core/providers/registry')
+vi.mock('../../eval/evaluator')
+vi.mock('../../ipc/test-run-handlers', () => ({ saveTestRun: vi.fn() }))
 
-import { getProvider } from '../../core/providers/registry'
-import { evaluateAll } from '../eval/evaluator'
+import { getProvider } from '../../../core/providers/registry'
+import { evaluateAll } from '../../eval/evaluator'
 
 const mockGetProvider = vi.mocked(getProvider)
 const mockEvaluate = vi.mocked(evaluateAll)
@@ -168,9 +168,7 @@ describe('executeTestRun – callback sequence', () => {
   })
 
   it('skips loading when the model already has a loaded instance', async () => {
-    mockFetchLocalModels.mockResolvedValue([
-      { id: 'llama-3', loadedInstances: [{ id: 'inst-1' }] }
-    ])
+    mockFetchLocalModels.mockResolvedValue([{ id: 'llama-3', loadedInstances: [{ id: 'inst-1' }] }])
     const send = makeSend()
     await executeTestRun(makeRun(), makeSuite(), send)
     expect(mockLoadModel).not.toHaveBeenCalled()
@@ -215,7 +213,10 @@ describe('executeTestRun – model key resolution', () => {
   it('uses modelKey for installed model refs', async () => {
     const modelRun = makeModelRun({ modelRef: { source: 'installed', modelKey: 'llama-3-8b' } })
     await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
-    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ model: 'llama-3-8b' }))
+    expect(mockChat).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'llama-3-8b' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
+    )
   })
 
   it('uses modelId for huggingface model refs', async () => {
@@ -232,7 +233,10 @@ describe('executeTestRun – model key resolution', () => {
     ])
     const modelRun = makeModelRun({ modelRef: { source: 'huggingface', modelId: 'meta/llama-3' } })
     await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
-    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ model: 'meta/llama-3' }))
+    expect(mockChat).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'meta/llama-3' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
+    )
   })
 
   it('downloads the raw model id and resolves the key for registry model refs', async () => {
@@ -254,7 +258,10 @@ describe('executeTestRun – model key resolution', () => {
     })
     await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
     expect(mockDownloadModel).toHaveBeenCalledWith('liquid/lfm2-350m')
-    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ model: 'liquid/lfm2-350m' }))
+    expect(mockChat).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'liquid/lfm2-350m' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
+    )
   })
 })
 
@@ -262,7 +269,10 @@ describe('executeTestRun – request building', () => {
   it('builds a completion request from prompt input', async () => {
     const testCase = makeTestCase({ input: { type: 'completion', prompt: 'Say hello' } })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
-    expect(mockChat).toHaveBeenCalledWith(expect.objectContaining({ input: 'Say hello' }))
+    expect(mockChat).toHaveBeenCalledWith(
+      expect.objectContaining({ input: 'Say hello' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
+    )
   })
 
   it('builds a chat request joining non-system messages', async () => {
@@ -278,7 +288,8 @@ describe('executeTestRun – request building', () => {
     })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
     expect(mockChat).toHaveBeenCalledWith(
-      expect.objectContaining({ input: 'Hello\nHi\nHow are you?' })
+      expect.objectContaining({ input: 'Hello\nHi\nHow are you?' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
 
@@ -297,7 +308,8 @@ describe('executeTestRun – request building', () => {
       expect.objectContaining({
         system_prompt: 'You are a helpful assistant.',
         input: 'Hello'
-      })
+      }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
 
@@ -311,7 +323,8 @@ describe('executeTestRun – request building', () => {
     })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
     expect(mockChat).toHaveBeenCalledWith(
-      expect.objectContaining({ temperature: 0.7, top_p: 0.9, max_output_tokens: 256 })
+      expect.objectContaining({ temperature: 0.7, top_p: 0.9, max_output_tokens: 256 }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
 })
@@ -532,6 +545,73 @@ describe('executeTestRun – error handling', () => {
     const send = makeSend()
     await executeTestRun(makeRun(), makeSuite(), send)
     expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'completed' })
+  })
+})
+
+describe('executeTestRun – timeout and cancellation', () => {
+  it('passes the case timeoutMs to abort the chat and records a timeout error', async () => {
+    const testCase = makeTestCase({ id: 'tc-1', timeoutMs: 20 })
+    mockChat.mockImplementation(
+      (_req, opts?: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          opts?.signal?.addEventListener('abort', () => reject(new Error('should not surface')))
+        })
+    )
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), send)
+    const call = send.mock.calls.find(([ch]) => ch === RUN.CASE_COMPLETED)
+    expect((call?.[1] as { result: { error: string } }).result.error).toMatch(
+      /Timed out after 20ms/
+    )
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'failed' })
+  })
+
+  it('falls back to the run config default timeout when the case has none', async () => {
+    const testCase = makeTestCase({ id: 'tc-1' })
+    mockChat.mockImplementation(
+      (_req, opts?: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          opts?.signal?.addEventListener('abort', () => reject(new Error('aborted')))
+        })
+    )
+    const send = makeSend()
+    const run = makeRun([makeModelRun()], [testCase])
+    run.config.defaultTestCaseTimeout = 15
+    await executeTestRun(run, makeSuite([testCase]), send)
+    const call = send.mock.calls.find(([ch]) => ch === RUN.CASE_COMPLETED)
+    expect((call?.[1] as { result: { error: string } }).result.error).toMatch(
+      /Timed out after 15ms/
+    )
+  })
+
+  it('does not time out when no timeout is configured', async () => {
+    const send = makeSend()
+    await executeTestRun(makeRun(), makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'completed' })
+  })
+
+  it('cancels the in-flight case and stops the run when the signal aborts', async () => {
+    const controller = new AbortController()
+    const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
+    mockChat.mockImplementation(
+      (_req, opts?: { signal?: AbortSignal }) =>
+        new Promise((_resolve, reject) => {
+          controller.abort()
+          opts?.signal?.addEventListener('abort', () => reject(new Error('aborted')))
+        })
+    )
+    const send = makeSend()
+    await executeTestRun(
+      makeRun([makeModelRun()], testCases),
+      makeSuite(testCases),
+      send,
+      controller.signal
+    )
+    const caseCompletedCalls = send.mock.calls.filter(([ch]) => ch === RUN.CASE_COMPLETED)
+    expect(caseCompletedCalls).toHaveLength(1)
+    expect(caseCompletedCalls[0][1]).toMatchObject({ status: 'cancelled', testCaseId: 'tc-1' })
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'cancelled' })
+    expect(mockChat).toHaveBeenCalledTimes(1)
   })
 })
 

@@ -88,14 +88,14 @@ export const useTestRunsStore = defineStore('test-runs', () => {
       caseRun.startedAt = new Date().toISOString()
     })
 
-    api.onCaseCompleted(({ modelRunId, testCaseId, result, aggregate }) => {
+    api.onCaseCompleted(({ modelRunId, testCaseId, status, result, aggregate }) => {
       const modelRun = findModelRun(modelRunId)
       const caseRun = modelRun?.caseRuns.find((c) => c.testCaseId === testCaseId)
       if (modelRun) {
         modelRun.aggregate = aggregate
       }
       if (!caseRun) return
-      caseRun.status = 'completed'
+      caseRun.status = status ?? 'completed'
       caseRun.completedAt = new Date().toISOString()
       caseRun.result = result
     })
@@ -149,7 +149,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     if (index === -1) return
     testRuns.value.splice(index, 1)
     if (selectedRunId.value === id) {
-      selectedRunId.value = testRuns.value[0]?.id ?? null
+      selectedRunId.value = (testRuns.value[index] ?? testRuns.value[index - 1])?.id ?? null
     }
     await api.deleteTestRun(id)
   }

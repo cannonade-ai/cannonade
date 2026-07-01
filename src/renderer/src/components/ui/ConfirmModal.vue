@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
+import { useShortcut } from '@renderer/composables/useShortcut'
 import Modal from './Modal.vue'
 import Button from './Button.vue'
 
@@ -11,6 +12,10 @@ const visible = computed({
   set: (v) => {
     if (!v) store.respond(false)
   }
+})
+
+useShortcut(['Enter', 'Ctrl+Enter'], () => {
+  if (store.current !== null) store.respond(true)
 })
 </script>
 

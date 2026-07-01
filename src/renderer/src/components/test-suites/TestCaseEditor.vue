@@ -10,6 +10,7 @@ import {
   Textarea
 } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
+import { useShortcut } from '@renderer/composables/useShortcut'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
 import { IconPlus, IconTrash, IconX } from '@tabler/icons-vue'
@@ -117,6 +118,14 @@ async function onDelete(): Promise<void> {
   })
   if (confirmed) emit('delete')
 }
+
+useShortcut(
+  'Ctrl+Delete',
+  () => {
+    if (!props.isNew) onDelete()
+  },
+  { preventDefault: true }
+)
 </script>
 
 <template>
@@ -128,7 +137,13 @@ async function onDelete(): Promise<void> {
     </template>
 
     <template #footer>
-      <Button v-if="!isNew" type="danger-outline" :icon="IconTrash" @click="onDelete">
+      <Button
+        v-if="!isNew"
+        v-tooltip="'Ctrl + Delete'"
+        type="danger-outline"
+        :icon="IconTrash"
+        @click="onDelete"
+      >
         Delete
       </Button>
       <div class="footer-right">

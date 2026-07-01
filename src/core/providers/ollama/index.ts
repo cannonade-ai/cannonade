@@ -1,7 +1,8 @@
 import { Ollama } from 'ollama'
+import type { ChatResponse as OllamaChatResponse } from 'ollama'
 import type { LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
-import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
 import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/provider/ipc-contracts'
 
 import { authHeader } from '@shared/provider/api-key'
@@ -37,11 +38,28 @@ export function createOllamaProvider(
       return listRes.models.map((m) => toLocalModel(m, psRes.models, instanceId))
     },
 
-    async chat(request: ChatRequest): Promise<ChatResponse> {
+    async chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
       const ollamaRequest = toChatRequest(request)
       console.log('[ollama] chat body:', JSON.stringify(ollamaRequest, null, 2))
-      const response = await client.chat(ollamaRequest)
-      return toChatResponse(response)
+      const stream = await client.chat(ollamaRequest)
+
+      const onAbort = (): void => stream.abort()
+      options?.abortSignal?.addEventListener('abort', onAbort)
+
+      try {
+        let content = ''
+        let thinking = ''
+        let finalChunk: OllamaChatResponse | undefined
+        for await (const chunk of stream) {
+          content += chunk.message.content
+          if (chunk.message.thinking) thinking += chunk.message.thinking
+          finalChunk = chunk
+        }
+        if (!finalChunk) throw new Error('[ollama] chat stream ended without a response')
+        return toChatResponse(finalChunk, content, thinking)
+      } finally {
+        options?.abortSignal?.removeEventListener('abort', onAbort)
+      }
     },
 
     async deleteModel(modelId: string): Promise<void> {

@@ -4,6 +4,7 @@ import { IconPlayerStop, IconTrash, IconEdit } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
 import { Button, Panel } from '@renderer/components/ui'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
+import { useShortcut } from '@renderer/composables/useShortcut'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { useNavigationStore } from '@renderer/stores/navigation'
@@ -43,6 +44,8 @@ async function showDeleteConfirm(): Promise<void> {
   })
   if (ok) store.deleteRun(props.run.id)
 }
+
+useShortcut('Ctrl+Delete', () => showDeleteConfirm(), { preventDefault: true })
 </script>
 
 <template>
@@ -61,7 +64,14 @@ async function showDeleteConfirm(): Promise<void> {
       <Button v-if="isActive" type="danger-outline" :icon="IconPlayerStop" @click="showStopConfirm">
         Stop
       </Button>
-      <Button type="danger-outline" :icon="IconTrash" @click="showDeleteConfirm">Delete</Button>
+      <Button
+        v-tooltip="'Ctrl + Delete'"
+        type="danger-outline"
+        :icon="IconTrash"
+        @click="showDeleteConfirm"
+      >
+        Delete
+      </Button>
     </template>
 
     <!--<div class="section-label">Model Results</div>-->

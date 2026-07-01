@@ -101,3 +101,7 @@ export interface ChatResponse {
   stats: ChatStats
   response_id?: string
 }
+
+export interface ChatOptions {
+  abortSignal?: AbortSignal
+}

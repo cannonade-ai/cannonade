@@ -4,13 +4,20 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerHandlers } from './ipc/handlers'
 import { initAppSettings } from './ipc/settings-handlers'
 import { initSecrets } from './secrets/secret-store'
+import { createWindowStateManager } from './window-state'
 import icon from '../../resources/icon.png?asset'
 
-function createWindow(): void {
-  // Create the browser window.
+const MIN_ZOOM = -3.0
+const MAX_ZOOM = 3.0
+
+function createWindow(): BrowserWindow {
+  const windowState = createWindowStateManager()
+
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    x: windowState.bounds.x,
+    y: windowState.bounds.y,
+    width: windowState.bounds.width,
+    height: windowState.bounds.height,
     minWidth: 1024,
     minHeight: 576,
     show: false,
@@ -24,8 +31,33 @@ function createWindow(): void {
     }
   })
 
+  windowState.manage(mainWindow)
+
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+  })
+
+  function setZoom(level: number): void {
+    mainWindow.webContents.setZoomLevel(Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, level)))
+  }
+
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    if (input.type !== 'keyDown' || (!input.control && !input.meta)) return
+    const level = mainWindow.webContents.getZoomLevel()
+    if (input.key === '+' || input.key === '=') {
+      setZoom(level + 0.5)
+      event.preventDefault()
+    } else if (input.key === '-') {
+      setZoom(level - 0.5)
+      event.preventDefault()
+    } else if (input.key === '0') {
+      setZoom(0)
+      event.preventDefault()
+    }
+  })
+
+  mainWindow.webContents.on('zoom-changed', (_event, direction) => {
+    setZoom(mainWindow.webContents.getZoomLevel() + (direction === 'in' ? 0.5 : -0.5))
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -40,6 +72,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  return mainWindow
 }
 
 // This method will be called when Electron has finished
@@ -68,14 +102,9 @@ app.whenReady().then(async () => {
   })
 })
 
-// Quit when all windows are closed, except on macOS. There, it's common
-// for applications and their menu bar to stay active until the user quits
-// explicitly with Cmd + Q.
+// Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
 })
-
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.

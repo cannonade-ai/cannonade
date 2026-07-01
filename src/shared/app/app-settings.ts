@@ -9,7 +9,7 @@ export interface AppSettings {
   lastSuiteId: string | null
   autoDeleteModels: boolean
   parallelRuns: boolean
-  defaultTestTimeout: number
+  defaultTestCaseTimeout: number
   configuredProviders: ConfiguredProvider[]
   onboardingComplete: boolean
 }
@@ -21,7 +21,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   lastSuiteId: null,
   autoDeleteModels: false,
   parallelRuns: false,
-  defaultTestTimeout: 42000,
+  defaultTestCaseTimeout: 0,
   configuredProviders: [],
   onboardingComplete: false
 }
