@@ -33,6 +33,7 @@ export interface TestRunConfig {
   unloadModelsBeforeRun?: boolean
   unloadModelsAfterRun?: boolean
   parallelRun?: boolean
+  defaultTestCaseTimeout?: number
 }
 
 export type RunStatus =

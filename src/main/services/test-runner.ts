@@ -10,10 +10,61 @@ import type {
   AggregateMetrics,
   RunConfig
 } from '@shared/app/test-suite'
-import type { ChatRequest, OutputItem } from '@shared/provider/chat'
+import type { ChatRequest, ChatResponse, OutputItem } from '@shared/provider/chat'
 import type { LocalModel } from '@shared/provider/local-model'
+import type { LLMProvider } from '../../core/providers/base'
 
 type SendEvent = (channel: string, payload: unknown) => void
+
+class ChatTimeoutError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'ChatTimeoutError'
+  }
+}
+
+async function runChat(
+  provider: LLMProvider,
+  request: ChatRequest,
+  runSignal: AbortSignal,
+  timeoutMs: number
+): Promise<ChatResponse> {
+  if (!provider.chat) throw new Error(`${provider.id}: chat not supported`)
+  if (runSignal.aborted) throw new DOMException('Aborted', 'AbortError')
+
+  const controller = new AbortController()
+  const onRunAbort = (): void => controller.abort()
+  runSignal.addEventListener('abort', onRunAbort)
+
+  let timedOut = false
+  const timer =
+    timeoutMs > 0
+      ? setTimeout(() => {
+          timedOut = true
+          controller.abort()
+        }, timeoutMs)
+      : undefined
+
+  const abortPromise = new Promise<never>((_, reject) => {
+    controller.signal.addEventListener('abort', () => {
+      if (timedOut) {
+        reject(new ChatTimeoutError(`Timed out after ${timeoutMs}ms`))
+      } else {
+        reject(new DOMException('Aborted', 'AbortError'))
+      }
+    })
+  })
+
+  const chatPromise = provider.chat(request, { abortSignal: controller.signal })
+  chatPromise.catch(() => {})
+
+  try {
+    return await Promise.race([chatPromise, abortPromise])
+  } finally {
+    if (timer) clearTimeout(timer)
+    runSignal.removeEventListener('abort', onRunAbort)
+  }
+}
 
 const HF_BASE_URL = 'https://huggingface.co/'
 const POLL_INTERVAL_MS = 1000
@@ -171,12 +222,13 @@ export async function executeTestRun(
   run: TestRun,
   suite: TestSuite,
   send: SendEvent,
-  signal: AbortSignal = new AbortController().signal
+  abortSignal: AbortSignal = new AbortController().signal
 ): Promise<void> {
   const runState: TestRun = structuredClone(run)
   const providerId = run.config.provider
   const provider = getProvider(providerId)
   const capabilities = provider.capabilities
+  const defaultTimeoutMs = run.config.defaultTestCaseTimeout ?? 0
 
   runState.status = 'running'
   runState.startedAt = new Date().toISOString()
@@ -210,7 +262,7 @@ export async function executeTestRun(
   }
 
   for (const modelRun of run.modelRuns) {
-    if (signal.aborted) break
+    if (abortSignal.aborted) break
 
     const modelRunState = runState.modelRuns.find((m) => m.id === modelRun.id)!
     const results: TestCaseResult[] = []
@@ -233,13 +285,13 @@ export async function executeTestRun(
           modelRun.id,
           downloadTarget,
           send,
-          signal
+          abortSignal
         )
       }
     } catch (err) {
       fatalError = err instanceof Error ? err.message : String(err)
       overallFailed = true
-      modelRunState.status = signal.aborted ? 'cancelled' : 'failed'
+      modelRunState.status = abortSignal.aborted ? 'cancelled' : 'failed'
       modelRunState.completedAt = new Date().toISOString()
       modelRunState.aggregate = computeAggregate(results, suite.testCases)
       modelRunState.error = fatalError
@@ -252,7 +304,7 @@ export async function executeTestRun(
       continue
     }
 
-    if (signal.aborted) break
+    if (abortSignal.aborted) break
 
     modelRunState.status = 'running'
     modelRunState.autoDownloaded = autoDownloaded
@@ -289,7 +341,7 @@ export async function executeTestRun(
         } catch (err) {
           fatalError = err instanceof Error ? err.message : String(err)
           overallFailed = true
-          modelRunState.status = signal.aborted ? 'cancelled' : 'failed'
+          modelRunState.status = abortSignal.aborted ? 'cancelled' : 'failed'
           modelRunState.completedAt = new Date().toISOString()
           modelRunState.aggregate = computeAggregate(results, suite.testCases)
           modelRunState.error = fatalError
@@ -301,7 +353,7 @@ export async function executeTestRun(
           })
           continue
         }
-        if (signal.aborted) break
+        if (abortSignal.aborted) break
         modelRunState.status = 'running'
       }
     }
@@ -312,7 +364,7 @@ export async function executeTestRun(
 
     try {
       for (const testCase of suite.testCases) {
-        if (signal.aborted) break
+        if (abortSignal.aborted) break
 
         const caseRunState = modelRunState.caseRuns.find((c) => c.testCaseId === testCase.id)!
         caseRunState.status = 'running'
@@ -321,10 +373,10 @@ export async function executeTestRun(
         console.log('[test-runner] Starting test case: ', testCase.name)
 
         const request = buildRequest(testCase, modelKey, suite.defaultRunConfig)
+        const timeoutMs = testCase.timeoutMs ?? defaultTimeoutMs
 
         try {
-          if (!provider.chat) throw new Error(`${providerId}: chat not supported`)
-          const response = await provider.chat(request)
+          const response = await runChat(provider, request, abortSignal, timeoutMs)
           if (!modelInstanceId) modelInstanceId = response.model_instance_id
           console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
 
@@ -358,6 +410,29 @@ export async function executeTestRun(
           })
           console.log('[test-runner] Test case completed:', result)
         } catch (err) {
+          if (abortSignal.aborted) {
+            const result: TestCaseResult = {
+              testCaseId: testCase.id,
+              output: '',
+              metrics: {},
+              passed: false,
+              evalResults: [],
+              error: 'Cancelled'
+            }
+            caseRunState.status = 'cancelled'
+            caseRunState.completedAt = new Date().toISOString()
+            caseRunState.result = result
+            send(RUN.CASE_COMPLETED, {
+              modelRunId: modelRun.id,
+              testCaseId: testCase.id,
+              status: 'cancelled',
+              result,
+              aggregate: modelRunState.aggregate ?? computeAggregate(results)
+            })
+            console.log('[test-runner] Test case cancelled:', testCase.name)
+            break
+          }
+
           const error = err instanceof Error ? err.message : String(err)
           const result: TestCaseResult = {
             testCaseId: testCase.id,
@@ -388,7 +463,7 @@ export async function executeTestRun(
       console.log('[test-runner] Test case completed with fatal error:', fatalError)
     }
 
-    const modelStatus: RunStatus = signal.aborted
+    const modelStatus: RunStatus = abortSignal.aborted
       ? 'cancelled'
       : fatalError || overallFailed
         ? 'failed'
@@ -433,7 +508,7 @@ export async function executeTestRun(
     }
   }
 
-  const finalStatus: RunStatus = signal.aborted
+  const finalStatus: RunStatus = abortSignal.aborted
     ? 'cancelled'
     : overallFailed
       ? 'failed'

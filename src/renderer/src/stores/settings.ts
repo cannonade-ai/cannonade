@@ -20,7 +20,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const lastSuiteId = ref<string | null>(DEFAULTS.lastSuiteId)
   const autoDeleteModels = ref(DEFAULTS.autoDeleteModels)
   const parallelRuns = ref(DEFAULTS.parallelRuns)
-  const defaultTestTimeout = ref(DEFAULTS.defaultTestTimeout)
+  const defaultTestCaseTimeout = ref(DEFAULTS.defaultTestCaseTimeout)
   const onboardingComplete = ref(DEFAULTS.onboardingComplete)
   const appVersion = ref('')
   const suitesDir = ref('')
@@ -37,7 +37,7 @@ export const useSettingsStore = defineStore('settings', () => {
       lastSuiteId,
       autoDeleteModels,
       parallelRuns,
-      defaultTestTimeout,
+      defaultTestCaseTimeout,
       onboardingComplete,
       () => providersStore.configuredProviders
     ],
@@ -49,7 +49,7 @@ export const useSettingsStore = defineStore('settings', () => {
         lastSuiteId: lastSuiteId.value,
         autoDeleteModels: autoDeleteModels.value,
         parallelRuns: parallelRuns.value,
-        defaultTestTimeout: defaultTestTimeout.value,
+        defaultTestCaseTimeout: defaultTestCaseTimeout.value,
         configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p })),
         onboardingComplete: onboardingComplete.value
       })
@@ -70,7 +70,7 @@ export const useSettingsStore = defineStore('settings', () => {
     lastSuiteId.value = appSettings.lastSuiteId
     autoDeleteModels.value = appSettings.autoDeleteModels
     parallelRuns.value = appSettings.parallelRuns
-    defaultTestTimeout.value = appSettings.defaultTestTimeout
+    defaultTestCaseTimeout.value = appSettings.defaultTestCaseTimeout
     onboardingComplete.value = appSettings.onboardingComplete ?? false
     providersStore.init(appSettings.configuredProviders ?? [])
   }
@@ -85,7 +85,7 @@ export const useSettingsStore = defineStore('settings', () => {
     language.value = DEFAULTS.language
     autoDeleteModels.value = DEFAULTS.autoDeleteModels
     parallelRuns.value = DEFAULTS.parallelRuns
-    defaultTestTimeout.value = DEFAULTS.defaultTestTimeout
+    defaultTestCaseTimeout.value = DEFAULTS.defaultTestCaseTimeout
     onboardingComplete.value = false
     providersStore.init([])
   }
@@ -101,7 +101,7 @@ export const useSettingsStore = defineStore('settings', () => {
     lastSuiteId,
     autoDeleteModels,
     parallelRuns,
-    defaultTestTimeout,
+    defaultTestCaseTimeout,
     onboardingComplete,
     appVersion,
     suitesDir,

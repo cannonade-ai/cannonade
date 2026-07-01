@@ -12,7 +12,7 @@ import type {
   ServerStatusResponse
 } from '@shared/provider/ipc-contracts'
 import type { ErrorBody, LmStudioSettings, ModelListResponse, Model } from './types'
-import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
+import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
 import { authHeader } from '@shared/provider/api-key'
 import {
   toLocalModel,
@@ -98,13 +98,14 @@ export function createLmStudioProvider(
       return (await fetchRawModels()).map((m) => toLocalModel(m, instanceId))
     },
 
-    async chat(request: ChatRequest): Promise<ChatResponse> {
+    async chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
       const body = toChatRequest(request)
       console.log('[lmstudio] chat body:', JSON.stringify(body, null, 2))
       const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
+        signal: options?.abortSignal
       })
       return (await res.json()) as ChatResponse
     },

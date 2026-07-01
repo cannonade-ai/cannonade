@@ -25,14 +25,14 @@ const settings = useSettingsStore()
     </SettingsModalRow>
     <SettingsModalRow label="Default test timeout" hint="Per-case timeout in milliseconds">
       <NumberInput
-        :model-value="settings.defaultTestTimeout"
-        :min="1000"
+        :model-value="settings.defaultTestCaseTimeout"
+        :min="0"
         :step="1000"
         align-right
         class="input-sm"
         @update:model-value="
           (v) => {
-            if (v !== undefined) settings.defaultTestTimeout = v
+            if (v !== undefined) settings.defaultTestCaseTimeout = v
           }
         "
       />
