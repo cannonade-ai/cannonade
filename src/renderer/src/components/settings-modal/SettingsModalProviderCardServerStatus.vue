@@ -91,26 +91,48 @@ onMounted(refresh)
     width: 7px;
     height: 7px;
     border-radius: 50%;
-    background: var(--border);
+    background-color: var(--border);
     flex-shrink: 0;
-    transition: background-color 0.2s ease;
+    transition: background-color 0.5s ease;
 
     &.running {
-      background: var(--success, #4caf50);
+      background-color: var(--success, #4caf50);
     }
 
     &.stopped {
-      background: var(--text-muted);
+      background-color: var(--text-muted);
     }
 
     &.loading {
-      background: var(--accent);
+      background-color: var(--accent);
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        background-color: var(--accent);
+        animation: wave 1.25s ease-out infinite;
+      }
     }
   }
 
   &__label {
     font-size: var(--text-xs);
     color: var(--text-muted);
+  }
+}
+
+@keyframes wave {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
   }
 }
 </style>
