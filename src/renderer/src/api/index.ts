@@ -2,6 +2,7 @@ import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { TestSuite } from '@shared/app/test-suite'
+import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
@@ -49,6 +50,7 @@ export const api = {
   getAppVersion: (): Promise<string> => window.api.getAppVersion(),
   getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
   getRunsDir: (): Promise<string> => window.api.getRunsDir(),
+  getPromptsDir: (): Promise<string> => window.api.getPromptsDir(),
   openPath: (path: string): Promise<void> => window.api.openPath(path),
   minimize: (): void => window.api.minimize(),
   maximize: (): void => window.api.maximize(),
@@ -56,6 +58,9 @@ export const api = {
   listSuites: (): Promise<TestSuite[]> => window.api.listSuites(),
   saveSuite: (suite: TestSuite): Promise<void> => window.api.saveSuite(suite),
   deleteSuite: (id: string): Promise<void> => window.api.deleteSuite(id),
+  listPrompts: (): Promise<Prompt[]> => window.api.listPrompts(),
+  savePrompt: (prompt: Prompt): Promise<void> => window.api.savePrompt(prompt),
+  deletePrompt: (id: string): Promise<void> => window.api.deletePrompt(id),
   loadAppSettings: (): Promise<AppSettings> => window.api.loadAppSettings(),
   saveAppSettings: (settings: AppSettings): Promise<void> => window.api.saveAppSettings(settings),
   listTestRuns: (): Promise<TestRun[]> => window.api.listTestRuns(),

@@ -13,12 +13,19 @@ export interface TestSuite {
   testCases: TestCase[]
 }
 
+export interface TestCasePromptRef {
+  promptId: string
+  version: number | 'latest'
+}
+
 export interface TestCase {
   id: string
   name: string
   description?: string
 
   input: TestInput
+
+  promptRef?: TestCasePromptRef
 
   evaluations: EvaluationConfig[]
   passingLogic: 'all' | 'any'

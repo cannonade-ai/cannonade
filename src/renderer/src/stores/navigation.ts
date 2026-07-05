@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export type View = 'local-models' | 'test-suites' | 'test-runs'
+export type View = 'local-models' | 'test-suites' | 'test-runs' | 'prompts'
 export type SettingsSection = 'general' | 'providers' | 'appearance' | 'test-runs'
 
 export const useNavigationStore = defineStore('navigation', () => {

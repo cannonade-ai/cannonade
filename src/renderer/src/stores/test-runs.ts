@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import type { TestRun, TestRunConfig, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import { api } from '../api'
+import { usePromptsStore } from './prompts'
 
 export interface SuiteSummary {
   id: string
@@ -118,12 +119,18 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   }
 
   async function submitRun(config: TestRunConfig, suite: TestSuite): Promise<void> {
+    const promptsStore = usePromptsStore()
+    await promptsStore.ensureLoaded()
+    const resolvedSuite: TestSuite = {
+      ...suite,
+      testCases: promptsStore.resolveTestCases(suite.testCases)
+    }
     const now = new Date().toISOString()
     const run: TestRun = {
       id: crypto.randomUUID(),
       suiteId: config.suiteId,
-      suiteName: suite.name,
-      testCases: suite.testCases,
+      suiteName: resolvedSuite.name,
+      testCases: resolvedSuite.testCases,
       config,
       status: 'pending',
       createdAt: now,
@@ -132,7 +139,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
         modelRef,
         status: 'pending',
         autoDownloaded: false,
-        caseRuns: suite.testCases.map((tc) => ({
+        caseRuns: resolvedSuite.testCases.map((tc) => ({
           testCaseId: tc.id,
           status: 'pending' as RunStatus
         }))
@@ -141,7 +148,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     testRuns.value.unshift(run)
     selectedRunId.value = run.id
     isCreatingNew.value = false
-    await api.startRun(JSON.parse(JSON.stringify(run)), JSON.parse(JSON.stringify(suite)))
+    await api.startRun(JSON.parse(JSON.stringify(run)), JSON.parse(JSON.stringify(resolvedSuite)))
   }
 
   async function deleteRun(id: string): Promise<void> {
