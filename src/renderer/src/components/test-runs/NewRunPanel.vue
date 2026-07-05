@@ -74,10 +74,10 @@ const form = reactive<{
   suiteId: '',
   provider: initialProvider,
   models: [],
-  deleteAutoDownloadedModels: false,
-  unloadModelsBeforeRun: true,
-  unloadModelsAfterRun: false,
-  parallelRun: false
+  deleteAutoDownloadedModels: settingsStore.autoDeleteModels,
+  unloadModelsBeforeRun: settingsStore.unloadModelsBeforeRun,
+  unloadModelsAfterRun: settingsStore.autoDeleteModels || settingsStore.unloadModelsAfterRun,
+  parallelRun: settingsStore.parallelRuns
 })
 
 onMounted(() => {

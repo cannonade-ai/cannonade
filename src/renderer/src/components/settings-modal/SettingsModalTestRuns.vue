@@ -12,6 +12,18 @@ const settings = useSettingsStore()
   <div class="section">
     <SettingsModalDivider label="Defaults" />
     <SettingsModalRow
+      label="Unload other models before run"
+      hint="Frees up memory by unloading any other loaded models before a run starts"
+    >
+      <Toggle v-model="settings.unloadModelsBeforeRun" />
+    </SettingsModalRow>
+    <SettingsModalRow
+      label="Unload model after each run"
+      hint="Frees up memory by unloading the model once its run finishes"
+    >
+      <Toggle v-model="settings.unloadModelsAfterRun" />
+    </SettingsModalRow>
+    <SettingsModalRow
       label="Auto-delete downloaded models"
       hint="Remove downloaded models after running test cases on it"
     >
