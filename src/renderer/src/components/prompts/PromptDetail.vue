@@ -143,6 +143,7 @@ async function onDelete(): Promise<void> {
 }
 
 useShortcut('Escape', () => emit('back'))
+useShortcut('Ctrl+Delete', () => onDelete(), { preventDefault: true })
 </script>
 
 <template>
@@ -155,7 +156,13 @@ useShortcut('Escape', () => emit('back'))
 
     <Panel class="prompt-panel" :title="prompt ? 'Edit Prompt' : 'New Prompt'">
       <template #footer>
-        <Button v-if="prompt" type="danger-outline" :icon="IconTrash" @click="onDelete">
+        <Button
+          v-if="prompt"
+          v-tooltip="'Ctrl + Delete'"
+          type="danger-outline"
+          :icon="IconTrash"
+          @click="onDelete"
+        >
           Delete
         </Button>
         <div class="footer-right">
@@ -176,7 +183,11 @@ useShortcut('Escape', () => emit('back'))
               @input="errors.name = false"
             />
           </Field>
-          <Field v-if="prompt" label="Version">
+          <Field
+            v-if="prompt"
+            label="Version"
+            hint="Versions are managed automatically. Saving changed content creates a new one."
+          >
             <Select v-model="selectedVersion" :options="versionOptions" class="version-select" />
           </Field>
         </div>
@@ -194,7 +205,11 @@ useShortcut('Escape', () => emit('back'))
           <Button type="secondary" @click="onSetAsLatest">Set as Latest</Button>
         </div>
 
-        <Field label="Content" fill>
+        <Field
+          label="Content"
+          hint="Used as the system message (instructions for the LLM) in test cases that reference this prompt."
+          fill
+        >
           <Textarea
             v-model="content"
             fill

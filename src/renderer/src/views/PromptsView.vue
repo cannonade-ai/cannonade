@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { IconPlus, IconFolderOpen } from '@tabler/icons-vue'
 import type { Prompt } from '@shared/app/prompt'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
-import { Button, Panel, Badge } from '@renderer/components/ui'
+import { Button, Panel, Badge, InfoTooltip } from '@renderer/components/ui'
 import { storeToRefs } from 'pinia'
 import { usePromptsStore } from '@renderer/stores/prompts'
 import { api } from '@renderer/api'
@@ -64,6 +64,9 @@ async function openPromptsFolder(): Promise<void> {
       <Panel class="prompts-panel" title="Prompts">
         <template #title-addon>
           <Badge>{{ prompts.length }}</Badge>
+          <InfoTooltip
+            content="Reusable system prompts that test cases can reference. Versions are managed automatically and each prompt's history is kept."
+          />
         </template>
         <template #header-right>
           <Button v-tooltip="'Open prompts folder'" type="icon" @click="openPromptsFolder">

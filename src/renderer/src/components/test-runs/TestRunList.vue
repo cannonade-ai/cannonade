@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TestRun } from '@shared/app/test-run'
-import { Badge, Panel, Button, ScrollArea } from '@renderer/components/ui'
+import { Badge, Panel, Button, ScrollArea, InfoTooltip } from '@renderer/components/ui'
 import { formatDate } from '@renderer/utils/format'
 import { IconFolderOpen } from '@tabler/icons-vue'
 import { api } from '@renderer/api'
@@ -34,6 +34,9 @@ const { runMenuItems } = useTestRunMenus()
   <Panel class="runs-panel" title="Test Runs">
     <template #title-addon>
       <Badge>{{ runs.length }}</Badge>
+      <InfoTooltip
+        content="A run is marked completed when it executes successfully, even if some test cases fail. Failed means the run itself could not finish, e.g. a model failed to load or download."
+      />
     </template>
     <template #header-right>
       <Button v-tooltip="'Open runs folder'" type="icon" @click="openRunsFolder">

@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import type { RunConfig } from '@shared/app/test-suite'
-import { Field, NumberInput, Panel } from '@renderer/components/ui'
+import { Field, InfoTooltip, NumberInput, Panel } from '@renderer/components/ui'
 
 const config = defineModel<RunConfig | undefined>('config')
 </script>
 
 <template>
   <Panel title="Default Run Config">
+    <template #title-addon>
+      <InfoTooltip
+        content="All settings are optional. Support varies by provider and unsupported options will be ignored."
+      />
+    </template>
     <Field
       label="Max Tokens"
       hint="The longest response the model may produce, measured in tokens. A token is roughly ¾ of a word."

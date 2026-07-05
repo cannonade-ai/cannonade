@@ -54,7 +54,6 @@ defineProps<{
     background: var(--panel-header);
     border-bottom: 2px solid var(--border);
     flex-shrink: 0;
-    flex-wrap: wrap;
     height: 3rem;
   }
 
@@ -72,6 +71,7 @@ defineProps<{
 
   &__title {
     font-size: var(--text-xs);
+    line-height: 1.375rem;
     font-weight: 600;
     font-family: var(--font-headline);
     text-transform: uppercase;

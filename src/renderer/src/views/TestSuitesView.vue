@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { IconPlus, IconFolderOpen } from '@tabler/icons-vue'
 import type { TestSuite } from '@shared/app/test-suite'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
-import { Button, Panel, Badge } from '@renderer/components/ui'
+import { Button, Panel, Badge, InfoTooltip } from '@renderer/components/ui'
 import { storeToRefs } from 'pinia'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
 import { useNavigationStore } from '@renderer/stores/navigation'
@@ -63,6 +63,9 @@ async function onNewSuite(): Promise<void> {
       <Panel class="suites-panel" title="Test Suites">
         <template #title-addon>
           <Badge>{{ suites.length }}</Badge>
+          <InfoTooltip
+            content="Collections of test cases with inputs and expected outputs. Run a suite against one or more models to compare results."
+          />
         </template>
         <template #header-right>
           <Button v-tooltip="'Open suites folder'" type="icon" @click="openSuitesFolder">
