@@ -12,10 +12,11 @@ import {
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
 import { useConfirmStore } from '@renderer/stores/confirm'
-import type { EvaluationConfig, TestCase } from '@shared/app/test-suite'
+import type { EvaluationConfig, TestCase, TestCasePromptRef } from '@shared/app/test-suite'
 import { IconPlus, IconTrash, IconX } from '@tabler/icons-vue'
 import { ref, watch } from 'vue'
 import TestCaseEvaluationMethod from './TestCaseEvaluationMethod.vue'
+import TestCaseEditorPromptField from './TestCaseEditorPromptField.vue'
 
 const confirmStore = useConfirmStore()
 
@@ -38,6 +39,8 @@ const passingLogicOptions: SelectOption<'all' | 'any'>[] = [
 const name = ref('')
 const description = ref('')
 const systemPrompt = ref('')
+const promptRef = ref<TestCasePromptRef | null>(null)
+const promptFieldRef = ref<InstanceType<typeof TestCaseEditorPromptField> | null>(null)
 const userInput = ref('')
 const evaluations = ref<EvaluationConfig[]>([])
 const passingLogic = ref<'all' | 'any'>('all')
@@ -57,6 +60,7 @@ watch(
       name.value = tc.name
       description.value = tc.description ?? ''
       systemPrompt.value = tc.input.messages?.find((m) => m.role === 'system')?.content ?? ''
+      promptRef.value = tc.promptRef ?? null
       userInput.value =
         tc.input.messages?.find((m) => m.role === 'user')?.content ?? tc.input.prompt ?? ''
       evaluations.value = tc.evaluations.length > 0 ? [...tc.evaluations] : [defaultEvaluation()]
@@ -65,6 +69,7 @@ watch(
       name.value = ''
       description.value = ''
       systemPrompt.value = ''
+      promptRef.value = null
       userInput.value = ''
       evaluations.value = [defaultEvaluation()]
       passingLogic.value = 'all'
@@ -73,10 +78,12 @@ watch(
   { immediate: true }
 )
 
-function onSave(): void {
+async function onSave(): Promise<void> {
   errors.value.name = !name.value.trim()
   errors.value.userInput = !userInput.value.trim()
   if (errors.value.name || errors.value.userInput) return
+
+  await promptFieldRef.value?.commit()
 
   const messages: { role: 'system' | 'user' | 'assistant'; content: string }[] = []
   if (systemPrompt.value) messages.push({ role: 'system' as const, content: systemPrompt.value })
@@ -87,6 +94,7 @@ function onSave(): void {
     name: name.value,
     description: description.value || undefined,
     input: { type: 'chat', messages },
+    promptRef: promptRef.value ?? undefined,
     evaluations: evaluations.value,
     passingLogic: passingLogic.value
   }
@@ -178,16 +186,11 @@ useShortcut(
             <span class="section-title">Input</span>
           </div>
           <div class="section-body">
-            <Field
-              label="System Prompt"
-              hint="Instructions that set the model's role and behavior before it sees the user input."
-            >
-              <Textarea
-                v-model="systemPrompt"
-                :rows="4"
-                placeholder="System instructions for the model..."
-              />
-            </Field>
+            <TestCaseEditorPromptField
+              ref="promptFieldRef"
+              v-model:content="systemPrompt"
+              v-model:prompt-ref="promptRef"
+            />
             <Field label="User Input" hint="The user message sent to the model for this test case.">
               <Textarea
                 v-model="userInput"

@@ -9,7 +9,13 @@ import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
 import ContextMenu from '@renderer/components/ui/ContextMenu.vue'
 import ToastContainer from '@renderer/components/ui/ToastContainer.vue'
 import SettingsModal from '@renderer/components/settings-modal/SettingsModal.vue'
-import { LocalModelsView, TestSuitesView, TestRunsView, OnboardingView } from '@renderer/views'
+import {
+  LocalModelsView,
+  TestSuitesView,
+  TestRunsView,
+  PromptsView,
+  OnboardingView
+} from '@renderer/views'
 
 const nav = useNavigationStore()
 const settings = useSettingsStore()
@@ -22,6 +28,8 @@ const viewComponent = computed(() => {
       return TestSuitesView
     case 'test-runs':
       return TestRunsView
+    case 'prompts':
+      return PromptsView
     default:
       return LocalModelsView
   }

@@ -1,8 +1,9 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
-import { APP, SUITES, SETTINGS, TEST_RUNS, RUN } from '@shared/app/ipc-channels'
+import { APP, SUITES, PROMPTS, SETTINGS, TEST_RUNS, RUN } from '@shared/app/ipc-channels'
 import type { TestSuite } from '@shared/app/test-suite'
+import type { Prompt } from '@shared/app/prompt'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
@@ -33,6 +34,7 @@ const api = {
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),
+  getPromptsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_PROMPTS_DIR),
   openPath: (path: string): Promise<void> => ipcRenderer.invoke(APP.OPEN_PATH, path),
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
   maximize: (): void => ipcRenderer.send(APP.MAXIMIZE),
@@ -40,6 +42,9 @@ const api = {
   listSuites: (): Promise<TestSuite[]> => ipcRenderer.invoke(SUITES.LIST),
   saveSuite: (suite: TestSuite): Promise<void> => ipcRenderer.invoke(SUITES.SAVE, suite),
   deleteSuite: (id: string): Promise<void> => ipcRenderer.invoke(SUITES.DELETE, id),
+  listPrompts: (): Promise<Prompt[]> => ipcRenderer.invoke(PROMPTS.LIST),
+  savePrompt: (prompt: Prompt): Promise<void> => ipcRenderer.invoke(PROMPTS.SAVE, prompt),
+  deletePrompt: (id: string): Promise<void> => ipcRenderer.invoke(PROMPTS.DELETE, id),
   loadAppSettings: (): Promise<AppSettings> => ipcRenderer.invoke(SETTINGS.LOAD),
   saveAppSettings: (settings: AppSettings): Promise<void> =>
     ipcRenderer.invoke(SETTINGS.SAVE, settings),

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IconBrain, IconFlask, IconPlayerPlay, IconSettings } from '@tabler/icons-vue'
+import { IconBrain, IconFlask, IconPlayerPlay, IconPrompt, IconSettings } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import SidebarNavItem from './SidebarNavItem.vue'
 
@@ -24,6 +24,13 @@ const collapsed = ref(false)
         :active="nav.current === 'test-suites'"
         :collapsed="collapsed"
         @click="nav.navigate('test-suites')"
+      />
+      <SidebarNavItem
+        :icon="IconPrompt"
+        label="Prompts"
+        :active="nav.current === 'prompts'"
+        :collapsed="collapsed"
+        @click="nav.navigate('prompts')"
       />
       <SidebarNavItem
         :icon="IconPlayerPlay"

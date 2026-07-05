@@ -6,6 +6,7 @@ import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP } from '@shared/app/ipc-channels'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
+import { registerPromptHandlers } from './prompt-handlers'
 import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
 import { registerRunHandlers } from './run-handlers'
@@ -13,6 +14,7 @@ import { registerSecretHandlers } from './secret-handlers'
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
+  registerPromptHandlers()
   registerSettingsHandlers()
   registerTestRunHandlers()
   registerRunHandlers()
@@ -103,6 +105,7 @@ export function registerHandlers(): void {
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())
   ipcMain.handle(APP.GET_SUITES_DIR, () => join(app.getPath('userData'), 'suites'))
   ipcMain.handle(APP.GET_RUNS_DIR, () => join(app.getPath('userData'), 'runs'))
+  ipcMain.handle(APP.GET_PROMPTS_DIR, () => join(app.getPath('userData'), 'prompts'))
   ipcMain.handle(APP.OPEN_PATH, (_event, path: string) => shell.openPath(path))
 
   ipcMain.handle(PROVIDER.SYNC, (_event, providers: ConfiguredProvider[]): void => {

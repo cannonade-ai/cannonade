@@ -3,6 +3,7 @@ import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { TestSuite } from '@shared/app/test-suite'
+import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
@@ -74,6 +75,7 @@ export interface AppAPI {
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>
+  getPromptsDir(): Promise<string>
   openPath(path: string): Promise<void>
   minimize(): void
   maximize(): void
@@ -81,6 +83,9 @@ export interface AppAPI {
   listSuites(): Promise<TestSuite[]>
   saveSuite(suite: TestSuite): Promise<void>
   deleteSuite(id: string): Promise<void>
+  listPrompts(): Promise<Prompt[]>
+  savePrompt(prompt: Prompt): Promise<void>
+  deletePrompt(id: string): Promise<void>
   loadAppSettings(): Promise<AppSettings>
   saveAppSettings(settings: AppSettings): Promise<void>
   listTestRuns(): Promise<TestRun[]>

@@ -2,6 +2,7 @@ export const APP = {
   GET_VERSION: 'app:getVersion',
   GET_SUITES_DIR: 'app:getSuitesDir',
   GET_RUNS_DIR: 'app:getRunsDir',
+  GET_PROMPTS_DIR: 'app:getPromptsDir',
   OPEN_PATH: 'app:openPath',
   MINIMIZE: 'app:minimize',
   MAXIMIZE: 'app:maximize',
@@ -12,6 +13,12 @@ export const SUITES = {
   LIST: 'suites:list',
   SAVE: 'suites:save',
   DELETE: 'suites:delete'
+} as const
+
+export const PROMPTS = {
+  LIST: 'prompts:list',
+  SAVE: 'prompts:save',
+  DELETE: 'prompts:delete'
 } as const
 
 export const SETTINGS = {
