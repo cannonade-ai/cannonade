@@ -2,6 +2,7 @@ import { getProvider } from '../../../core/providers/registry'
 import { RUN } from '@shared/app/ipc-channels'
 import type { ModelRef, PerModelRun } from '@shared/app/test-run'
 import type { LocalModel } from '@shared/provider/local-model'
+import { matchesHfModelId } from '@shared/provider/hf-model-match'
 import type { LLMProvider } from '../../../core/providers/base'
 import type { SendEvent } from './types'
 
@@ -20,17 +21,8 @@ export async function resolveModelKey(providerId: string, hfModelId: string): Pr
   const provider = getProvider(providerId)
   if (!provider.fetchLocalModels) throw new Error(`${providerId}: fetchLocalModels not supported`)
 
-  const hfParts = hfModelId.split('/')
-  const normalizedKey =
-    hfParts.length >= 2 ? hfParts[hfParts.length - 1].toLowerCase().replace(/-gguf$/i, '') : null
-
   const findMatch = (models: LocalModel[]): LocalModel | undefined =>
-    models.find(
-      (m) =>
-        m.id.toLowerCase().includes(hfModelId.toLowerCase()) ||
-        (normalizedKey !== null && m.id.toLowerCase() === normalizedKey) ||
-        (normalizedKey !== null && m.id.toLowerCase().endsWith('/' + normalizedKey))
-    )
+    models.find((m) => matchesHfModelId(m.id, hfModelId))
 
   let match = findMatch(await provider.fetchLocalModels())
   if (!match) {

@@ -11,6 +11,7 @@ import {
   type Icon
 } from '@tabler/icons-vue'
 import { useProvidersStore } from '@renderer/stores/providers'
+import { matchesHfModelId } from '@shared/provider/hf-model-match'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
@@ -55,6 +56,12 @@ function addHuggingFaceModel(): void {
   const raw = hfInput.value.trim()
   const id = raw.includes('https://') ? raw.split('/').slice(-2).join('/') : raw
   if (!id) return
+  const installedMatch = props.installedModels.find((m) => matchesHfModelId(m.key, id))
+  if (installedMatch) {
+    if (!isChecked(installedMatch.key)) toggleInstalled(installedMatch.key)
+    hfInput.value = ''
+    return
+  }
   if (props.modelValue.some((m) => m.source === 'huggingface' && m.modelId === id)) return
   emit('update:model-value', [...props.modelValue, { source: 'huggingface', modelId: id }])
   hfInput.value = ''
@@ -63,6 +70,11 @@ function addHuggingFaceModel(): void {
 function addRegistryModel(): void {
   const id = registryInput.value.trim()
   if (!id) return
+  if (props.installedModels.some((m) => m.key === id)) {
+    if (!isChecked(id)) toggleInstalled(id)
+    registryInput.value = ''
+    return
+  }
   if (props.modelValue.some((m) => m.source === 'registry' && m.modelId === id)) return
   emit('update:model-value', [...props.modelValue, { source: 'registry', modelId: id }])
   registryInput.value = ''
