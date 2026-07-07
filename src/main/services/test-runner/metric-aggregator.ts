@@ -11,10 +11,15 @@ export function computeAggregate(
   const ttftValues = results.flatMap((r) =>
     r.metrics.timeToFirstTokenMs != null ? [r.metrics.timeToFirstTokenMs] : []
   )
+  const durationValues = results.flatMap((r) =>
+    r.metrics.durationMs != null ? [r.metrics.durationMs] : []
+  )
   const avg = (arr: number[]): number | undefined =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : undefined
   const min = (arr: number[]): number | undefined => (arr.length ? Math.min(...arr) : undefined)
   const max = (arr: number[]): number | undefined => (arr.length ? Math.max(...arr) : undefined)
+  const sum = (arr: number[]): number | undefined =>
+    arr.length ? arr.reduce((a, b) => a + b, 0) : undefined
 
   return {
     total: results.length,
@@ -26,6 +31,10 @@ export function computeAggregate(
     avgTimeToFirstTokenMs: avg(ttftValues),
     minTimeToFirstTokenMs: min(ttftValues),
     maxTimeToFirstTokenMs: max(ttftValues),
+    avgDurationMs: avg(durationValues),
+    minDurationMs: min(durationValues),
+    maxDurationMs: max(durationValues),
+    totalDurationMs: sum(durationValues),
     avgScore: passed / (testCases ? testCases.length : results.length)
   }
 }

@@ -385,13 +385,18 @@ describe('executeTestRun – case result construction', () => {
           metrics: {
             tokensPerSecond: 100,
             timeToFirstTokenMs: 200,
-            score: 1
+            score: 1,
+            durationMs: expect.any(Number)
           }
         }),
         aggregate: expect.objectContaining({
           avgScore: 1,
           avgTokensPerSecond: 100,
-          avgTimeToFirstTokenMs: 200
+          avgTimeToFirstTokenMs: 200,
+          avgDurationMs: expect.any(Number),
+          minDurationMs: expect.any(Number),
+          maxDurationMs: expect.any(Number),
+          totalDurationMs: expect.any(Number)
         })
       })
     )
@@ -637,7 +642,11 @@ describe('executeTestRun – aggregate metrics', () => {
           maxTokensPerSecond: 60,
           avgTimeToFirstTokenMs: 100,
           minTimeToFirstTokenMs: 100,
-          maxTimeToFirstTokenMs: 100
+          maxTimeToFirstTokenMs: 100,
+          avgDurationMs: expect.any(Number),
+          minDurationMs: expect.any(Number),
+          maxDurationMs: expect.any(Number),
+          totalDurationMs: expect.any(Number)
         }),
         error: undefined
       })
@@ -677,6 +686,10 @@ describe('executeTestRun – aggregate metrics', () => {
     expect(aggregate.avgTimeToFirstTokenMs).toBeUndefined()
     expect(aggregate.minTimeToFirstTokenMs).toBeUndefined()
     expect(aggregate.maxTimeToFirstTokenMs).toBeUndefined()
+    expect(aggregate.avgDurationMs).toBeUndefined()
+    expect(aggregate.minDurationMs).toBeUndefined()
+    expect(aggregate.maxDurationMs).toBeUndefined()
+    expect(aggregate.totalDurationMs).toBeUndefined()
   })
 
   it('computes separate aggregates per model run', async () => {

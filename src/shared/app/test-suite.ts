@@ -165,6 +165,7 @@ export interface TestCaseResult {
     tokensPerSecond?: number
     timeToFirstTokenMs?: number
     score?: number
+    durationMs?: number
   }
 
   passed: boolean
@@ -186,6 +187,11 @@ export interface AggregateMetrics {
   avgTimeToFirstTokenMs?: number
   minTimeToFirstTokenMs?: number
   maxTimeToFirstTokenMs?: number
+
+  avgDurationMs?: number
+  minDurationMs?: number
+  maxDurationMs?: number
+  totalDurationMs?: number
 
   avgScore?: number
 }
