@@ -59,7 +59,12 @@ const currentAction = computed<string | null>(() => {
 function duration(mr: PerModelRun): string {
   if (!mr.startedAt || !mr.completedAt) return '—'
   const ms = new Date(mr.completedAt).getTime() - new Date(mr.startedAt).getTime()
-  if (ms < 1000) return `${ms}ms`
+  return formatDurationMs(ms)
+}
+
+function formatDurationMs(ms: number | undefined): string {
+  if (ms == null) return '—'
+  if (ms < 1000) return `${ms.toFixed(0)}ms`
   return `${(ms / 1000).toFixed(1)}s`
 }
 
@@ -178,21 +183,21 @@ function remainingTime(estimatedCompletion: string): string {
             <div class="group-values">
               <div class="metric">
                 <span class="metric-label">Avg</span>
-                <span class="metric-value">{{
-                  modelRun.aggregate.avgTokensPerSecond.toFixed(1)
-                }}</span>
+                <span class="metric-value">
+                  {{ modelRun.aggregate.avgTokensPerSecond.toFixed(1) }}
+                </span>
               </div>
               <div v-if="modelRun.aggregate.minTokensPerSecond != null" class="metric">
                 <span class="metric-label">Min</span>
-                <span class="metric-value">{{
-                  modelRun.aggregate.minTokensPerSecond.toFixed(1)
-                }}</span>
+                <span class="metric-value">
+                  {{ modelRun.aggregate.minTokensPerSecond.toFixed(1) }}
+                </span>
               </div>
               <div v-if="modelRun.aggregate.maxTokensPerSecond != null" class="metric">
                 <span class="metric-label">Max</span>
-                <span class="metric-value">{{
-                  modelRun.aggregate.maxTokensPerSecond.toFixed(1)
-                }}</span>
+                <span class="metric-value">
+                  {{ modelRun.aggregate.maxTokensPerSecond.toFixed(1) }}
+                </span>
               </div>
             </div>
           </div>
@@ -205,21 +210,54 @@ function remainingTime(estimatedCompletion: string): string {
             <div class="group-values">
               <div class="metric">
                 <span class="metric-label">Avg</span>
-                <span class="metric-value"
-                  >{{ modelRun.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms</span
-                >
+                <span class="metric-value">
+                  {{ modelRun.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms
+                </span>
               </div>
               <div v-if="modelRun.aggregate.minTimeToFirstTokenMs != null" class="metric">
                 <span class="metric-label">Min</span>
-                <span class="metric-value"
-                  >{{ modelRun.aggregate.minTimeToFirstTokenMs.toFixed(0) }}ms</span
-                >
+                <span class="metric-value">
+                  {{ modelRun.aggregate.minTimeToFirstTokenMs.toFixed(0) }}ms
+                </span>
               </div>
               <div v-if="modelRun.aggregate.maxTimeToFirstTokenMs != null" class="metric">
                 <span class="metric-label">Max</span>
-                <span class="metric-value"
-                  >{{ modelRun.aggregate.maxTimeToFirstTokenMs.toFixed(0) }}ms</span
-                >
+                <span class="metric-value">
+                  {{ modelRun.aggregate.maxTimeToFirstTokenMs.toFixed(0) }}ms
+                </span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-if="modelRun.aggregate.avgDurationMs != null">
+          <div class="metric-group-divider" />
+          <div class="metric-group">
+            <span class="group-label">Duration</span>
+            <div class="group-values">
+              <div class="metric">
+                <span class="metric-label">Avg</span>
+                <span class="metric-value">
+                  {{ formatDurationMs(modelRun.aggregate.avgDurationMs) }}
+                </span>
+              </div>
+              <div v-if="modelRun.aggregate.minDurationMs != null" class="metric">
+                <span class="metric-label">Min</span>
+                <span class="metric-value">
+                  {{ formatDurationMs(modelRun.aggregate.minDurationMs) }}
+                </span>
+              </div>
+              <div v-if="modelRun.aggregate.maxDurationMs != null" class="metric">
+                <span class="metric-label">Max</span>
+                <span class="metric-value">
+                  {{ formatDurationMs(modelRun.aggregate.maxDurationMs) }}
+                </span>
+              </div>
+              <div v-if="modelRun.aggregate.totalDurationMs != null" class="metric">
+                <span class="metric-label">Total</span>
+                <span class="metric-value">
+                  {{ formatDurationMs(modelRun.aggregate.totalDurationMs) }}
+                </span>
               </div>
             </div>
           </div>

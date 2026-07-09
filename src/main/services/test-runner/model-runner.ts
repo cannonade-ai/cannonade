@@ -50,6 +50,8 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
   const request = buildRequest(testCase, modelKey, suite.defaultRunConfig)
   const timeoutMs = testCase.timeoutMs ?? params.defaultTimeoutMs
 
+  const startTime = performance.now()
+
   try {
     const response = await runChat(provider, request, abortSignal, timeoutMs)
     console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
@@ -57,6 +59,7 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
     const output = extractTextOutput(response.output)
     const reasoning = extractReasoningOutput(response.output)
     const evaluation = await evaluateAll(output, testCase)
+    const durationMs = performance.now() - startTime
     const result: TestCaseResult = {
       testCaseId: testCase.id,
       output,
@@ -64,7 +67,8 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
       metrics: {
         tokensPerSecond: response.stats.tokens_per_second,
         timeToFirstTokenMs: response.stats.time_to_first_token_seconds * 1000,
-        score: evaluation.score
+        score: evaluation.score,
+        durationMs
       },
       passed: evaluation.passed,
       evalResults: evaluation.evalResults,
