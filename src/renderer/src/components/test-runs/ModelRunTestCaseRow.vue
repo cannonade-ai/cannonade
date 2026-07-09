@@ -78,12 +78,11 @@ function formatDurationMs(ms: number | undefined): string {
 function duration(cr: TestCaseRun): string {
   if (!cr.startedAt || !cr.completedAt) return '—'
   const ms = new Date(cr.completedAt).getTime() - new Date(cr.startedAt).getTime()
-  if (ms < 1000) return `${ms}ms`
-  return `${(ms / 1000).toFixed(1)}s`
+  return formatDurationMs(ms)
 }
 
 function getDurationLabel(cr: TestCaseRun): string {
-  if (cr.result?.metrics?.durationMs != null) {
+  if (cr.result?.metrics?.durationMs) {
     return formatDurationMs(cr.result.metrics.durationMs)
   }
   return duration(cr)
@@ -93,7 +92,12 @@ const hasMetrics = computed<boolean>(() => {
   if (props.caseRun?.startedAt && props.caseRun?.completedAt) return true
   const m = props.caseRun?.result?.metrics
   if (!m) return false
-  return m.tokensPerSecond != null || m.timeToFirstTokenMs != null || m.durationMs != null || m.score != null
+  return (
+    m.tokensPerSecond != null ||
+    m.timeToFirstTokenMs != null ||
+    m.durationMs != null ||
+    m.score != null
+  )
 })
 </script>
 
