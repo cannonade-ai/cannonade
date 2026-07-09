@@ -63,6 +63,7 @@ export function useModelMenus(): {
               for (const instance of model.loadedInstances) {
                 await api.unloadModel(providerId, instance.id)
               }
+              log.info(`${model.name} unloaded successfully.`)
               await modelsStore.loadLocalModels()
             } finally {
               modelsStore.setModelOperation(model.id, null)
@@ -97,8 +98,9 @@ export function useModelMenus(): {
             try {
               await api.deleteModel(providerId, model.id)
               toastStore.success(`${model.name} deleted successfully.`)
+              log.info(`${model.name} deleted successfully.`)
             } catch (e) {
-              log.error('Failed to delete model:', e)
+              log.error(`${model.name} Failed to delete model.`, e)
               toastStore.error(`${model.name} Failed to delete model. ${e}`)
               return
             }

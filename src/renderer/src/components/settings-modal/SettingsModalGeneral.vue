@@ -1,11 +1,18 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@renderer/stores/settings'
 import Button from '@renderer/components/ui/Button.vue'
+import Select, { type SelectOption } from '@renderer/components/ui/Select.vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import SettingsModalRow from './SettingsModalRow.vue'
 import SettingsModalDivider from './SettingsModalDivider.vue'
 import { IconFolderOpen } from '@tabler/icons-vue'
 import { api } from '@renderer/api'
+import { LOG_LEVELS, type LogLevel } from '@shared/app/logging'
+
+const logLevelOptions: SelectOption<LogLevel>[] = LOG_LEVELS.map((level) => ({
+  value: level,
+  label: level.charAt(0).toUpperCase() + level.slice(1)
+}))
 
 const settings = useSettingsStore()
 const confirmStore = useConfirmStore()
@@ -46,6 +53,13 @@ async function handleReset(): Promise<void> {
           @click="openSuitesFolder"
         />
       </div>
+    </SettingsModalRow>
+    <SettingsModalDivider label="Logs" />
+    <SettingsModalRow
+      label="Log level"
+      hint="Minimum level of messages written to the log file and console"
+    >
+      <Select v-model="settings.logLevel" :options="logLevelOptions" class="select-sm" />
     </SettingsModalRow>
     <SettingsModalDivider label="Resources" />
     <SettingsModalRow label="Report an issue">

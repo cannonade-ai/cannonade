@@ -1,6 +1,7 @@
 import log from 'electron-log/main'
 import type { LogFunctions, LogMessage, Transport } from 'electron-log'
 import type { LogEntry, LogLevel } from '@shared/app/logging'
+import { DEFAULT_APP_SETTINGS } from '@shared/app/app-settings'
 
 const MAX_BUFFER_SIZE = 1000
 const buffer: LogEntry[] = []
@@ -34,6 +35,7 @@ export function initLogger(): void {
   log.transports.buffer = bufferTransport
   log.transports.console.format = '{h}:{i}:{s}.{ms} [{level}]{scope} > {text}'
   log.transports.file.format = '[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}]{scope} > {text}'
+  applyLogLevel(DEFAULT_APP_SETTINGS.logLevel)
 }
 
 export function applyLogLevel(level: LogLevel): void {

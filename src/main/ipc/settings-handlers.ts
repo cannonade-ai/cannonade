@@ -22,8 +22,9 @@ export async function initAppSettings(): Promise<void> {
     log.debug('No saved settings loaded, using defaults:', err)
     cache = { ...DEFAULT_APP_SETTINGS }
   }
-  buildRegistry(cache.configuredProviders)
   applyLogLevel(cache.logLevel)
+  buildRegistry(cache.configuredProviders)
+  log.debug('App settings loaded successfully')
 }
 
 export function getAppSettings(): AppSettings {

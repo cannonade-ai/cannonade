@@ -84,7 +84,6 @@ function createWindow(): BrowserWindow {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   initLogger()
-  log.info('App starting', { version: app.getVersion() })
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
@@ -98,6 +97,7 @@ app.whenReady().then(async () => {
 
   await initSecrets()
   await initAppSettings()
+  log.info('App starting', { version: app.getVersion() })
   registerHandlers()
   createWindow()
 
