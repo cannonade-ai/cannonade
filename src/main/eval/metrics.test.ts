@@ -263,7 +263,6 @@ describe('levenshtein', () => {
       expected: 'helloworld',
       caseSensitive: true
     })
-    console.log(result)
     expect(result.passed).toBe(false)
     expect(result.score).toBe(0)
   })

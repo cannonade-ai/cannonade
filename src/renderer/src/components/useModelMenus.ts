@@ -7,6 +7,10 @@ import { useToastStore } from '@renderer/stores/toast'
 import { api } from '@renderer/api'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import { createLogger } from '@renderer/utils/logger'
+
+const log = createLogger('model-menus')
+
 export function useModelMenus(): {
   modelMenuItems: (
     model: LocalModel,
@@ -37,10 +41,11 @@ export function useModelMenus(): {
               await api.loadModel(providerId, model.id)
               await modelsStore.loadLocalModels()
               toastStore.success(`${model.name} loaded successfully.`)
+              log.info(`${model.name} loaded successfully.`)
             } catch (e) {
               const message = `Failed to load ${model.name}. ${e instanceof Error ? e.message : ''}`
               toastStore.error(message, { title: 'Model load failed', duration: 0 })
-              console.error(message)
+              log.error(message)
             } finally {
               modelsStore.setModelOperation(model.id, null)
             }
@@ -93,7 +98,7 @@ export function useModelMenus(): {
               await api.deleteModel(providerId, model.id)
               toastStore.success(`${model.name} deleted successfully.`)
             } catch (e) {
-              console.error('Failed to delete model:', e)
+              log.error('Failed to delete model:', e)
               toastStore.error(`${model.name} Failed to delete model. ${e}`)
               return
             }

@@ -4,6 +4,9 @@ import { api } from '../api'
 import { useProvidersStore } from './providers'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
+import { createLogger } from '../utils/logger'
+
+const log = createLogger('models-store')
 
 export type ModelOperation = 'loading' | 'unloading' | 'deleting'
 
@@ -44,7 +47,7 @@ export const useModelsStore = defineStore('models', () => {
       } else {
         error.value = 'Failed to load models'
       }
-      console.error(e)
+      log.error('Failed to load local models:', error.value)
     } finally {
       loading.value = false
     }
@@ -62,7 +65,7 @@ export const useModelsStore = defineStore('models', () => {
       } else {
         error.value = 'Failed to load models'
       }
-      console.error(e)
+      log.error('Failed to load external models:', error.value)
     } finally {
       loading.value = false
     }

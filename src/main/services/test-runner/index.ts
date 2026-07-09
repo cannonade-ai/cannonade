@@ -6,6 +6,9 @@ import type { TestSuite } from '@shared/app/test-suite'
 import { unloadUnselectedModels } from './model-manager'
 import { processModelRun } from './model-runner'
 import type { SendEvent } from './types'
+import { createLogger } from '../../logger'
+
+const log = createLogger('test-runner')
 
 export async function executeTestRun(
   run: TestRun,
@@ -22,7 +25,7 @@ export async function executeTestRun(
   runState.status = 'running'
   runState.startedAt = new Date().toISOString()
   send(RUN.STARTED, { runId: run.id })
-  console.log('[test-runner] Starting test run:', run, suite)
+  log.info(`Starting test run: ${run.id}`)
 
   let overallFailed = false
 
@@ -63,5 +66,5 @@ export async function executeTestRun(
 
   await saveTestRun(runState)
   send(RUN.COMPLETED, { runId: run.id, status: finalStatus })
-  console.log('[test-runner] Test run completed:', run)
+  log.info(`Test run completed: ${run.id} status=${finalStatus}`)
 }

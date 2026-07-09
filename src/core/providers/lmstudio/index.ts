@@ -21,6 +21,9 @@ import {
   parseStartOutput,
   parseStopOutput
 } from './mappers'
+import { createLogger } from '../../../main/logger'
+
+const log = createLogger('lmstudio')
 
 function parseError(raw: string, status: number): ProviderError {
   try {
@@ -34,7 +37,7 @@ function parseError(raw: string, status: number): ProviderError {
       return new ProviderError(parts.join(' | '), status, err.code)
     }
   } catch (e) {
-    console.error('Error ocurred during parsing lm studio error', e)
+    log.debug('Error response body is not JSON:', e)
   }
   return new ProviderError(`HTTP ${status}`, status)
 }
@@ -43,7 +46,7 @@ async function fetchOrThrow(input: RequestInfo, init?: RequestInit): Promise<Res
   const res = await fetch(input, init)
   if (!res.ok) {
     const raw = await res.text()
-    console.error(`[lmstudio] ${init?.method ?? 'GET'} ${input} error:`, raw)
+    log.error(`${init?.method ?? 'GET'} ${input} error:`, raw)
     throw parseError(raw, res.status)
   }
   return res
@@ -100,7 +103,7 @@ export function createLmStudioProvider(
 
     async chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
       const body = toChatRequest(request)
-      console.log('[lmstudio] chat body:', JSON.stringify(body, null, 2))
+      log.debug('Chat request body:', body)
       const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...auth },
@@ -176,16 +179,21 @@ export function createLmStudioProvider(
 
     async getServerStatus(): Promise<ServerStatusResponse> {
       const output = await execCommand('lms server status')
+      log.debug('lms server status output:', output)
       return parseStatusOutput(output)
     },
 
     async startServer(): Promise<ServerStatusResponse> {
+      log.info('Starting LM Studio server')
       const output = await execCommand('lms server start')
+      log.debug('lms server start output:', output)
       return parseStartOutput(output)
     },
 
     async stopServer(): Promise<ServerStatusResponse> {
+      log.info('Stopping LM Studio server')
       const output = await execCommand('lms server stop')
+      log.debug('lms server stop output:', output)
       return parseStopOutput(output)
     }
   }

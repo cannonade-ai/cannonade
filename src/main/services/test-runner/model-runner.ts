@@ -16,6 +16,9 @@ import {
   deleteAutoDownloadedModel
 } from './model-manager'
 import type { SendEvent } from './types'
+import { createLogger } from '../../logger'
+
+const log = createLogger('model-runner')
 
 interface RunTestCaseParams {
   provider: LLMProvider
@@ -45,7 +48,7 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
   caseRunState.status = 'running'
   caseRunState.startedAt = new Date().toISOString()
   send(RUN.CASE_STARTED, { modelRunId: modelRun.id, testCaseId: testCase.id })
-  console.log('[test-runner] Starting test case: ', testCase.name)
+  log.info('Starting test case:', testCase.name)
 
   const request = buildRequest(testCase, modelKey, suite.defaultRunConfig)
   const timeoutMs = testCase.timeoutMs ?? params.defaultTimeoutMs
@@ -54,7 +57,7 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
 
   try {
     const response = await runChat(provider, request, abortSignal, timeoutMs)
-    console.log(`[test-runner] ${run.id} / ${modelRun.id} / ${testCase.name}:`, response)
+    log.debug(`run.id: ${run.id}, modelRun.id: ${modelRun.id}, case: ${testCase.name}:`, response)
 
     const output = extractTextOutput(response.output)
     const reasoning = extractReasoningOutput(response.output)
@@ -86,7 +89,8 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
       result,
       aggregate: modelRunState.aggregate
     })
-    console.log('[test-runner] Test case completed:', result)
+    log.info(`Test case completed: ${testCase.name} passed=${result.passed}`)
+    log.debug('Test case result:', result)
     return { cancelled: false, failed: false, modelInstanceId: response.model_instance_id }
   } catch (err) {
     if (abortSignal.aborted) {
@@ -108,7 +112,7 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
         result,
         aggregate: modelRunState.aggregate ?? computeAggregate(params.results)
       })
-      console.log('[test-runner] Test case cancelled:', testCase.name)
+      log.info('Test case cancelled:', testCase.name)
       return { cancelled: true, failed: false }
     }
 
@@ -132,7 +136,8 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
       result,
       aggregate: modelRunState.aggregate
     })
-    console.log('[test-runner] Test case completed with error:', result)
+    log.error(`Test case failed: ${testCase.name}, error: ${error}`)
+    log.debug('Test case result:', result)
     return { cancelled: false, failed: true }
   }
 }
@@ -183,6 +188,7 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
       aggregate: modelRunState.aggregate,
       error: fatalError
     })
+    log.error(`Model download failed: ${modelRun.id}`, fatalError)
     return true
   }
 
@@ -210,6 +216,7 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
     if (!alreadyLoaded) {
       modelRunState.status = 'loading'
       send(RUN.MODEL_LOADING, { modelRunId: modelRun.id })
+      log.info(`Loading model: ${modelKey}, modelRun: ${modelRun.id}`)
       try {
         await provider.loadModel(modelKey)
       } catch (err) {
@@ -224,6 +231,7 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
           aggregate: modelRunState.aggregate,
           error: fatalError
         })
+        log.error(`Model load failed: ${modelRun.id}`, fatalError)
         return true
       }
       if (abortSignal.aborted) return overallFailed
@@ -231,8 +239,7 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
     }
   }
 
-  console.log('[test-runner] Starting model run:', modelRun)
-
+  log.info(`Starting model run: ${modelRun.id}, model: ${modelKey}`)
   let modelInstanceId: string | undefined
 
   try {
@@ -260,7 +267,7 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
   } catch (err) {
     fatalError = err instanceof Error ? err.message : String(err)
     overallFailed = true
-    console.log('[test-runner] Test case completed with fatal error:', fatalError)
+    log.error('Test case completed with fatal error:', fatalError)
   }
 
   const modelStatus: RunStatus = abortSignal.aborted
@@ -278,7 +285,8 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
     aggregate: modelRunState.aggregate,
     error: fatalError
   })
-  console.log('[test-runner] Model run completed:', modelRun)
+  log.info(`Model run completed: ${modelRun.id} status=${modelStatus}`)
+  log.debug('Model run:', modelRun)
 
   if (capabilities.loadModel && run.config.unloadModelsAfterRun && modelInstanceId) {
     await unloadModelAfterRun(provider, providerId, modelInstanceId)

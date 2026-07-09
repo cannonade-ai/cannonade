@@ -4,6 +4,9 @@ import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/ch
 import { OpenAIModelsResponse, OpenAIChatResponse } from './types'
 import { authHeader } from '@shared/provider/api-key'
 import { toLocalModel, toChatRequest, toChatResponse } from './mappers'
+import { createLogger } from '../../../main/logger'
+
+const log = createLogger('custom-provider')
 
 export function createCustomProvider(
   instanceId: string,
@@ -24,7 +27,7 @@ export function createCustomProvider(
 
   async function chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
     const body = toChatRequest(request)
-    console.log('[custom] chat body:', JSON.stringify(body, null, 2))
+    log.debug('Chat request body:', body)
     const res = await fetch(`${normalizedBase}/v1/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...auth },

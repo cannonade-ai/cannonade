@@ -26,6 +26,10 @@ export const SETTINGS = {
   SAVE: 'settings:save'
 } as const
 
+export const LOGS = {
+  LIST: 'logs:list'
+} as const
+
 export const TEST_RUNS = {
   LIST: 'test-runs:list',
   DELETE: 'test-runs:delete'

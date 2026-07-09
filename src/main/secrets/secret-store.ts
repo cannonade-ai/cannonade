@@ -2,8 +2,11 @@ import { app, safeStorage } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import type { SecretInfo } from '@shared/provider/api-key'
+import { createLogger } from '../logger'
 
 export type { SecretInfo }
+
+const log = createLogger('secret-store')
 
 let cache: Record<string, string> = {}
 
@@ -26,10 +29,11 @@ export async function initSecrets(): Promise<void> {
       try {
         cache[key] = safeStorage.decryptString(Buffer.from(encoded, 'base64'))
       } catch (e) {
-        console.error(`[secrets] failed to decrypt ${key}`, e)
+        log.error(`Failed to decrypt ${key}:`, e)
       }
     }
-  } catch {
+  } catch (err) {
+    log.debug('No stored credentials loaded:', err)
     cache = {}
   }
 }
@@ -67,11 +71,13 @@ export async function setSecret(key: string, value: string): Promise<void> {
   }
   cache[key] = value
   await persist()
+  log.debug(`Secret stored: ${key}`)
 }
 
 export async function deleteSecret(key: string): Promise<void> {
   delete cache[key]
   await persist()
+  log.debug(`Secret deleted: ${key}`)
 }
 
 export function isSecureStorageAvailable(): boolean {

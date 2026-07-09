@@ -1,6 +1,9 @@
 import { app, BrowserWindow, screen, type Rectangle } from 'electron'
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
+import { createLogger } from './logger'
+
+const log = createLogger('window-state')
 
 interface WindowState {
   bounds: Rectangle
@@ -18,7 +21,8 @@ function loadState(): WindowState | null {
   try {
     const raw = readFileSync(windowStatePath(), 'utf-8')
     return JSON.parse(raw) as WindowState
-  } catch {
+  } catch (err) {
+    log.debug('No saved window state, using defaults:', err)
     return null
   }
 }
@@ -77,7 +81,7 @@ export function createWindowStateManager(): WindowStateManager {
             'utf-8'
           )
         } catch (err) {
-          console.error('[window-state] Persist error', err)
+          log.error('Persist error:', err)
         }
       }
 

@@ -1,5 +1,4 @@
 export function matchesHfModelId(installedKey: string, hfModelId: string): boolean {
-  console.log(installedKey, hfModelId)
   const key = installedKey.toLowerCase()
   const hf = hfModelId.toLowerCase()
   const hfParts = hf.split('/')

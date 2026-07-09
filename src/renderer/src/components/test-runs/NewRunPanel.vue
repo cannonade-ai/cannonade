@@ -13,6 +13,9 @@ import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { KNOWN_PROVIDER_DEFAULTS } from '@shared/provider/configured-provider'
 import { IconEdit, IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { createLogger } from '@renderer/utils/logger'
+
+const log = createLogger('new-run-panel')
 
 const props = defineProps<{
   suites: TestSuite[]
@@ -156,12 +159,12 @@ const canSubmit = computed(() => form.suiteId !== '' && form.models.length > 0)
 
 function onSubmit(): void {
   if (!canSubmit.value) {
-    console.warn('[NewRunPanel] Cannot submit: invalid form')
+    log.debug('Cannot submit: invalid form')
     return
   }
   const suite = props.suites.find((s) => s.id === form.suiteId)
   if (!suite) {
-    console.error('[NewRunPanel] Suite not found:', form.suiteId)
+    log.error('Suite not found:', form.suiteId)
     return
   }
   settingsStore.lastSuiteId = form.suiteId

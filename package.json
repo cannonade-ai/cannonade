@@ -21,7 +21,8 @@
     "build:mac": "npm run build && electron-builder --mac",
     "build:linux": "npm run build && electron-builder --linux",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "validate": "npm run typecheck && electron-vite build && vitest run"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
@@ -30,6 +31,7 @@
     "@lmstudio/sdk": "^1.5.0",
     "@tabler/icons-vue": "^3.44.0",
     "bleu-score": "^1.0.4",
+    "electron-log": "^5.4.4",
     "electron-updater": "^6.8.3",
     "fastest-levenshtein": "^1.0.16",
     "js-rouge": "^3.2.0",

@@ -1,4 +1,5 @@
 import type { ConfiguredProvider } from '../provider/configured-provider'
+import type { LogLevel } from './logging'
 
 export type FontSize = 'sm' | 'md' | 'lg'
 
@@ -14,6 +15,7 @@ export interface AppSettings {
   defaultTestCaseTimeout: number
   configuredProviders: ConfiguredProvider[]
   onboardingComplete: boolean
+  logLevel: LogLevel
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -27,5 +29,6 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   unloadModelsAfterRun: false,
   defaultTestCaseTimeout: 0,
   configuredProviders: [],
-  onboardingComplete: false
+  onboardingComplete: false,
+  logLevel: 'info'
 }

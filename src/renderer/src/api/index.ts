@@ -8,6 +8,7 @@ import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo } from '@shared/provider/api-key'
 import type { TestRun } from '@shared/app/test-run'
+import type { LogEntry } from '@shared/app/logging'
 import type {
   RunStartedPayload,
   RunCompletedPayload,
@@ -63,6 +64,7 @@ export const api = {
   deletePrompt: (id: string): Promise<void> => window.api.deletePrompt(id),
   loadAppSettings: (): Promise<AppSettings> => window.api.loadAppSettings(),
   saveAppSettings: (settings: AppSettings): Promise<void> => window.api.saveAppSettings(settings),
+  listLogs: (): Promise<LogEntry[]> => window.api.listLogs(),
   listTestRuns: (): Promise<TestRun[]> => window.api.listTestRuns(),
   deleteTestRun: (id: string): Promise<void> => window.api.deleteTestRun(id),
   startRun: (run: TestRun, suite: TestSuite): Promise<void> => window.api.startRun(run, suite),

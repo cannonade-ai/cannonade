@@ -7,6 +7,9 @@ import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/prov
 
 import { authHeader } from '@shared/provider/api-key'
 import { toLocalModel, toChatRequest, toChatResponse, toDownloadProgress } from './mappers'
+import { createLogger } from '../../../main/logger'
+
+const log = createLogger('ollama')
 
 export function createOllamaProvider(
   instanceId: string,
@@ -40,7 +43,7 @@ export function createOllamaProvider(
 
     async chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
       const ollamaRequest = toChatRequest(request)
-      console.log('[ollama] chat body:', JSON.stringify(ollamaRequest, null, 2))
+      log.debug('Chat request body:', ollamaRequest)
       const stream = await client.chat(ollamaRequest)
 
       const onAbort = (): void => stream.abort()
@@ -78,7 +81,7 @@ export function createOllamaProvider(
           }
           downloadJobs.set(jobId, { job_id: jobId, status: 'completed' })
         } catch (err) {
-          console.error(`[ollama] Download failed for model ${modelName}`, err)
+          log.error(`Download failed for model ${modelName}:`, err)
           downloadJobs.set(jobId, { job_id: jobId, status: 'failed' })
         }
       })()

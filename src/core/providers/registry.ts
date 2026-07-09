@@ -5,6 +5,9 @@ import {
   type ProviderType
 } from '@shared/provider/configured-provider'
 import { getSecret } from '../../main/secrets/secret-store'
+import { createLogger } from '../../main/logger'
+
+const log = createLogger('provider-registry')
 
 type ProviderFactory = (
   instanceId: string,
@@ -58,6 +61,11 @@ export function buildRegistry(configuredProviders: ConfiguredProvider[]): void {
     validateProvider(providerConfig.instanceId, provider)
     registry.set(providerConfig.instanceId, provider)
   }
+  log.debug(`Provider registry built with ${registry.size} provider(s)`)
+  log.debug(
+    'Configured providers:',
+    configuredProviders.map((p) => ({ instanceId: p.instanceId, type: p.type, url: p.url }))
+  )
 }
 
 export function getProvider(instanceId: string): LLMProvider {

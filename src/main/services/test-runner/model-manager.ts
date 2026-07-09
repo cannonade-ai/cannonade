@@ -5,6 +5,9 @@ import type { LocalModel } from '@shared/provider/local-model'
 import { matchesHfModelId } from '@shared/provider/hf-model-match'
 import type { LLMProvider } from '../../../core/providers/base'
 import type { SendEvent } from './types'
+import { createLogger } from '../../logger'
+
+const log = createLogger('model-manager')
 
 const HF_BASE_URL = 'https://huggingface.co/'
 const POLL_INTERVAL_MS = 1000
@@ -50,14 +53,19 @@ export async function downloadAndPoll(
   const response = await provider.downloadModel(downloadTarget)
 
   if (response.status === 'already_downloaded') {
+    log.debug(`Model already downloaded: ${downloadTarget}`)
     return false
   }
 
   const jobId = response.job_id
+  log.info(`Model download started: ${downloadTarget}, jobId: ${jobId}`)
   await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS / 2))
   while (!signal.aborted) {
     const status = await provider.getDownloadStatus!(jobId)
-    if (status.status === 'completed') return true
+    if (status.status === 'completed') {
+      log.info(`Model download completed: ${downloadTarget}`)
+      return true
+    }
     if (status.status === 'failed') throw new Error(`Download failed for ${downloadTarget}`)
     send(RUN.MODEL_DOWNLOADING, {
       modelRunId,
@@ -90,7 +98,7 @@ export async function unloadUnselectedModels(
       }
     }
   } catch (err) {
-    console.error('[test-runner] Failed to unload models before run:', err)
+    log.error('Failed to unload models before run:', err)
   }
 }
 
@@ -100,7 +108,7 @@ export async function isModelLoaded(provider: LLMProvider, modelKey: string): Pr
     const localModels = await provider.fetchLocalModels()
     return localModels.some((m) => m.id === modelKey && m.loadedInstances.length > 0)
   } catch (err) {
-    console.error('[test-runner] Failed to check loaded models:', err)
+    log.error('Failed to check loaded models:', err)
     return false
   }
 }
@@ -114,7 +122,7 @@ export async function unloadModelAfterRun(
     if (!provider.unloadModel) throw new Error(`${providerId}: unloadModel not supported`)
     await provider.unloadModel(modelInstanceId)
   } catch (err) {
-    console.error('[test-runner] Failed to unload model:', err)
+    log.error('Failed to unload model:', err)
   }
 }
 
@@ -130,6 +138,6 @@ export async function deleteAutoDownloadedModel(
       await provider.deleteModel(modelKey)
     }
   } catch (err) {
-    console.error('[test-runner] Failed to delete auto-downloaded model:', err)
+    log.error('Failed to delete auto-downloaded model:', err)
   }
 }

@@ -1,12 +1,17 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import 'electron-log/preload'
+import electronLog from 'electron-log/renderer'
 import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
-import { APP, SUITES, PROMPTS, SETTINGS, TEST_RUNS, RUN } from '@shared/app/ipc-channels'
+import { APP, SUITES, PROMPTS, SETTINGS, TEST_RUNS, RUN, LOGS } from '@shared/app/ipc-channels'
+import type { LogEntry } from '@shared/app/logging'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
+
+const log = electronLog.scope('preload')
 
 const api = {
   fetchLocalModels: (instanceId: string) =>
@@ -48,6 +53,7 @@ const api = {
   loadAppSettings: (): Promise<AppSettings> => ipcRenderer.invoke(SETTINGS.LOAD),
   saveAppSettings: (settings: AppSettings): Promise<void> =>
     ipcRenderer.invoke(SETTINGS.SAVE, settings),
+  listLogs: (): Promise<LogEntry[]> => ipcRenderer.invoke(LOGS.LIST),
   listTestRuns: (): Promise<TestRun[]> => ipcRenderer.invoke(TEST_RUNS.LIST),
   deleteTestRun: (id: string): Promise<void> => ipcRenderer.invoke(TEST_RUNS.DELETE, id),
   startRun: (run: TestRun, suite: TestSuite): Promise<void> =>
@@ -84,7 +90,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
-    console.error(error)
+    log.error('Failed to expose context bridge APIs:', error)
   }
 } else {
   // @ts-ignore (define in dts)

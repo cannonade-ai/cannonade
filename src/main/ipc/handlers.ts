@@ -3,7 +3,7 @@ import '../../core/providers'
 import { getProvider, createProbeProvider, buildRegistry } from '../../core/providers/registry'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import { PROVIDER } from '@shared/provider/ipc-channels'
-import { APP } from '@shared/app/ipc-channels'
+import { APP, LOGS } from '@shared/app/ipc-channels'
 import { join } from 'path'
 import { registerSuiteHandlers } from './suite-handlers'
 import { registerPromptHandlers } from './prompt-handlers'
@@ -11,6 +11,9 @@ import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
 import { registerRunHandlers } from './run-handlers'
 import { registerSecretHandlers } from './secret-handlers'
+import { getBufferedLogs, createLogger } from '../logger'
+
+const log = createLogger('ipc-handlers')
 
 export function registerHandlers(): void {
   registerSuiteHandlers()
@@ -82,7 +85,8 @@ export function registerHandlers(): void {
         if (provider.fetchLocalModels) await provider.fetchLocalModels()
         else if (provider.fetchExternalModels) await provider.fetchExternalModels()
         return true
-      } catch {
+      } catch (err) {
+        log.debug(`Connection test failed for ${type} at ${url}:`, err)
         return false
       }
     }
@@ -97,10 +101,13 @@ export function registerHandlers(): void {
         await provider.fetchExternalModels()
       }
       return true
-    } catch {
+    } catch (err) {
+      log.debug(`Connection test failed for ${instanceId}:`, err)
       return false
     }
   })
+
+  ipcMain.handle(LOGS.LIST, () => getBufferedLogs())
 
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())
   ipcMain.handle(APP.GET_SUITES_DIR, () => join(app.getPath('userData'), 'suites'))

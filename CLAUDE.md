@@ -30,3 +30,4 @@ npm test
 - You can use icons from tabler: `import { IconTank } from '@tabler/icons-vue'`;
 - Never run TypeScript type checks, build the project instead.
 - Never use `title:"some text"` on components, use `v-tooltip="'some text'"` instead.
+- Use `createLogger` (`src/main/logger.ts` / `src/renderer/src/utils/logger.ts`) instead of `console.*`; scope names are kebab-case matching the module's purpose (e.g. `'test-runner'`).

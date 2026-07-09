@@ -9,6 +9,7 @@ import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo } from '@shared/provider/api-key'
 import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
+import type { LogEntry } from '@shared/app/logging'
 import type { TestCaseResult } from '@shared/app/test-suite'
 
 export interface RunStartedPayload {
@@ -88,6 +89,7 @@ export interface AppAPI {
   deletePrompt(id: string): Promise<void>
   loadAppSettings(): Promise<AppSettings>
   saveAppSettings(settings: AppSettings): Promise<void>
+  listLogs(): Promise<LogEntry[]>
   listTestRuns(): Promise<TestRun[]>
   deleteTestRun(id: string): Promise<void>
   startRun(run: TestRun, suite: TestSuite): Promise<void>

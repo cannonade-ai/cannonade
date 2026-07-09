@@ -23,6 +23,9 @@ import {
   type ProviderType,
   type ConfiguredProvider
 } from '@shared/provider/configured-provider'
+import { createLogger } from '@renderer/utils/logger'
+
+const log = createLogger('add-provider-modal')
 
 function iconFor(type: ProviderType, isExternal: boolean): Component {
   if (type === 'custom') return IconCode
@@ -136,7 +139,8 @@ async function testConnection(): Promise<void> {
   try {
     const ok = await api.testConnectionUrl(selectedType.value, url.value)
     connectionStatus.value = ok ? 'ok' : 'error'
-  } catch {
+  } catch (e) {
+    log.debug(`Connection test failed for ${selectedType.value}:`, e)
     connectionStatus.value = 'error'
   }
 }
