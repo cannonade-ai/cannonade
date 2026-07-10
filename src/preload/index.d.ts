@@ -11,6 +11,7 @@ import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
 import type { LogEntry } from '@shared/app/logging'
 import type { TestCaseResult } from '@shared/app/test-suite'
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 
 export interface RunStartedPayload {
   runId: string
@@ -70,6 +71,8 @@ export interface AppAPI {
   testConnection(instanceId: string): Promise<boolean>
   testConnectionUrl(type: ProviderType, url: string, auth?: ProbeAuth): Promise<boolean>
   syncProviders(providers: ConfiguredProvider[]): Promise<void>
+  chat(instanceId: string, requestId: string, request: ChatRequest): Promise<ChatResponse>
+  abortChat(requestId: string): Promise<void>
   getSecretInfo(envVarName: string, instanceId: string | null): Promise<SecretInfo>
   setSecret(instanceId: string, value: string): Promise<void>
   deleteSecret(instanceId: string): Promise<void>

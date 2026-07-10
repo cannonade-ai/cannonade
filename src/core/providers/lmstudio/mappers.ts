@@ -3,6 +3,20 @@ import type { LocalModel } from '@shared/provider/local-model'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { ChatRequest } from '@shared/provider/chat'
 
+export function toSingleTurnRequest(request: ChatRequest): ChatRequest | null {
+  if (!request.messages?.length) return request
+  const systemMessages = request.messages.filter((m) => m.role === 'system')
+  const otherMessages = request.messages.filter((m) => m.role !== 'system')
+  if (systemMessages.length > 1) return null
+  if (otherMessages.length !== 1 || otherMessages[0].role !== 'user') return null
+  return {
+    ...request,
+    messages: undefined,
+    input: otherMessages[0].content,
+    system_prompt: systemMessages[0]?.content ?? request.system_prompt
+  }
+}
+
 export function toLocalModel(model: Model, instanceId: string): LocalModel {
   const meta: Record<string, string | number> = {}
   if (model.publisher) meta.publisher = model.publisher
@@ -30,7 +44,7 @@ export function toLocalModel(model: Model, instanceId: string): LocalModel {
 export function toChatRequest(request: ChatRequest): LmStudioChatRequest {
   return {
     model: request.model,
-    input: request.input,
+    input: request.input ?? '',
     system_prompt: request.system_prompt,
     integrations: request.integrations,
     stream: request.stream,

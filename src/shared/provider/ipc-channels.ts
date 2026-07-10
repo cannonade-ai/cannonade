@@ -2,6 +2,7 @@ export const PROVIDER = {
   FETCH_LOCAL_MODELS: 'provider:fetchLocalModels',
   FETCH_EXTERNAL_MODELS: 'provider:fetchExternalModels',
   CHAT: 'provider:chat',
+  CHAT_ABORT: 'provider:chatAbort',
   DOWNLOAD_MODEL: 'provider:downloadModel',
   DOWNLOAD_MODEL_STATUS: 'provider:downloadModelStatus',
   DELETE_MODEL: 'provider:deleteModel',

@@ -12,6 +12,7 @@ import { registerSettingsHandlers } from './settings-handlers'
 import { registerTestRunHandlers } from './test-run-handlers'
 import { registerRunHandlers } from './run-handlers'
 import { registerSecretHandlers } from './secret-handlers'
+import { registerChatHandlers } from './chat-handlers'
 import { getBufferedLogs, createLogger } from '../logger'
 
 const log = createLogger('ipc-handlers')
@@ -23,6 +24,7 @@ export function registerHandlers(): void {
   registerTestRunHandlers()
   registerRunHandlers()
   registerSecretHandlers()
+  registerChatHandlers()
 
   ipcMain.handle(
     PROVIDER.GET_CAPABILITIES,

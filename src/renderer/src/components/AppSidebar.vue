@@ -5,6 +5,7 @@ import {
   IconTestPipe,
   IconPlayerPlay,
   IconFileDescription,
+  IconMessageCircle,
   IconSettings
 } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
@@ -37,6 +38,13 @@ const collapsed = ref(false)
         :active="nav.current === 'prompts'"
         :collapsed="collapsed"
         @click="nav.navigate('prompts')"
+      />
+      <SidebarNavItem
+        :icon="IconMessageCircle"
+        label="Playground"
+        :active="nav.current === 'playground'"
+        :collapsed="collapsed"
+        @click="nav.navigate('playground')"
       />
       <SidebarNavItem
         :icon="IconPlayerPlay"

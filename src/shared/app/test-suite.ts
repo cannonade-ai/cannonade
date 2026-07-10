@@ -1,3 +1,5 @@
+import type { ChatMessage } from '../provider/chat'
+
 export interface TestSuite {
   id: string
   name: string
@@ -46,11 +48,6 @@ export interface TestInput {
 
   // optional structured input (useful for programmatic validation)
   data?: Record<string, unknown>
-}
-
-export interface ChatMessage {
-  role: 'system' | 'user' | 'assistant'
-  content: string
 }
 
 export interface RunConfig {

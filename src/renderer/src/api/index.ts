@@ -9,6 +9,7 @@ import type { ConfiguredProvider, ProviderType } from '@shared/provider/configur
 import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun } from '@shared/app/test-run'
 import type { LogEntry } from '@shared/app/logging'
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 import type {
   RunStartedPayload,
   RunCompletedPayload,
@@ -44,6 +45,9 @@ export const api = {
     window.api.testConnectionUrl(type, url, auth),
   syncProviders: (providers: ConfiguredProvider[]): Promise<void> =>
     window.api.syncProviders(providers),
+  chat: (instanceId: string, requestId: string, request: ChatRequest): Promise<ChatResponse> =>
+    window.api.chat(instanceId, requestId, request),
+  abortChat: (requestId: string): Promise<void> => window.api.abortChat(requestId),
   getSecretInfo: (envVarName: string, instanceId: string | null): Promise<SecretInfo> =>
     window.api.getSecretInfo(envVarName, instanceId),
   setSecret: (instanceId: string, value: string): Promise<void> =>

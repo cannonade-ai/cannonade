@@ -10,6 +10,11 @@ export interface ImageInput {
 
 export type InputItem = TextInput | ImageInput
 
+export interface ChatMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string
+}
+
 export interface PluginIntegration {
   type: 'plugin'
   id: string
@@ -28,7 +33,8 @@ export type Integration = string | PluginIntegration | EphemeralMcpIntegration
 
 export interface ChatRequest {
   model: string
-  input: string | InputItem[]
+  input?: string | InputItem[]
+  messages?: ChatMessage[]
   system_prompt?: string
   integrations?: Integration[]
   stream?: boolean

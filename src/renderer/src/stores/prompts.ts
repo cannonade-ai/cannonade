@@ -3,7 +3,8 @@ import { defineStore } from 'pinia'
 import { api } from '../api'
 import { getLatestVersion, getPromptVersion } from '@shared/app/prompt'
 import type { Prompt, PromptVersion } from '@shared/app/prompt'
-import type { TestCase, TestCasePromptRef, ChatMessage } from '@shared/app/test-suite'
+import type { TestCase, TestCasePromptRef } from '@shared/app/test-suite'
+import type { ChatMessage } from '@shared/provider/chat'
 
 export const usePromptsStore = defineStore('prompts', () => {
   const prompts = ref<Prompt[]>([])
