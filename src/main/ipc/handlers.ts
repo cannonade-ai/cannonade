@@ -2,6 +2,7 @@ import { app, ipcMain, BrowserWindow, shell } from 'electron'
 import '../../core/providers'
 import { getProvider, createProbeProvider, buildRegistry } from '../../core/providers/registry'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
+import type { ProbeAuth } from '@shared/provider/api-key'
 import { PROVIDER } from '@shared/provider/ipc-channels'
 import { APP, LOGS } from '@shared/app/ipc-channels'
 import { join } from 'path'
@@ -79,8 +80,8 @@ export function registerHandlers(): void {
 
   ipcMain.handle(
     PROVIDER.TEST_CONNECTION_URL,
-    async (_event, type: ProviderType, url: string): Promise<boolean> => {
-      const provider = createProbeProvider(type, url)
+    async (_event, type: ProviderType, url: string, auth?: ProbeAuth): Promise<boolean> => {
+      const provider = createProbeProvider(type, url, auth)
       try {
         if (provider.fetchLocalModels) await provider.fetchLocalModels()
         else if (provider.fetchExternalModels) await provider.fetchExternalModels()

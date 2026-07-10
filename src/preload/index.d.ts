@@ -7,7 +7,7 @@ import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
-import type { SecretInfo } from '@shared/provider/api-key'
+import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
 import type { LogEntry } from '@shared/app/logging'
 import type { TestCaseResult } from '@shared/app/test-suite'
@@ -68,11 +68,11 @@ export interface AppAPI {
   serverStart(instanceId: string): Promise<ServerStatusResponse>
   serverStop(instanceId: string): Promise<ServerStatusResponse>
   testConnection(instanceId: string): Promise<boolean>
-  testConnectionUrl(type: ProviderType, url: string): Promise<boolean>
+  testConnectionUrl(type: ProviderType, url: string, auth?: ProbeAuth): Promise<boolean>
   syncProviders(providers: ConfiguredProvider[]): Promise<void>
-  getSecretInfo(type: ProviderType): Promise<SecretInfo>
-  setSecret(type: ProviderType, value: string): Promise<void>
-  deleteSecret(type: ProviderType): Promise<void>
+  getSecretInfo(envVarName: string, instanceId: string | null): Promise<SecretInfo>
+  setSecret(instanceId: string, value: string): Promise<void>
+  deleteSecret(instanceId: string): Promise<void>
   getAppVersion(): Promise<string>
   getSuitesDir(): Promise<string>
   getRunsDir(): Promise<string>

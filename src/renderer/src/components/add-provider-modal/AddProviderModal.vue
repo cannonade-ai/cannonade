@@ -14,13 +14,16 @@ import Button from '@renderer/components/ui/Button.vue'
 import Field from '@renderer/components/ui/Field.vue'
 import Input from '@renderer/components/ui/Input.vue'
 import Toggle from '@renderer/components/ui/Toggle.vue'
+import RadioGroup from '@renderer/components/ui/RadioGroup.vue'
 import AddProviderModalTypeCard from './AddProviderModalTypeCard.vue'
 import { useProvidersStore } from '@renderer/stores/providers'
 import { api } from '@renderer/api'
-import type { SecretSource } from '@shared/provider/api-key'
+import type { ProbeAuth } from '@shared/provider/api-key'
 import {
   KNOWN_PROVIDER_DEFAULTS,
+  defaultEnvVarName,
   type ProviderType,
+  type ProviderAuthMethod,
   type ConfiguredProvider
 } from '@shared/provider/configured-provider'
 import { createLogger } from '@renderer/utils/logger'
@@ -54,18 +57,29 @@ const displayName = ref('')
 const url = ref('')
 const isRemote = ref(false)
 const connectionStatus = ref<'idle' | 'testing' | 'ok' | 'error'>('idle')
+const authMethod = ref<ProviderAuthMethod>('none')
+const envVarName = ref('')
 
 const apiKeyState = reactive(emptyApiKeyState())
 
 function emptyApiKeyState(): {
   value: string
-  source: SecretSource
-  preview: string
+  storedKeyExists: boolean
+  maskedStoredKey: string
+  envVarExists: boolean
+  maskedEnvValue: string
   dirty: boolean
   cleared: boolean
-  envLabel: string
 } {
-  return { value: '', source: 'none', preview: '', dirty: false, cleared: false, envLabel: '' }
+  return {
+    value: '',
+    storedKeyExists: false,
+    maskedStoredKey: '',
+    envVarExists: false,
+    maskedEnvValue: '',
+    dirty: false,
+    cleared: false
+  }
 }
 
 const isEditMode = computed(() => !!props.editProvider)
@@ -74,17 +88,32 @@ const existingTypes = computed(() => new Set(providers.configuredProviders.map((
 
 const selectedDefinition = computed(() => KNOWN_PROVIDER_DEFAULTS[selectedType.value])
 
+const authMethodOptions = computed<{ value: ProviderAuthMethod; label: string }[]>(() => [
+  ...(selectedDefinition.value.requiresApiKey
+    ? []
+    : [{ value: 'none' as ProviderAuthMethod, label: 'None' }]),
+  { value: 'stored' as ProviderAuthMethod, label: 'API Key' },
+  { value: 'env' as ProviderAuthMethod, label: 'Environment Variable' }
+])
+
+function defaultAuthMethod(type: ProviderType): ProviderAuthMethod {
+  return KNOWN_PROVIDER_DEFAULTS[type].requiresApiKey ? 'stored' : 'none'
+}
+
 const apiKeyHint = computed(() => {
-  const envPart = apiKeyState.envLabel
-    ? ` Alternatively, set the ${apiKeyState.envLabel} environment variable.`
-    : ''
-  const base = `Stored securely on this device.${envPart}`
+  const base = 'Stored securely on this device.'
   return selectedDefinition.value.requiresApiKey ? base : `Optional. ${base}`
 })
 
 const apiKeySatisfied = computed(() => {
   if (!selectedDefinition.value.requiresApiKey) return true
-  return apiKeyState.source !== 'none' || apiKeyState.value.trim().length > 0
+  if (authMethod.value === 'env') return apiKeyState.envVarExists
+  if (authMethod.value === 'stored') {
+    return (
+      (apiKeyState.storedKeyExists && !apiKeyState.cleared) || apiKeyState.value.trim().length > 0
+    )
+  }
+  return false
 })
 
 const canAdd = computed(
@@ -104,15 +133,21 @@ watch(
       displayName.value = provider.displayName
       url.value = provider.url
       isRemote.value = provider.isRemote ?? false
+      authMethod.value = provider.authMethod ?? defaultAuthMethod(provider.type)
+      envVarName.value = provider.envVarName ?? defaultEnvVarName(provider.type)
       step.value = 2
       connectionStatus.value = 'idle'
-      loadSecretInfo(provider.type)
+      void refreshSecretInfo()
     } else {
       reset()
     }
   },
   { immediate: true }
 )
+
+watch(envVarName, () => {
+  void refreshSecretInfo()
+})
 
 function isDisabled(type: ProviderType): boolean {
   return KNOWN_PROVIDER_DEFAULTS[type].singleton && existingTypes.value.has(type)
@@ -125,8 +160,10 @@ function selectType(type: ProviderType): void {
   displayName.value = defaults.displayName
   url.value = defaults.defaultUrl
   isRemote.value = false
+  authMethod.value = defaultAuthMethod(type)
+  envVarName.value = defaultEnvVarName(type)
   step.value = 2
-  void loadSecretInfo(type)
+  void refreshSecretInfo()
 }
 
 function goBack(): void {
@@ -134,10 +171,20 @@ function goBack(): void {
   connectionStatus.value = 'idle'
 }
 
+function probeAuth(): ProbeAuth {
+  if (authMethod.value === 'env') {
+    return { authMethod: 'env', envVarName: envVarName.value.trim() }
+  }
+  if (authMethod.value === 'stored') {
+    return { authMethod: 'stored', instanceId: props.editProvider?.instanceId }
+  }
+  return { authMethod: 'none' }
+}
+
 async function testConnection(): Promise<void> {
   connectionStatus.value = 'testing'
   try {
-    const ok = await api.testConnectionUrl(selectedType.value, url.value)
+    const ok = await api.testConnectionUrl(selectedType.value, url.value, probeAuth())
     connectionStatus.value = ok ? 'ok' : 'error'
   } catch (e) {
     log.debug(`Connection test failed for ${selectedType.value}:`, e)
@@ -145,31 +192,32 @@ async function testConnection(): Promise<void> {
   }
 }
 
-async function loadSecretInfo(type: ProviderType): Promise<void> {
-  apiKeyState.value = ''
-  apiKeyState.dirty = false
-  apiKeyState.cleared = false
-  const status = await api.getSecretInfo(type)
-  apiKeyState.source = status.source
-  apiKeyState.preview = status.preview ?? ''
-  apiKeyState.envLabel = status.envName
+async function refreshSecretInfo(): Promise<void> {
+  const name = envVarName.value.trim() || defaultEnvVarName(selectedType.value)
+  const info = await api.getSecretInfo(name, props.editProvider?.instanceId ?? null)
+  apiKeyState.envVarExists = info.envVarExists
+  apiKeyState.maskedEnvValue = info.maskedEnvValue ?? ''
+  if (!apiKeyState.cleared) {
+    apiKeyState.storedKeyExists = info.storedKeyExists
+    apiKeyState.maskedStoredKey = info.maskedStoredKey ?? ''
+  }
 }
 
 function clearApiKey(): void {
   apiKeyState.value = ''
-  apiKeyState.preview = ''
-  apiKeyState.source = 'none'
+  apiKeyState.storedKeyExists = false
+  apiKeyState.maskedStoredKey = ''
   apiKeyState.dirty = true
   apiKeyState.cleared = true
 }
 
-async function persistApiKey(): Promise<void> {
-  if (!apiKeyState.dirty) return
+async function persistApiKey(instanceId: string): Promise<void> {
+  if (authMethod.value !== 'stored' || !apiKeyState.dirty) return
   const value = apiKeyState.value.trim()
   if (value.length > 0) {
-    await api.setSecret(selectedType.value, value)
+    await api.setSecret(instanceId, value)
   } else if (apiKeyState.cleared) {
-    await api.deleteSecret(selectedType.value)
+    await api.deleteSecret(instanceId)
   }
 }
 
@@ -180,10 +228,12 @@ async function addProvider(): Promise<void> {
     displayName: displayName.value.trim(),
     url: url.value.trim(),
     isDefault: false,
+    authMethod: authMethod.value,
+    envVarName: authMethod.value === 'env' ? envVarName.value.trim() : undefined,
     ...(selectedDefinition.value.supportsRemote && { isRemote: isRemote.value })
   }
 
-  await persistApiKey()
+  await persistApiKey(provider.instanceId)
   await providers.addProvider(provider)
   model.value = false
   reset()
@@ -191,11 +241,13 @@ async function addProvider(): Promise<void> {
 
 async function saveProvider(): Promise<void> {
   if (!props.editProvider) return
-  await persistApiKey()
+  await persistApiKey(props.editProvider.instanceId)
   await providers.updateProvider({
     ...props.editProvider,
     displayName: displayName.value.trim(),
     url: url.value.trim(),
+    authMethod: authMethod.value,
+    envVarName: authMethod.value === 'env' ? envVarName.value.trim() : undefined,
     ...(selectedDefinition.value.supportsRemote && { isRemote: isRemote.value })
   })
   model.value = false
@@ -207,6 +259,8 @@ function reset(): void {
   displayName.value = ''
   url.value = ''
   isRemote.value = false
+  authMethod.value = 'none'
+  envVarName.value = ''
   connectionStatus.value = 'idle'
   Object.assign(apiKeyState, emptyApiKeyState())
 }
@@ -248,18 +302,27 @@ function onClose(): void {
         <Input v-model="url" placeholder="http://localhost:1234" type="url" />
       </Field>
 
-      <Field label="API Key" :hint="apiKeyHint">
+      <Field
+        label="Authentication"
+        hint="How this provider authenticates: no API key, a stored key, or an environment variable."
+      >
+        <RadioGroup v-model="authMethod" :options="authMethodOptions" type="rounded" />
+      </Field>
+
+      <Field v-if="authMethod === 'stored'" label="API Key" :hint="apiKeyHint">
         <div class="api-key-input">
-          <Input v-if="apiKeyState.source === 'env'" :model-value="apiKeyState.preview" disabled />
           <Input
-            v-else
             v-model="apiKeyState.value"
             type="password"
-            :placeholder="apiKeyState.source === 'store' ? apiKeyState.preview : 'Enter API key'"
+            :placeholder="
+              apiKeyState.storedKeyExists && !apiKeyState.cleared
+                ? apiKeyState.maskedStoredKey
+                : 'Enter API key'
+            "
             @update:model-value="apiKeyState.dirty = true"
           />
           <Button
-            v-if="apiKeyState.source === 'store'"
+            v-if="apiKeyState.storedKeyExists && !apiKeyState.cleared"
             v-tooltip="'Clear saved key'"
             type="icon"
             :icon="IconX"
@@ -268,6 +331,22 @@ function onClose(): void {
             @click="clearApiKey"
           />
         </div>
+      </Field>
+
+      <Field
+        v-else-if="authMethod === 'env'"
+        label="Environment Variable"
+        hint="Name of the environment variable that holds the API key."
+      >
+        <Input v-model="envVarName" placeholder="MY_PROVIDER_API_KEY" spellcheck="false" />
+        <span v-if="apiKeyState.envVarExists" class="env-status env-status--ok">
+          <IconCircleCheck :size="13" />
+          Set ({{ apiKeyState.maskedEnvValue }})
+        </span>
+        <span v-else class="env-status env-status--warn">
+          <IconCircleX :size="13" />
+          Not set in current environment
+        </span>
       </Field>
 
       <Field
@@ -344,6 +423,22 @@ function onClose(): void {
   right: 4px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.env-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  font-size: var(--text-xs);
+
+  &--ok {
+    color: var(--success, #4ade80);
+  }
+
+  &--warn {
+    color: var(--text-muted);
+  }
 }
 
 .status {

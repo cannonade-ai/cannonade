@@ -8,6 +8,7 @@ import type { LogEntry } from '@shared/app/logging'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
+import type { ProbeAuth } from '@shared/provider/api-key'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
 
@@ -30,12 +31,14 @@ const api = {
   serverStart: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_START, instanceId),
   serverStop: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_STOP, instanceId),
   testConnection: (instanceId: string) => ipcRenderer.invoke(PROVIDER.TEST_CONNECTION, instanceId),
-  testConnectionUrl: (type: ProviderType, url: string) =>
-    ipcRenderer.invoke(PROVIDER.TEST_CONNECTION_URL, type, url),
+  testConnectionUrl: (type: ProviderType, url: string, auth?: ProbeAuth) =>
+    ipcRenderer.invoke(PROVIDER.TEST_CONNECTION_URL, type, url, auth),
   syncProviders: (providers: ConfiguredProvider[]) => ipcRenderer.invoke(PROVIDER.SYNC, providers),
-  getSecretInfo: (type: ProviderType) => ipcRenderer.invoke(SECRETS.GET_INFO, type),
-  setSecret: (type: ProviderType, value: string) => ipcRenderer.invoke(SECRETS.SET, type, value),
-  deleteSecret: (type: ProviderType) => ipcRenderer.invoke(SECRETS.DELETE, type),
+  getSecretInfo: (envVarName: string, instanceId: string | null) =>
+    ipcRenderer.invoke(SECRETS.GET_INFO, envVarName, instanceId),
+  setSecret: (instanceId: string, value: string) =>
+    ipcRenderer.invoke(SECRETS.SET, instanceId, value),
+  deleteSecret: (instanceId: string) => ipcRenderer.invoke(SECRETS.DELETE, instanceId),
   getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
   getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
   getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),

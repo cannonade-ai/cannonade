@@ -7,7 +7,7 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     supportsRemote: true,
     isExternal: false,
     requiresApiKey: false,
-    apiKeyEnvNames: ['LMSTUDIO_API_KEY', 'LM_API_TOKEN']
+    defaultEnvVar: 'LMSTUDIO_API_KEY'
   },
   ollama: {
     displayName: 'Ollama',
@@ -17,17 +17,17 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     supportsRemote: true,
     isExternal: false,
     requiresApiKey: false,
-    apiKeyEnvNames: ['OLLAMA_API_KEY']
+    defaultEnvVar: 'OLLAMA_API_KEY'
   },
   custom: {
     displayName: 'Custom',
     description: 'Any OpenAI-compatible API endpoint',
-    defaultUrl: '',
+    defaultUrl: 'http://localhost:8080',
     singleton: false,
     supportsRemote: false,
     isExternal: false,
     requiresApiKey: false,
-    apiKeyEnvNames: ['CUSTOM_API_KEY']
+    defaultEnvVar: 'CUSTOM_API_KEY'
   },
   openrouter: {
     displayName: 'OpenRouter',
@@ -37,11 +37,13 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     supportsRemote: false,
     isExternal: true,
     requiresApiKey: true,
-    apiKeyEnvNames: ['OPENROUTER_API_KEY']
+    defaultEnvVar: 'OPENROUTER_API_KEY'
   }
 } as const
 
 export type ProviderType = keyof typeof KNOWN_PROVIDER_DEFAULTS
+
+export type ProviderAuthMethod = 'none' | 'env' | 'stored'
 
 export interface ConfiguredProvider {
   instanceId: string
@@ -50,4 +52,10 @@ export interface ConfiguredProvider {
   url: string
   isDefault: boolean
   isRemote?: boolean
+  authMethod?: ProviderAuthMethod
+  envVarName?: string
+}
+
+export function defaultEnvVarName(type: ProviderType): string {
+  return KNOWN_PROVIDER_DEFAULTS[type].defaultEnvVar
 }

@@ -6,7 +6,7 @@ import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
-import type { SecretInfo } from '@shared/provider/api-key'
+import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun } from '@shared/app/test-run'
 import type { LogEntry } from '@shared/app/logging'
 import type {
@@ -40,14 +40,15 @@ export const api = {
   serverStop: (instanceId: string): Promise<ServerStatusResponse> =>
     window.api.serverStop(instanceId),
   testConnection: (instanceId: string): Promise<boolean> => window.api.testConnection(instanceId),
-  testConnectionUrl: (type: ProviderType, url: string): Promise<boolean> =>
-    window.api.testConnectionUrl(type, url),
+  testConnectionUrl: (type: ProviderType, url: string, auth?: ProbeAuth): Promise<boolean> =>
+    window.api.testConnectionUrl(type, url, auth),
   syncProviders: (providers: ConfiguredProvider[]): Promise<void> =>
     window.api.syncProviders(providers),
-  getSecretInfo: (type: ProviderType): Promise<SecretInfo> => window.api.getSecretInfo(type),
-  setSecret: (type: ProviderType, value: string): Promise<void> =>
-    window.api.setSecret(type, value),
-  deleteSecret: (type: ProviderType): Promise<void> => window.api.deleteSecret(type),
+  getSecretInfo: (envVarName: string, instanceId: string | null): Promise<SecretInfo> =>
+    window.api.getSecretInfo(envVarName, instanceId),
+  setSecret: (instanceId: string, value: string): Promise<void> =>
+    window.api.setSecret(instanceId, value),
+  deleteSecret: (instanceId: string): Promise<void> => window.api.deleteSecret(instanceId),
   getAppVersion: (): Promise<string> => window.api.getAppVersion(),
   getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
   getRunsDir: (): Promise<string> => window.api.getRunsDir(),
