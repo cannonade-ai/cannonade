@@ -1,10 +1,7 @@
 import type { LLMProvider } from './base'
-import {
-  KNOWN_PROVIDER_DEFAULTS,
-  type ConfiguredProvider,
-  type ProviderType
-} from '@shared/provider/configured-provider'
-import { getSecret } from '../../main/secrets/secret-store'
+import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
+import type { ProbeAuth } from '@shared/provider/api-key'
+import { resolveApiKey, resolveProbeKey } from '../../main/secrets/secret-store'
 import { createLogger } from '../../main/logger'
 
 const log = createLogger('provider-registry')
@@ -23,10 +20,14 @@ export function registerProviderFactory(type: string, factory: ProviderFactory):
   factories.set(type, factory)
 }
 
-export function createProbeProvider(type: ProviderType, url: string): LLMProvider {
+export function createProbeProvider(
+  type: ProviderType,
+  url: string,
+  auth?: ProbeAuth
+): LLMProvider {
   const factory = factories.get(type) ?? factories.get('custom')
   if (!factory) throw new Error(`No factory registered for provider type: ${type}`)
-  return factory('__probe__', url, getSecret(KNOWN_PROVIDER_DEFAULTS[type].apiKeyEnvNames), false)
+  return factory('__probe__', url, resolveProbeKey(type, auth), false)
 }
 
 function validateProvider(id: string, p: LLMProvider): void {
@@ -46,7 +47,14 @@ function validateProvider(id: string, p: LLMProvider): void {
   if (c.serverControl && !p.stopServer) miss('stopServer')
 }
 
+let lastConfigured: ConfiguredProvider[] = []
+
+export function rebuildRegistry(): void {
+  buildRegistry(lastConfigured)
+}
+
 export function buildRegistry(configuredProviders: ConfiguredProvider[]): void {
+  lastConfigured = configuredProviders
   registry.clear()
 
   for (const providerConfig of configuredProviders) {
@@ -55,7 +63,7 @@ export function buildRegistry(configuredProviders: ConfiguredProvider[]): void {
     const provider = factory(
       providerConfig.instanceId,
       providerConfig.url,
-      getSecret(KNOWN_PROVIDER_DEFAULTS[providerConfig.type].apiKeyEnvNames),
+      resolveApiKey(providerConfig),
       providerConfig.isRemote ?? false
     )
     validateProvider(providerConfig.instanceId, provider)

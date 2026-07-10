@@ -61,6 +61,7 @@ export const useProvidersStore = defineStore('providers', () => {
     }
     await api.syncProviders(remaining)
     configuredProviders.value = remaining
+    await api.deleteSecret(instanceId)
   }
 
   function setDefault(instanceId: string): void {

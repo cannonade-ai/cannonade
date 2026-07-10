@@ -1,30 +1,23 @@
 import { ipcMain } from 'electron'
 import { SECRETS } from '@shared/provider/ipc-channels'
-import { KNOWN_PROVIDER_DEFAULTS, type ProviderType } from '@shared/provider/configured-provider'
 import { getSecretInfo, setSecret, deleteSecret, type SecretInfo } from '../secrets/secret-store'
-import { buildRegistry } from '../../core/providers/registry'
-import { getAppSettings } from './settings-handlers'
-
-function rebuildRegistry(): void {
-  buildRegistry(getAppSettings().configuredProviders)
-}
-
-function envNames(type: ProviderType): readonly string[] {
-  return KNOWN_PROVIDER_DEFAULTS[type].apiKeyEnvNames
-}
+import { rebuildRegistry } from '../../core/providers/registry'
 
 export function registerSecretHandlers(): void {
-  ipcMain.handle(SECRETS.GET_INFO, (_event, type: ProviderType): SecretInfo => {
-    return getSecretInfo(envNames(type))
-  })
+  ipcMain.handle(
+    SECRETS.GET_INFO,
+    (_event, envVarName: string, instanceId: string | null): SecretInfo => {
+      return getSecretInfo(envVarName, instanceId)
+    }
+  )
 
-  ipcMain.handle(SECRETS.SET, async (_event, type: ProviderType, value: string): Promise<void> => {
-    await setSecret(envNames(type)[0], value)
+  ipcMain.handle(SECRETS.SET, async (_event, instanceId: string, value: string): Promise<void> => {
+    await setSecret(instanceId, value)
     rebuildRegistry()
   })
 
-  ipcMain.handle(SECRETS.DELETE, async (_event, type: ProviderType): Promise<void> => {
-    await deleteSecret(envNames(type)[0])
+  ipcMain.handle(SECRETS.DELETE, async (_event, instanceId: string): Promise<void> => {
+    await deleteSecret(instanceId)
     rebuildRegistry()
   })
 }

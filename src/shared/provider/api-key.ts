@@ -1,9 +1,16 @@
-export type SecretSource = 'env' | 'store' | 'none'
+import type { ProviderAuthMethod } from './configured-provider'
 
 export interface SecretInfo {
-  source: SecretSource
-  preview: string | null
-  envName: string
+  envVarExists: boolean
+  maskedEnvValue: string | null
+  storedKeyExists: boolean
+  maskedStoredKey: string | null
+}
+
+export interface ProbeAuth {
+  authMethod: ProviderAuthMethod
+  envVarName?: string
+  instanceId?: string
 }
 
 export function authHeader(apiKey?: string): Record<string, string> {

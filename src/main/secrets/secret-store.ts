@@ -1,7 +1,13 @@
 import { app, safeStorage } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
-import type { SecretInfo } from '@shared/provider/api-key'
+import type { ProbeAuth, SecretInfo } from '@shared/provider/api-key'
+import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
+import {
+  resolveApiKey as resolveApiKeyFromSources,
+  resolveProbeApiKey,
+  type SecretSources
+} from './auth-resolution'
 import { createLogger } from '../logger'
 
 export type { SecretInfo }
@@ -17,6 +23,10 @@ function credentialsPath(): string {
 function maskSecret(value: string): string {
   const visible = value.slice(-4)
   return `${'•'.repeat(5)}${value.length > 4 ? visible : ''}`
+}
+
+function sources(): SecretSources {
+  return { env: process.env, store: cache }
 }
 
 export async function initSecrets(): Promise<void> {
@@ -46,38 +56,39 @@ async function persist(): Promise<void> {
   await fs.writeFile(credentialsPath(), JSON.stringify(encoded, null, 2), 'utf-8')
 }
 
-export function getSecret(envNames: readonly string[]): string | undefined {
-  for (const name of envNames) {
-    const fromEnv = process.env[name]
-    if (fromEnv) return fromEnv
-  }
-  return cache[envNames[0]]
+export function resolveApiKey(provider: ConfiguredProvider): string | undefined {
+  return resolveApiKeyFromSources(provider, sources())
 }
 
-export function getSecretInfo(envNames: readonly string[]): SecretInfo {
-  const canonical = envNames[0]
-  for (const name of envNames) {
-    const fromEnv = process.env[name]
-    if (fromEnv) return { source: 'env', preview: maskSecret(fromEnv), envName: name }
-  }
-  const stored = cache[canonical]
-  if (stored) return { source: 'store', preview: maskSecret(stored), envName: canonical }
-  return { source: 'none', preview: null, envName: canonical }
+export function resolveProbeKey(type: ProviderType, auth?: ProbeAuth): string | undefined {
+  return resolveProbeApiKey(type, auth, sources())
 }
 
-export async function setSecret(key: string, value: string): Promise<void> {
+export function getSecretInfo(envVarName: string, instanceId: string | null): SecretInfo {
+  const fromEnv = process.env[envVarName]
+  const stored = instanceId ? cache[instanceId] : undefined
+  return {
+    envVarExists: !!fromEnv,
+    maskedEnvValue: fromEnv ? maskSecret(fromEnv) : null,
+    storedKeyExists: !!stored,
+    maskedStoredKey: stored ? maskSecret(stored) : null
+  }
+}
+
+export async function setSecret(instanceId: string, value: string): Promise<void> {
   if (!safeStorage.isEncryptionAvailable()) {
     throw new Error('Secure storage is not available on this system')
   }
-  cache[key] = value
+  cache[instanceId] = value
   await persist()
-  log.debug(`Secret stored: ${key}`)
+  log.debug(`Secret stored for provider: ${instanceId}`)
 }
 
-export async function deleteSecret(key: string): Promise<void> {
-  delete cache[key]
+export async function deleteSecret(instanceId: string): Promise<void> {
+  if (!(instanceId in cache)) return
+  delete cache[instanceId]
   await persist()
-  log.debug(`Secret deleted: ${key}`)
+  log.debug(`Secret deleted for provider: ${instanceId}`)
 }
 
 export function isSecureStorageAvailable(): boolean {
