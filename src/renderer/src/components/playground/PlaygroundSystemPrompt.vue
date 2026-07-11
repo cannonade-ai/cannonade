@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { storeToRefs } from 'pinia'
-import { Badge, Select, Textarea } from '@renderer/components/ui'
+import { Badge, Collapse, Select, Textarea } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import { usePlaygroundStore } from '@renderer/stores/playground'
 import { usePromptsStore } from '@renderer/stores/prompts'
@@ -54,20 +54,19 @@ watch(linkedPrompt, (linked) => {
 </script>
 
 <template>
-  <div class="system-prompt">
-    <div class="system-prompt__label">
-      <span>System Prompt</span>
+  <Collapse label="System Prompt" class="system-prompt" default-open>
+    <template #label-addon>
       <template v-if="linkedPrompt">
         <Badge v-if="linkedPrompt.modified" square>modified</Badge>
         <Badge v-else type="secondary" square>linked</Badge>
       </template>
-    </div>
+    </template>
     <div v-if="promptOptions.length" class="system-prompt__load">
       <Select
         v-model="selectedPromptId"
         class="system-prompt__prompt-select"
         :options="promptOptions"
-        placeholder="Load saved prompt…"
+        placeholder="Load saved prompt..."
       />
       <Select
         v-if="selectedPromptId"
@@ -77,26 +76,11 @@ watch(linkedPrompt, (linked) => {
       />
     </div>
     <Textarea v-model="promptText" placeholder="You are a helpful assistant…" :rows="5" />
-  </div>
+  </Collapse>
 </template>
 
 <style scoped lang="scss">
 .system-prompt {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-
-  &__label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: var(--text-xs);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--text-muted);
-  }
-
   &__load {
     display: flex;
     gap: 8px;

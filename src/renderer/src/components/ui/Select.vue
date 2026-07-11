@@ -9,6 +9,7 @@ export interface SelectOption<V extends string = string> {
 const props = defineProps<{
   options: SelectOption<T>[]
   placeholder?: string
+  disabled?: boolean
 }>()
 
 const model = defineModel<T>()
@@ -23,6 +24,7 @@ const selectedLabel = computed(
 )
 
 function toggle(): void {
+  if (props.disabled) return
   open.value = !open.value
   if (open.value) {
     focused.value = props.options.findIndex((o) => o.value === model.value)
@@ -36,6 +38,7 @@ function select(value: T): void {
 }
 
 function onKeydown(e: KeyboardEvent): void {
+  if (props.disabled) return
   if (!open.value) {
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
       e.preventDefault()
@@ -82,10 +85,11 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
   <div
     ref="rootRef"
     class="select"
-    :class="{ open }"
-    tabindex="0"
+    :class="{ open, disabled }"
+    :tabindex="disabled ? -1 : 0"
     role="combobox"
     :aria-expanded="open"
+    :aria-disabled="disabled"
     @click="toggle"
     @keydown="onKeydown"
   >
@@ -144,6 +148,11 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
 
   &.open {
     border-color: var(--accent);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   &.open {

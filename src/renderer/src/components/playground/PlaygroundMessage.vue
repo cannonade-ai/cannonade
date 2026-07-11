@@ -1,7 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { IconAlertTriangle, IconChevronRight, IconRefresh } from '@tabler/icons-vue'
-import { Badge, Button, CopyButton } from '@renderer/components/ui'
+import {
+  IconAlertTriangle,
+  IconChevronRight,
+  IconCode,
+  IconMarkdown,
+  IconRefresh
+} from '@tabler/icons-vue'
+import { Badge, Button, CopyButton, MarkdownContent } from '@renderer/components/ui'
 import type { PlaygroundMessage } from '@renderer/stores/playground'
 
 defineProps<{
@@ -14,6 +20,7 @@ const emit = defineEmits<{
 }>()
 
 const reasoningOpen = ref(false)
+const showRaw = ref(false)
 
 function formatStat(value: number, digits = 1): string {
   return value.toFixed(digits)
@@ -54,13 +61,35 @@ function formatStat(value: number, digits = 1): string {
         <IconChevronRight :size="12" class="chevron" :class="{ open: reasoningOpen }" />
         Reasoning
       </button>
-      <pre v-if="message.reasoning && reasoningOpen" class="message__reasoning">{{
-        message.reasoning
-      }}</pre>
-
-      <CopyButton :value="message.content">
-        <div class="message__content">{{ message.content }}</div>
+      <CopyButton v-if="message.reasoning && reasoningOpen" :value="message.reasoning">
+        <MarkdownContent
+          v-if="!showRaw"
+          :content="message.reasoning"
+          class="message__reasoning message__reasoning--rendered"
+        />
+        <pre v-else class="message__reasoning">{{ message.reasoning }}</pre>
       </CopyButton>
+
+      <div class="message__content-wrap">
+        <CopyButton :value="message.content">
+          <MarkdownContent
+            v-if="message.role === 'assistant' && !showRaw"
+            :content="message.content"
+            class="message__content"
+          />
+          <div v-else class="message__content message__content--raw">{{ message.content }}</div>
+        </CopyButton>
+        <button
+          v-if="message.role === 'assistant'"
+          v-tooltip="showRaw ? 'Show rendered markdown' : 'Show raw text'"
+          type="button"
+          class="message__raw-toggle"
+          @click="showRaw = !showRaw"
+        >
+          <IconMarkdown v-if="showRaw" :size="13" :stroke-width="2" />
+          <IconCode v-else :size="13" :stroke-width="2" />
+        </button>
+      </div>
     </template>
   </div>
 </template>
@@ -100,6 +129,18 @@ function formatStat(value: number, digits = 1): string {
     color: var(--text-muted);
   }
 
+  &__content-wrap {
+    position: relative;
+
+    &:hover .message__raw-toggle {
+      opacity: 1;
+    }
+
+    &:hover :deep(.copy-btn) {
+      opacity: 1;
+    }
+  }
+
   &__content {
     padding: 8px 12px;
     font-size: var(--text-sm);
@@ -107,8 +148,38 @@ function formatStat(value: number, digits = 1): string {
     background: var(--surface-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    white-space: pre-wrap;
     word-break: break-word;
+
+    &--raw {
+      white-space: pre-wrap;
+    }
+  }
+
+  &__raw-toggle {
+    position: absolute;
+    top: 6px;
+    right: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: var(--text-muted);
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md, 6px);
+    cursor: pointer;
+    opacity: 0;
+    transition:
+      opacity 0.15s,
+      color 0.15s,
+      background 0.15s;
+
+    &:hover {
+      color: var(--text-primary);
+      background: var(--surface-hover, rgba(255, 255, 255, 0.06));
+    }
   }
 
   &__reasoning-toggle {
@@ -148,6 +219,11 @@ function formatStat(value: number, digits = 1): string {
     border-radius: var(--radius-lg);
     white-space: pre-wrap;
     word-break: break-word;
+
+    &--rendered {
+      font-family: var(--font-body);
+      white-space: normal;
+    }
   }
 
   &__error {

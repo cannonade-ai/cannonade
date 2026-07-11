@@ -111,7 +111,9 @@ export const usePlaygroundStore = defineStore('playground', () => {
     try {
       models.value = await api.fetchLocalModels(providerId.value)
       if (!models.value.some((m) => m.id === modelId.value)) {
-        modelId.value = models.value.find((m) => m.type === 'llm')?.id ?? ''
+        const llms = models.value.filter((m) => m.type === 'llm')
+        const loaded = llms.find((m) => m.loadedInstances.length > 0)
+        modelId.value = loaded?.id ?? llms[0]?.id ?? ''
       }
     } catch (e) {
       const providerName =
