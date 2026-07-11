@@ -275,7 +275,7 @@ describe('executeTestRun – request building', () => {
     )
   })
 
-  it('builds a chat request joining non-system messages', async () => {
+  it('passes multi-turn messages through in the chat request', async () => {
     const testCase = makeTestCase({
       input: {
         type: 'chat',
@@ -288,12 +288,18 @@ describe('executeTestRun – request building', () => {
     })
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
     expect(mockChat).toHaveBeenCalledWith(
-      expect.objectContaining({ input: 'Hello\nHi\nHow are you?' }),
+      expect.objectContaining({
+        messages: [
+          { role: 'user', content: 'Hello' },
+          { role: 'assistant', content: 'Hi' },
+          { role: 'user', content: 'How are you?' }
+        ]
+      }),
       expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
 
-  it('extracts system message as system_prompt in chat request', async () => {
+  it('keeps system messages in the passed-through chat messages', async () => {
     const testCase = makeTestCase({
       input: {
         type: 'chat',
@@ -306,8 +312,10 @@ describe('executeTestRun – request building', () => {
     await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
     expect(mockChat).toHaveBeenCalledWith(
       expect.objectContaining({
-        system_prompt: 'You are a helpful assistant.',
-        input: 'Hello'
+        messages: [
+          { role: 'system', content: 'You are a helpful assistant.' },
+          { role: 'user', content: 'Hello' }
+        ]
       }),
       expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )

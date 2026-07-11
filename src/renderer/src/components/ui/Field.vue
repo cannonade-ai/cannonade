@@ -43,9 +43,6 @@ defineProps<{
 
     .field--label {
       font-size: var(--text-sm);
-      font-weight: 400;
-      text-transform: none;
-      letter-spacing: normal;
     }
   }
 
@@ -53,10 +50,7 @@ defineProps<{
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: var(--text-xs);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    font-size: var(--text-sm);
     color: var(--text-muted);
     flex-shrink: 0;
   }

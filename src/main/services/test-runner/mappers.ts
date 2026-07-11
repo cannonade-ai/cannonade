@@ -25,13 +25,7 @@ export function buildRequest(
   }
 
   if (input.type === 'chat' && input.messages?.length) {
-    const systemMsg = input.messages.find((m) => m.role === 'system')
-    const userContent = input.messages
-      .filter((m) => m.role !== 'system')
-      .map((m) => m.content)
-      .join('\n')
-
-    return { ...base, model: modelKey, input: userContent, system_prompt: systemMsg?.content }
+    return { ...base, model: modelKey, messages: input.messages.map((m) => ({ ...m })) }
   }
 
   return { ...base, model: modelKey, input: input.prompt ?? '' }

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { Badge, Chevron, CopyButton, Textarea } from '@renderer/components/ui'
 import type { TestCaseRun } from '@shared/app/test-run'
-import type { ChatMessage, TestCase, TestCaseResult } from '@shared/app/test-suite'
+import type { TestCase, TestCaseResult } from '@shared/app/test-suite'
+import type { ChatMessage } from '@shared/provider/chat'
 import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
 import { computed, ref } from 'vue'
 

@@ -15,6 +15,14 @@ export function toLocalModel(m: OpenAIModel, instanceId: string): LocalModel {
 }
 
 function toChatMessages(request: ChatRequest): OpenAIChatMessage[] {
+  if (request.messages?.length) {
+    const messages: OpenAIChatMessage[] = request.messages.map((m) => ({ ...m }))
+    if (request.system_prompt && !request.messages.some((m) => m.role === 'system')) {
+      messages.unshift({ role: 'system', content: request.system_prompt })
+    }
+    return messages
+  }
+
   const messages: OpenAIChatMessage[] = []
 
   if (request.system_prompt) {
@@ -24,7 +32,7 @@ function toChatMessages(request: ChatRequest): OpenAIChatMessage[] {
   if (typeof request.input === 'string') {
     messages.push({ role: 'user', content: request.input })
   } else {
-    const text = request.input
+    const text = (request.input ?? [])
       .filter((item) => item.type === 'message')
       .map((item) => (item as TextInput).content)
       .join('\n')

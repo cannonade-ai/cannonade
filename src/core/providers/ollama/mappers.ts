@@ -45,6 +45,14 @@ export function toLocalModel(
 }
 
 function toChatMessages(request: ChatRequest): Message[] {
+  if (request.messages?.length) {
+    const messages: Message[] = request.messages.map((m) => ({ ...m }))
+    if (request.system_prompt && !request.messages.some((m) => m.role === 'system')) {
+      messages.unshift({ role: 'system', content: request.system_prompt })
+    }
+    return messages
+  }
+
   const messages: Message[] = []
 
   if (request.system_prompt) {
@@ -54,7 +62,7 @@ function toChatMessages(request: ChatRequest): Message[] {
   if (typeof request.input === 'string') {
     messages.push({ role: 'user', content: request.input })
   } else {
-    const text = request.input
+    const text = (request.input ?? [])
       .filter((item) => item.type === 'message')
       .map((item) => (item as { type: 'message'; content: string }).content)
       .join('\n')

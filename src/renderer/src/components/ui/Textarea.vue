@@ -76,6 +76,7 @@ onMounted(() => nextTick(fitHeight))
 }
 
 .textarea {
+  display: block;
   width: 100%;
   min-height: 3rem;
   padding: 6px 8px;

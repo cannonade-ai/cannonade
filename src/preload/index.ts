@@ -11,6 +11,7 @@ import type { ConfiguredProvider, ProviderType } from '@shared/provider/configur
 import type { ProbeAuth } from '@shared/provider/api-key'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { TestRun } from '@shared/app/test-run'
+import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 
 const log = electronLog.scope('preload')
 
@@ -34,6 +35,10 @@ const api = {
   testConnectionUrl: (type: ProviderType, url: string, auth?: ProbeAuth) =>
     ipcRenderer.invoke(PROVIDER.TEST_CONNECTION_URL, type, url, auth),
   syncProviders: (providers: ConfiguredProvider[]) => ipcRenderer.invoke(PROVIDER.SYNC, providers),
+  chat: (instanceId: string, requestId: string, request: ChatRequest): Promise<ChatResponse> =>
+    ipcRenderer.invoke(PROVIDER.CHAT, instanceId, requestId, request),
+  abortChat: (requestId: string): Promise<void> =>
+    ipcRenderer.invoke(PROVIDER.CHAT_ABORT, requestId),
   getSecretInfo: (envVarName: string, instanceId: string | null) =>
     ipcRenderer.invoke(SECRETS.GET_INFO, envVarName, instanceId),
   setSecret: (instanceId: string, value: string) =>

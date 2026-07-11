@@ -14,6 +14,7 @@ import {
   TestSuitesView,
   TestRunsView,
   PromptsView,
+  PlaygroundView,
   OnboardingView
 } from '@renderer/views'
 
@@ -30,6 +31,8 @@ const viewComponent = computed(() => {
       return TestRunsView
     case 'prompts':
       return PromptsView
+    case 'playground':
+      return PlaygroundView
     default:
       return LocalModelsView
   }

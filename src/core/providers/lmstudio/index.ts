@@ -12,15 +12,21 @@ import type {
   ServerStatusResponse
 } from '@shared/provider/ipc-contracts'
 import type { ErrorBody, LmStudioSettings, ModelListResponse, Model } from './types'
+import type { OpenAIChatResponse } from '../custom/types'
 import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
 import { authHeader } from '@shared/provider/api-key'
 import {
   toLocalModel,
   toChatRequest,
+  toSingleTurnRequest,
   parseStatusOutput,
   parseStartOutput,
   parseStopOutput
 } from './mappers'
+import {
+  toChatRequest as toOpenAIChatRequest,
+  toChatResponse as toOpenAIChatResponse
+} from '../custom/mappers'
 import { createLogger } from '../../../main/logger'
 
 const log = createLogger('lmstudio')
@@ -102,7 +108,19 @@ export function createLmStudioProvider(
     },
 
     async chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
-      const body = toChatRequest(request)
+      const singleTurn = toSingleTurnRequest(request)
+      if (!singleTurn) {
+        const body = toOpenAIChatRequest(request)
+        log.debug('Multi-turn chat request body (OpenAI-compatible endpoint):', body)
+        const res = await fetchOrThrow(`${base}/v1/chat/completions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...auth },
+          body: JSON.stringify(body),
+          signal: options?.abortSignal
+        })
+        return toOpenAIChatResponse((await res.json()) as OpenAIChatResponse)
+      }
+      const body = toChatRequest(singleTurn)
       log.debug('Chat request body:', body)
       const res = await fetchOrThrow(`${base}/api/v1/chat`, {
         method: 'POST',
