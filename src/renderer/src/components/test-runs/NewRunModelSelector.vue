@@ -8,6 +8,7 @@ import {
   IconCircleCheck,
   IconExternalLink,
   IconPackageImport,
+  IconCloudComputing,
   type Icon
 } from '@tabler/icons-vue'
 import { useProvidersStore } from '@renderer/stores/providers'
@@ -19,6 +20,7 @@ const props = defineProps<{
   installedModels: Array<{ key: string; label: string; loaded: boolean }>
   loadingModels: boolean
   loadFailed: boolean
+  external?: boolean
 }>()
 
 const providersStore = useProvidersStore()
@@ -32,21 +34,40 @@ const emit = defineEmits<{
   'update:model-value': [models: ModelRef[]]
 }>()
 
-const sortedInstalledModels = computed<typeof props.installedModels>(() =>
-  [...props.installedModels].sort((a, b) => Number(b.loaded) - Number(a.loaded))
-)
+const searchInput = ref('')
+
+const sortedInstalledModels = computed<typeof props.installedModels>(() => {
+  const sorted = [...props.installedModels].sort((a, b) => Number(b.loaded) - Number(a.loaded))
+  const query = searchInput.value.trim().toLowerCase()
+  if (!props.external || !query) return sorted
+  return sorted.filter(
+    (m) => m.label.toLowerCase().includes(query) || m.key.toLowerCase().includes(query)
+  )
+})
 
 const hfInput = ref('')
 const registryInput = ref('')
 
+function refKey(m: ModelRef): string {
+  return m.source === 'installed' ? m.modelKey : m.modelId
+}
+
+function toModelRef(key: string): ModelRef {
+  return props.external
+    ? { source: 'external', modelId: key }
+    : { source: 'installed', modelKey: key }
+}
+
 function isChecked(key: string): boolean {
-  return props.modelValue.some((m) => m.source === 'installed' && m.modelKey === key)
+  const source = props.external ? 'external' : 'installed'
+  return props.modelValue.some((m) => m.source === source && refKey(m) === key)
 }
 
 function toggleInstalled(key: string): void {
-  const without = props.modelValue.filter((m) => !(m.source === 'installed' && m.modelKey === key))
+  const source = props.external ? 'external' : 'installed'
+  const without = props.modelValue.filter((m) => !(m.source === source && refKey(m) === key))
   if (without.length === props.modelValue.length) {
-    emit('update:model-value', [...props.modelValue, { source: 'installed', modelKey: key }])
+    emit('update:model-value', [...props.modelValue, toModelRef(key)])
   } else {
     emit('update:model-value', without)
   }
@@ -83,6 +104,7 @@ function addRegistryModel(): void {
 function badgeIcon(ref: ModelRef): Icon {
   if (ref.source === 'installed') return IconCircleCheck
   if (ref.source === 'registry') return IconPackageImport
+  if (ref.source === 'external') return IconCloudComputing
   return IconCloudDownload
 }
 
@@ -117,11 +139,23 @@ function modelChipLabel(ref: ModelRef): string {
 
     <div class="sub-section">
       <div class="sub-label-row">
-        <span class="sub-label">Installed Models</span>
+        <span class="sub-label">{{ external ? 'Available Models' : 'Installed Models' }}</span>
         <IconLoader2 v-if="loadingModels" class="spinner" :size="12" :stroke-width="2" />
       </div>
+      <Input
+        v-if="external && installedModels.length > 0"
+        v-model="searchInput"
+        type="search"
+        placeholder="Search models…"
+      />
       <div v-if="!loadingModels && installedModels.length === 0" class="empty-hint">
-        No installed models found.
+        {{ external ? 'No models found.' : 'No installed models found.' }}
+      </div>
+      <div
+        v-else-if="installedModels.length > 0 && sortedInstalledModels.length === 0"
+        class="empty-hint"
+      >
+        No models match your search.
       </div>
       <ul v-else-if="installedModels.length > 0" class="installed-list">
         <li
@@ -149,7 +183,7 @@ function modelChipLabel(ref: ModelRef): string {
       </ul>
     </div>
 
-    <div class="sub-section">
+    <div v-if="!external" class="sub-section">
       <span class="sub-label-row">
         <span class="sub-label">Registry Model</span>
         <InfoTooltip interactive>
@@ -179,7 +213,7 @@ function modelChipLabel(ref: ModelRef): string {
       </div>
     </div>
 
-    <div class="sub-section">
+    <div v-if="!external" class="sub-section">
       <span class="sub-label-row">
         <span class="sub-label">HuggingFace Model</span>
         <InfoTooltip interactive>

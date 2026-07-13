@@ -10,6 +10,7 @@ import { useToastStore } from '@renderer/stores/toast'
 import type { ModelRef, TestRunConfig } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import { supportsTextOutput } from '@shared/provider/external-model'
 import { KNOWN_PROVIDER_DEFAULTS } from '@shared/provider/configured-provider'
 import { IconEdit, IconPlayerPlay, IconX } from '@tabler/icons-vue'
 import { computed, onMounted, reactive, ref, watch } from 'vue'
@@ -104,7 +105,7 @@ watch(
       providersStore.setLocalProvider(next)
       await modelsStore.loadLocalModels()
     } else {
-      modelsStore.externalProvider = next
+      providersStore.setExternalProvider(next)
       await modelsStore.loadExternalModels()
     }
     if (modelsStore.error) {
@@ -148,7 +149,9 @@ const installedModels = computed(() => {
       loaded: m.loadedInstances.length > 0
     }))
   }
-  return modelsStore.externalModels.map((m) => ({ key: m.id, label: m.name, loaded: false }))
+  return modelsStore.externalModels
+    .filter(supportsTextOutput)
+    .map((m) => ({ key: m.id, label: m.name, loaded: false }))
 })
 
 const suiteOptions = computed<SelectOption<string>[]>(() =>
@@ -231,6 +234,7 @@ function onSubmit(): void {
         :installed-models="installedModels"
         :loading-models="modelsStore.loading"
         :load-failed="modelsLoadFailed"
+        :external="!isLocalProvider(form.provider)"
       />
     </Field>
 

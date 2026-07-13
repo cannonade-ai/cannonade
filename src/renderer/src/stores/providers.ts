@@ -1,21 +1,39 @@
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { api } from '../api'
-import type { ConfiguredProvider } from '@shared/provider/configured-provider'
+import {
+  KNOWN_PROVIDER_DEFAULTS,
+  type ConfiguredProvider
+} from '@shared/provider/configured-provider'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
+
+function pickActiveProvider(providers: ConfiguredProvider[], override: string | null): string {
+  if (override && providers.some((p) => p.instanceId === override)) return override
+  return providers.find((p) => p.isDefault)?.instanceId ?? providers[0]?.instanceId ?? ''
+}
 
 export const useProvidersStore = defineStore('providers', () => {
   const configuredProviders = ref<ConfiguredProvider[]>([])
   const _localProviderOverride = ref<string | null>(null)
+  const _externalProviderOverride = ref<string | null>(null)
   const capabilitiesCache = ref<Record<string, ProviderCapabilities>>({})
   const activeCapabilities = ref<ProviderCapabilities | null>(null)
 
-  const activeLocalProvider = computed<string>(() => {
-    const providers = configuredProviders.value
-    const override = _localProviderOverride.value
-    if (override && providers.some((p) => p.instanceId === override)) return override
-    return providers.find((p) => p.isDefault)?.instanceId ?? providers[0]?.instanceId ?? ''
-  })
+  const localProviders = computed<ConfiguredProvider[]>(() =>
+    configuredProviders.value.filter((p) => !KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
+  )
+
+  const externalProviders = computed<ConfiguredProvider[]>(() =>
+    configuredProviders.value.filter((p) => KNOWN_PROVIDER_DEFAULTS[p.type].isExternal)
+  )
+
+  const activeLocalProvider = computed<string>(() =>
+    pickActiveProvider(localProviders.value, _localProviderOverride.value)
+  )
+
+  const activeExternalProvider = computed<string>(() =>
+    pickActiveProvider(externalProviders.value, _externalProviderOverride.value)
+  )
 
   watch(
     [activeLocalProvider, () => capabilitiesCache.value[activeLocalProvider.value]],
@@ -40,6 +58,10 @@ export const useProvidersStore = defineStore('providers', () => {
 
   function setLocalProvider(instanceId: string): void {
     _localProviderOverride.value = instanceId
+  }
+
+  function setExternalProvider(instanceId: string): void {
+    _externalProviderOverride.value = instanceId
   }
 
   async function addProvider(provider: ConfiguredProvider): Promise<void> {
@@ -99,10 +121,14 @@ export const useProvidersStore = defineStore('providers', () => {
 
   return {
     configuredProviders,
+    localProviders,
+    externalProviders,
     activeLocalProvider,
+    activeExternalProvider,
     activeCapabilities,
     init,
     setLocalProvider,
+    setExternalProvider,
     addProvider,
     removeProvider,
     setDefault,

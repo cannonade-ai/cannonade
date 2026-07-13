@@ -239,6 +239,36 @@ describe('executeTestRun – model key resolution', () => {
     )
   })
 
+  it('uses modelId directly and skips download and load for external model refs', async () => {
+    mockGetProvider.mockReturnValue({
+      id: 'openrouter',
+      capabilities: {
+        ...capabilities,
+        localModels: false,
+        externalModels: true,
+        downloadModel: false,
+        downloadStatus: false,
+        deleteModel: false,
+        loadModel: false,
+        serverControl: false,
+        requiresApiKey: true
+      },
+      chat: mockChat
+    })
+    const modelRun = makeModelRun({
+      modelRef: { source: 'external', modelId: 'openai/gpt-4' }
+    })
+    const send = makeSend()
+    await executeTestRun(makeRun([modelRun]), makeSuite(), send)
+    expect(mockDownloadModel).not.toHaveBeenCalled()
+    expect(mockLoadModel).not.toHaveBeenCalled()
+    expect(mockChat).toHaveBeenCalledWith(
+      expect.objectContaining({ model: 'openai/gpt-4' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
+    )
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'completed' })
+  })
+
   it('downloads the raw model id and resolves the key for registry model refs', async () => {
     mockFetchLocalModels.mockResolvedValue([
       {

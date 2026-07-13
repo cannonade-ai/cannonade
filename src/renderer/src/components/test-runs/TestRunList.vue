@@ -154,6 +154,10 @@ const { runMenuItems } = useTestRunMenus()
   gap: 4px;
   flex-shrink: 0;
 
+  .badge {
+    text-transform: capitalize;
+  }
+
   .run-date {
     font-size: var(--text-xs);
     color: var(--text-muted);

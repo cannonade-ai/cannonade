@@ -12,8 +12,8 @@ import type {
   MessageOutput,
   ReasoningOutput
 } from '@shared/provider/chat'
-import type { LocalModel } from '@shared/provider/local-model'
 import type { ConfiguredProvider } from '@shared/provider/configured-provider'
+import { supportsTextOutput } from '@shared/provider/external-model'
 import { createLogger } from '../utils/logger'
 
 const log = createLogger('playground-store')
@@ -40,6 +40,12 @@ export interface PlaygroundParams {
   reasoning?: 'off' | 'low' | 'medium' | 'high' | 'on'
 }
 
+export interface PlaygroundModelOption {
+  id: string
+  name: string
+  loaded: boolean
+}
+
 export interface LinkedPrompt {
   promptId: string
   version: PromptVersionRef
@@ -52,7 +58,7 @@ export const usePlaygroundStore = defineStore('playground', () => {
 
   const providerId = ref('')
   const modelId = ref('')
-  const models = ref<LocalModel[]>([])
+  const models = ref<PlaygroundModelOption[]>([])
   const modelsLoading = ref(false)
   const modelsError = ref<string | null>(null)
   const systemPrompt = ref('')
@@ -109,11 +115,21 @@ export const usePlaygroundStore = defineStore('playground', () => {
     modelsError.value = null
     models.value = []
     try {
-      models.value = await api.fetchLocalModels(providerId.value)
+      const capabilities = await providersStore.getCapabilities(providerId.value)
+      if (capabilities.externalModels) {
+        const external = await api.fetchExternalModels(providerId.value)
+        models.value = external
+          .filter(supportsTextOutput)
+          .map((m) => ({ id: m.id, name: m.name, loaded: false }))
+      } else {
+        const local = await api.fetchLocalModels(providerId.value)
+        models.value = local
+          .filter((m) => m.type === 'llm')
+          .map((m) => ({ id: m.id, name: m.name, loaded: m.loadedInstances.length > 0 }))
+      }
       if (!models.value.some((m) => m.id === modelId.value)) {
-        const llms = models.value.filter((m) => m.type === 'llm')
-        const loaded = llms.find((m) => m.loadedInstances.length > 0)
-        modelId.value = loaded?.id ?? llms[0]?.id ?? ''
+        const loaded = models.value.find((m) => m.loaded)
+        modelId.value = loaded?.id ?? models.value[0]?.id ?? ''
       }
     } catch (e) {
       const providerName =

@@ -202,6 +202,8 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
   let modelKey: string
   if (modelRun.modelRef.source === 'installed') {
     modelKey = modelRun.modelRef.modelKey
+  } else if (modelRun.modelRef.source === 'external') {
+    modelKey = modelRun.modelRef.modelId
   } else {
     const downloadId =
       modelRun.modelRef.source === 'huggingface'

@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends string">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
 export interface SelectOption<V extends string = string> {
   value: V
@@ -10,31 +10,58 @@ const props = defineProps<{
   options: SelectOption<T>[]
   placeholder?: string
   disabled?: boolean
+  searchable?: boolean
 }>()
 
 const model = defineModel<T>()
 
 const open = ref(false)
 const focused = ref(-1)
+const query = ref('')
 const rootRef = ref<HTMLElement | null>(null)
 const listRef = ref<HTMLElement | null>(null)
+const searchRef = ref<HTMLInputElement | null>(null)
 
 const selectedLabel = computed(
   () => props.options.find((o) => o.value === model.value)?.label ?? props.placeholder ?? ''
 )
 
+const filteredOptions = computed<SelectOption<T>[]>(() => {
+  const q = query.value.trim().toLowerCase()
+  if (!props.searchable || !q) return props.options
+  return props.options.filter(
+    (o) => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
+  )
+})
+
+watch(filteredOptions, (options) => {
+  if (focused.value >= options.length) focused.value = options.length - 1
+})
+
+function openDropdown(): void {
+  open.value = true
+  query.value = ''
+  focused.value = filteredOptions.value.findIndex((o) => o.value === model.value)
+  if (props.searchable) {
+    void nextTick(() => searchRef.value?.focus())
+  }
+}
+
+function closeDropdown(): void {
+  open.value = false
+  focused.value = -1
+  query.value = ''
+}
+
 function toggle(): void {
   if (props.disabled) return
-  open.value = !open.value
-  if (open.value) {
-    focused.value = props.options.findIndex((o) => o.value === model.value)
-  }
+  if (open.value) closeDropdown()
+  else openDropdown()
 }
 
 function select(value: T): void {
   model.value = value
-  open.value = false
-  focused.value = -1
+  closeDropdown()
 }
 
 function onKeydown(e: KeyboardEvent): void {
@@ -42,17 +69,15 @@ function onKeydown(e: KeyboardEvent): void {
   if (!open.value) {
     if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') {
       e.preventDefault()
-      open.value = true
-      focused.value = props.options.findIndex((o) => o.value === model.value)
+      openDropdown()
     }
     return
   }
   if (e.key === 'Escape') {
-    open.value = false
-    focused.value = -1
+    closeDropdown()
   } else if (e.key === 'ArrowDown') {
     e.preventDefault()
-    focused.value = Math.min(focused.value + 1, props.options.length - 1)
+    focused.value = Math.min(focused.value + 1, filteredOptions.value.length - 1)
     scrollFocusedIntoView()
   } else if (e.key === 'ArrowUp') {
     e.preventDefault()
@@ -60,7 +85,8 @@ function onKeydown(e: KeyboardEvent): void {
     scrollFocusedIntoView()
   } else if (e.key === 'Enter' && focused.value >= 0) {
     e.preventDefault()
-    select(props.options[focused.value].value)
+    const option = filteredOptions.value[focused.value]
+    if (option) select(option.value)
   }
 }
 
@@ -72,8 +98,7 @@ function scrollFocusedIntoView(): void {
 
 function onDocumentClick(e: MouseEvent): void {
   if (rootRef.value && !rootRef.value.contains(e.target as Node)) {
-    open.value = false
-    focused.value = -1
+    closeDropdown()
   }
 }
 
@@ -107,9 +132,19 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
     </svg>
 
     <div v-if="open" class="dropdown" role="listbox" @click.stop>
-      <ul ref="listRef">
+      <input
+        v-if="searchable"
+        ref="searchRef"
+        v-model="query"
+        class="search"
+        type="text"
+        placeholder="Search…"
+        @input="focused = 0"
+      />
+      <div v-if="filteredOptions.length === 0" class="no-results">No matches</div>
+      <ul v-else ref="listRef">
         <li
-          v-for="(option, i) in options"
+          v-for="(option, i) in filteredOptions"
           :key="option.value"
           class="option"
           :class="{ selected: option.value === model, focused: i === focused }"
@@ -192,6 +227,29 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
     border-radius: var(--radius);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     overflow: hidden;
+
+    .search {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 6px 8px;
+      font-size: var(--text-xs);
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      background: var(--surface);
+      border: none;
+      border-bottom: 1px solid var(--border);
+      outline: none;
+
+      &::placeholder {
+        color: var(--text-muted);
+      }
+    }
+
+    .no-results {
+      padding: 8px;
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+    }
 
     ul {
       list-style: none;

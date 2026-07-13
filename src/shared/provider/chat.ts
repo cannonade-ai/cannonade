@@ -92,6 +92,11 @@ export interface InvalidToolCallOutput {
 
 export type OutputItem = MessageOutput | ToolCallOutput | ReasoningOutput | InvalidToolCallOutput
 
+export interface ChatCostDetails {
+  upstream_inference_prompt_cost?: number
+  upstream_inference_completions_cost?: number
+}
+
 export interface ChatStats {
   input_tokens: number
   total_output_tokens: number
@@ -99,6 +104,9 @@ export interface ChatStats {
   tokens_per_second: number
   time_to_first_token_seconds: number
   model_load_time_seconds?: number
+  cached_input_tokens?: number
+  cost?: number
+  cost_details?: ChatCostDetails
 }
 
 export interface ChatResponse {

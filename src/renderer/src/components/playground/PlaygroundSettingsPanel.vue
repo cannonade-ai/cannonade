@@ -16,7 +16,7 @@ const providerOptions = computed<SelectOption[]>(() =>
 )
 
 const modelOptions = computed<SelectOption[]>(() =>
-  models.value.filter((m) => m.type === 'llm').map((m) => ({ value: m.id, label: m.name }))
+  models.value.map((m) => ({ value: m.id, label: m.name }))
 )
 
 const selectedProvider = computed<string | undefined>({
@@ -65,6 +65,7 @@ const reasoning = computed<string>({
               v-model="modelId"
               :options="modelOptions"
               :disabled="!!modelsError"
+              searchable
               placeholder="Select model"
             />
           </Field>
@@ -187,6 +188,7 @@ const reasoning = computed<string>({
 
 .models-error {
   margin: 0;
+  padding: 0 14px 14px 14px;
   font-size: var(--text-xs);
   color: var(--error);
 }

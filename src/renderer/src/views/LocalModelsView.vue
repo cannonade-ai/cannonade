@@ -15,7 +15,7 @@ const store = useModelsStore()
 const navStore = useNavigationStore()
 const providersStore = useProvidersStore()
 
-const providers = computed(() => providersStore.configuredProviders)
+const providers = computed(() => providersStore.localProviders)
 
 const providerOptions = computed<SelectOption<string>[]>(() =>
   providers.value.map((p) => ({ value: p.instanceId, label: p.displayName }))
@@ -59,7 +59,7 @@ useShortcut('F5', () => store.loadLocalModels(), { preventDefault: true })
   <div class="models">
     <div v-if="providers.length === 0" class="no-providers">
       <IconSettings :size="24" :stroke-width="1.5" class="empty-icon" color="#ffffff30" />
-      <span>No providers configured</span>
+      <span>No local providers configured</span>
       <Button :icon="IconSettings" @click="navStore.openSettings('providers')">
         Configure Provider
       </Button>
@@ -130,12 +130,22 @@ useShortcut('F5', () => store.loadLocalModels(), { preventDefault: true })
 </template>
 
 <style scoped lang="scss">
+.models {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+
+  > .model-section,
+  > .state-message {
+    flex-shrink: 0;
+  }
+}
+
 .no-providers {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
   gap: 12px;
   flex: 1;
   color: var(--text-muted);

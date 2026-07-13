@@ -11,6 +11,7 @@ import ToastContainer from '@renderer/components/ui/ToastContainer.vue'
 import SettingsModal from '@renderer/components/settings-modal/SettingsModal.vue'
 import {
   LocalModelsView,
+  ExternalModelsView,
   TestSuitesView,
   TestRunsView,
   PromptsView,
@@ -25,6 +26,8 @@ testRuns.initEventListeners()
 
 const viewComponent = computed(() => {
   switch (nav.current) {
+    case 'external-models':
+      return ExternalModelsView
     case 'test-suites':
       return TestSuitesView
     case 'test-runs':

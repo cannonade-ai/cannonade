@@ -27,6 +27,7 @@ npm test
 - Use kebab-case for events.
 - Use production grade best practises
 - Prefer explicit named types (e.g. `OutputItem[]`) over indexed access types (e.g. `ChatResponse['output']`).
+- Prefer simple TypeScript: plain `string`/`string[]` fields plus `as const` constant objects (e.g. `ModelModality.Text`) over complex type-level syntax like derived unions (`(typeof X)[number]`), type predicates, or enums.
 - You can use icons from tabler: `import { IconTank } from '@tabler/icons-vue'`;
 - Never run TypeScript type checks, build the project instead.
 - Never use `title:"some text"` on components, use `v-tooltip="'some text'"` instead.
