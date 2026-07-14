@@ -10,11 +10,20 @@ export function formatContext(tokens: number): string {
   return String(tokens)
 }
 
-export function formatPrice(raw: string): string {
-  const n = parseFloat(raw)
-  if (n === 0) return 'free'
-  const perMillion = n * 1_000_000
-  return `$${perMillion % 1 === 0 ? perMillion.toFixed(0) : perMillion.toPrecision(3)}/M`
+export function formatPrice(perMTokens: number): string {
+  if (perMTokens === 0) return 'Free'
+  const amount = perMTokens < 0.01 ? perMTokens.toPrecision(2) : perMTokens.toFixed(2)
+  return `$${amount}/1M`
+}
+
+export function formatDay(iso: string | undefined): string {
+  if (!iso) return '—'
+
+  return new Date(iso).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  })
 }
 
 export function formatDate(iso: string | undefined, showSeconds: boolean = false): string {

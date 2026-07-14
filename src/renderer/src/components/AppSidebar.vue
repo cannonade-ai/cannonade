@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import {
-  IconBrain,
+  IconCpu,
   IconTestPipe,
   IconPlayerPlay,
   IconFileDescription,
   IconMessageCircle,
-  IconSettings
+  IconSettings,
+  IconCloudComputing
 } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import SidebarNavItem from './SidebarNavItem.vue'
@@ -19,18 +20,18 @@ const collapsed = ref(false)
   <aside class="sidebar" :class="{ collapsed }">
     <nav class="sidebar-nav">
       <SidebarNavItem
-        :icon="IconBrain"
+        :icon="IconCpu"
         label="Local Models"
         :active="nav.current === 'local-models'"
         :collapsed="collapsed"
         @click="nav.navigate('local-models')"
       />
       <SidebarNavItem
-        :icon="IconTestPipe"
-        label="Test Suites"
-        :active="nav.current === 'test-suites'"
+        :icon="IconCloudComputing"
+        label="External Models"
+        :active="nav.current === 'external-models'"
         :collapsed="collapsed"
-        @click="nav.navigate('test-suites')"
+        @click="nav.navigate('external-models')"
       />
       <SidebarNavItem
         :icon="IconFileDescription"
@@ -45,6 +46,13 @@ const collapsed = ref(false)
         :active="nav.current === 'playground'"
         :collapsed="collapsed"
         @click="nav.navigate('playground')"
+      />
+      <SidebarNavItem
+        :icon="IconTestPipe"
+        label="Test Suites"
+        :active="nav.current === 'test-suites'"
+        :collapsed="collapsed"
+        @click="nav.navigate('test-suites')"
       />
       <SidebarNavItem
         :icon="IconPlayerPlay"

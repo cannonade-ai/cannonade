@@ -12,7 +12,7 @@ import type {
   ServerStatusResponse
 } from '@shared/provider/ipc-contracts'
 import type { ErrorBody, LmStudioSettings, ModelListResponse, Model } from './types'
-import type { OpenAIChatResponse } from '../custom/types'
+import type { OpenAIChatResponse } from '../openai-compat/types'
 import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
 import { authHeader } from '@shared/provider/api-key'
 import {
@@ -26,7 +26,7 @@ import {
 import {
   toChatRequest as toOpenAIChatRequest,
   toChatResponse as toOpenAIChatResponse
-} from '../custom/mappers'
+} from '../openai-compat/mappers'
 import { createLogger } from '../../../main/logger'
 
 const log = createLogger('lmstudio')

@@ -7,7 +7,7 @@ import {
   IconMarkdown,
   IconRefresh
 } from '@tabler/icons-vue'
-import { Badge, Button, CopyButton, MarkdownContent } from '@renderer/components/ui'
+import { Badge, Button, CopyButton, InfoTooltip, MarkdownContent } from '@renderer/components/ui'
 import type { PlaygroundMessage } from '@renderer/stores/playground'
 
 defineProps<{
@@ -29,9 +29,9 @@ function formatStat(value: number, digits = 1): string {
 
 <template>
   <div class="message" :class="`message--${message.role}`">
-    <div class="message__header">
-      <Badge :type="message.role === 'user' ? 'secondary' : 'default'" square>
-        {{ message.role }}
+    <div v-if="message.role === 'assistant'" class="message__header">
+      <Badge type="default" square>
+        {{ message.modelName ?? message.role }}
       </Badge>
       <span v-if="message.stats" class="message__stats">
         {{ message.stats.total_output_tokens }} tokens
@@ -41,6 +41,9 @@ function formatStat(value: number, digits = 1): string {
         <template v-if="message.stats.time_to_first_token_seconds > 0">
           · TTFT {{ formatStat(message.stats.time_to_first_token_seconds, 2) }}s
         </template>
+        <InfoTooltip placement="right" interactive :size="12">
+          <pre class="message__stats-json">{{ JSON.stringify(message.stats, null, 2) }}</pre>
+        </InfoTooltip>
       </span>
     </div>
 
@@ -104,10 +107,6 @@ function formatStat(value: number, digits = 1): string {
   &--user {
     align-self: flex-end;
 
-    .message__header {
-      justify-content: flex-end;
-    }
-
     .message__content {
       background: var(--accent-bg);
       border-color: var(--accent-border);
@@ -125,8 +124,20 @@ function formatStat(value: number, digits = 1): string {
   }
 
   &__stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     font-size: var(--text-xs);
     color: var(--text-muted);
+  }
+
+  &__stats-json {
+    margin: 0;
+    font-size: var(--text-xs);
+    font-family: var(--font-mono, monospace);
+    white-space: pre;
+    text-align: left;
+    overflow-y: auto;
   }
 
   &__content-wrap {

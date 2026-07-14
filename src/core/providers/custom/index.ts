@@ -1,9 +1,11 @@
 import type { LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
-import { OpenAIModelsResponse, OpenAIChatResponse } from './types'
+import { OpenAIModelsResponse } from './types'
+import type { OpenAIChatResponse } from '../openai-compat/types'
 import { authHeader } from '@shared/provider/api-key'
-import { toLocalModel, toChatRequest, toChatResponse } from './mappers'
+import { toLocalModel } from './mappers'
+import { toChatRequest, toChatResponse } from '../openai-compat/mappers'
 import { createLogger } from '../../../main/logger'
 
 const log = createLogger('custom-provider')

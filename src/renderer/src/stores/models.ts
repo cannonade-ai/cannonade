@@ -13,9 +13,9 @@ export type ModelOperation = 'loading' | 'unloading' | 'deleting'
 export const useModelsStore = defineStore('models', () => {
   const providersStore = useProvidersStore()
 
-  const externalProvider = ref<string>('')
   const localModels = ref<LocalModel[]>([])
   const externalModels = ref<ExternalModel[]>([])
+  const externalModelsCache = ref<Record<string, ExternalModel[]>>({})
   const loading = ref(false)
   const error = ref<string | null>(null)
   const modelOperations = ref<Record<string, ModelOperation>>({})
@@ -53,11 +53,21 @@ export const useModelsStore = defineStore('models', () => {
     }
   }
 
-  async function loadExternalModels(): Promise<void> {
+  async function loadExternalModels(force = false): Promise<void> {
+    const instanceId = providersStore.activeExternalProvider
+    if (!instanceId) return
+    const cached = externalModelsCache.value[instanceId]
+    if (!force && cached) {
+      externalModels.value = cached
+      error.value = null
+      return
+    }
     loading.value = true
     error.value = null
     try {
-      externalModels.value = await api.fetchExternalModels(externalProvider.value)
+      const models = await api.fetchExternalModels(instanceId)
+      externalModelsCache.value[instanceId] = models
+      externalModels.value = models
     } catch (e) {
       externalModels.value = []
       if (e instanceof Error) {
@@ -72,7 +82,6 @@ export const useModelsStore = defineStore('models', () => {
   }
 
   return {
-    externalProvider,
     localModels,
     externalModels,
     loading,

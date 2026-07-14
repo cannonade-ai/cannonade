@@ -1,7 +1,14 @@
-import { IconPlayerPlay, IconPlayerStop, IconTrash } from '@tabler/icons-vue'
+import {
+  IconMessageCircle,
+  IconPlayerPlay,
+  IconPlayerStop,
+  IconTestPipe,
+  IconTrash
+} from '@tabler/icons-vue'
 import type { ContextMenuItem } from '@renderer/stores/context-menu'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { useModelsStore } from '@renderer/stores/models'
+import { useNavigationStore } from '@renderer/stores/navigation'
 import { useToastStore } from '@renderer/stores/toast'
 
 import { api } from '@renderer/api'
@@ -19,6 +26,7 @@ export function useModelMenus(): {
 } {
   const confirmStore = useConfirmStore()
   const modelsStore = useModelsStore()
+  const navigationStore = useNavigationStore()
   const toastStore = useToastStore()
 
   function modelMenuItems(
@@ -29,6 +37,25 @@ export function useModelMenus(): {
     const providerId = model.providerId
 
     const items: ContextMenuItem[] = []
+
+    if (model.type === 'llm') {
+      items.push(
+        {
+          label: 'Open in Playground',
+          icon: IconMessageCircle,
+          action: (): void => {
+            navigationStore.navigate('playground', { providerId, modelId: model.id })
+          }
+        },
+        {
+          label: 'New Test Run',
+          icon: IconTestPipe,
+          action: (): void => {
+            navigationStore.navigate('test-runs', { providerId, modelId: model.id })
+          }
+        }
+      )
+    }
 
     if (capabilities?.loadModel) {
       if (!isLoaded) {

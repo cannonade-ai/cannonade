@@ -1,40 +1,37 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
-export type View = 'local-models' | 'test-suites' | 'test-runs' | 'prompts' | 'playground'
+export type View =
+  | 'local-models'
+  | 'external-models'
+  | 'test-suites'
+  | 'test-runs'
+  | 'prompts'
+  | 'playground'
 export type SettingsSection = 'general' | 'providers' | 'appearance' | 'test-runs'
+
+export interface NavigationPayload {
+  promptId?: string
+  suiteId?: string
+  providerId?: string
+  modelId?: string
+}
 
 export const useNavigationStore = defineStore('navigation', () => {
   const current = ref<View>('local-models')
+  const payload = ref<NavigationPayload | null>(null)
   const settingsOpen = ref(false)
   const settingsSection = ref<SettingsSection>('general')
-  const pendingSuiteId = ref<string | null>(null)
-  const pendingPlaygroundPromptId = ref<string | null>(null)
 
-  function navigate(view: View): void {
+  function navigate(view: View, data?: NavigationPayload): void {
+    payload.value = data ?? null
     current.value = view
   }
 
-  function openTestSuite(id: string): void {
-    pendingSuiteId.value = id
-    current.value = 'test-suites'
-  }
-
-  function getPendingSuiteId(): string | null {
-    const id = pendingSuiteId.value
-    pendingSuiteId.value = null
-    return id
-  }
-
-  function openInPlayground(promptId: string): void {
-    pendingPlaygroundPromptId.value = promptId
-    current.value = 'playground'
-  }
-
-  function getPendingPlaygroundPromptId(): string | null {
-    const id = pendingPlaygroundPromptId.value
-    pendingPlaygroundPromptId.value = null
-    return id
+  function consumePayload(): NavigationPayload | null {
+    const data = payload.value
+    payload.value = null
+    return data
   }
 
   function openSettings(section: SettingsSection = 'general'): void {
@@ -49,10 +46,7 @@ export const useNavigationStore = defineStore('navigation', () => {
   return {
     current,
     navigate,
-    openTestSuite,
-    consumePendingSuiteId: getPendingSuiteId,
-    openInPlayground,
-    consumePendingPlaygroundPromptId: getPendingPlaygroundPromptId,
+    consumePayload,
     settingsOpen,
     settingsSection,
     openSettings,

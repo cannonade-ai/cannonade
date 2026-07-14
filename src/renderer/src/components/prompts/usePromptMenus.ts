@@ -15,7 +15,7 @@ export function usePromptMenus(): { promptMenuItems: (id: string) => ContextMenu
         label: 'Open in Playground',
         icon: IconMessageCircle,
         action: () => {
-          navigationStore.openInPlayground(id)
+          navigationStore.navigate('playground', { promptId: id })
         }
       },
       {

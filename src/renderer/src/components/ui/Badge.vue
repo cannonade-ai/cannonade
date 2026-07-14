@@ -114,7 +114,6 @@ const computedIconAnimation = computed(() => {
   &.square {
     border-radius: 2px;
   }
-  text-transform: capitalize;
 
   &.default {
     background: var(--surface-elevated);

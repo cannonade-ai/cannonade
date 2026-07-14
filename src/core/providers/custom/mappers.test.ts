@@ -1,66 +1,22 @@
 import { describe, it, expect } from 'vitest'
-import { toChatRequest } from './mappers'
-import type { ChatRequest } from '@shared/provider/chat'
+import { toLocalModel } from './mappers'
 
-function makeRequest(overrides: Partial<ChatRequest> = {}): ChatRequest {
-  return { model: 'test-model', ...overrides }
-}
-
-describe('custom provider toChatRequest', () => {
-  it('builds messages from string input and system prompt', () => {
-    const result = toChatRequest(makeRequest({ input: 'Hello', system_prompt: 'Be helpful.' }))
-    expect(result.messages).toEqual([
-      { role: 'system', content: 'Be helpful.' },
-      { role: 'user', content: 'Hello' }
-    ])
+describe('custom provider toLocalModel', () => {
+  it('maps an OpenAI model entry to a LocalModel', () => {
+    const result = toLocalModel({ id: 'my-model', object: 'model', owned_by: 'me' }, 'custom-1')
+    expect(result).toEqual({
+      id: 'my-model',
+      name: 'my-model',
+      providerId: 'custom-1',
+      sizeBytes: 0,
+      type: 'llm',
+      loadedInstances: [],
+      meta: { owned_by: 'me' }
+    })
   })
 
-  it('passes messages through unchanged', () => {
-    const messages = [
-      { role: 'user' as const, content: 'Hello' },
-      { role: 'assistant' as const, content: 'Hi' },
-      { role: 'user' as const, content: 'How are you?' }
-    ]
-    const result = toChatRequest(makeRequest({ messages }))
-    expect(result.messages).toEqual(messages)
-  })
-
-  it('prepends system_prompt when messages contain no system message', () => {
-    const result = toChatRequest(
-      makeRequest({
-        messages: [{ role: 'user', content: 'Hello' }],
-        system_prompt: 'Be helpful.'
-      })
-    )
-    expect(result.messages).toEqual([
-      { role: 'system', content: 'Be helpful.' },
-      { role: 'user', content: 'Hello' }
-    ])
-  })
-
-  it('keeps the existing system message over system_prompt', () => {
-    const result = toChatRequest(
-      makeRequest({
-        messages: [
-          { role: 'system', content: 'From messages.' },
-          { role: 'user', content: 'Hello' }
-        ],
-        system_prompt: 'From request.'
-      })
-    )
-    expect(result.messages).toEqual([
-      { role: 'system', content: 'From messages.' },
-      { role: 'user', content: 'Hello' }
-    ])
-  })
-
-  it('ignores input when messages are present', () => {
-    const result = toChatRequest(
-      makeRequest({
-        messages: [{ role: 'user', content: 'From messages' }],
-        input: 'From input'
-      })
-    )
-    expect(result.messages).toEqual([{ role: 'user', content: 'From messages' }])
+  it('omits owned_by from meta when absent', () => {
+    const result = toLocalModel({ id: 'my-model', object: 'model' }, 'custom-1')
+    expect(result.meta).toEqual({})
   })
 })

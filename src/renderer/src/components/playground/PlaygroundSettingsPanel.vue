@@ -16,7 +16,7 @@ const providerOptions = computed<SelectOption[]>(() =>
 )
 
 const modelOptions = computed<SelectOption[]>(() =>
-  models.value.filter((m) => m.type === 'llm').map((m) => ({ value: m.id, label: m.name }))
+  models.value.map((m) => ({ value: m.id, label: m.name }))
 )
 
 const selectedProvider = computed<string | undefined>({
@@ -56,6 +56,8 @@ const reasoning = computed<string>({
               placeholder="Select provider"
             />
           </Field>
+        </div>
+        <div class="field-row">
           <Field label="Model" grow>
             <div v-if="modelsLoading" class="model-loading">
               <IconLoader2 :size="14" class="spin" />
@@ -65,10 +67,12 @@ const reasoning = computed<string>({
               v-model="modelId"
               :options="modelOptions"
               :disabled="!!modelsError"
+              searchable
               placeholder="Select model"
             />
           </Field>
         </div>
+
         <p v-if="modelsError" class="models-error">{{ modelsError }}</p>
 
         <PlaygroundSystemPrompt />
@@ -77,13 +81,22 @@ const reasoning = computed<string>({
           <Field
             label="Max Tokens"
             hint="The longest response the model may produce, measured in tokens. A token is roughly ¾ of a word."
+            hint-placement="top"
           >
             <NumberInput v-model="params.max_output_tokens" :min="1" :max="999999999" />
+          </Field>
+          <Field
+            label="Reasoning"
+            hint="Requests a reasoning effort level from models that support it. Unsupported models ignore this."
+            hint-placement="top"
+          >
+            <Select v-model="reasoning" :options="reasoningOptions" />
           </Field>
           <div class="field-row">
             <Field
               label="Temperature"
               hint="Controls randomness. Higher values give more varied, creative answers; lower values are more focused and predictable."
+              hint-placement="top"
               grow
             >
               <NumberInput v-model="params.temperature" :min="0" :max="1" :step="0.05" />
@@ -91,6 +104,7 @@ const reasoning = computed<string>({
             <Field
               label="Top P"
               hint="Limits word choices to the most likely options that together reach this probability. Lower is more focused."
+              hint-placement="top"
               grow
             >
               <NumberInput v-model="params.top_p" :min="0" :max="1" :step="0.05" />
@@ -100,6 +114,7 @@ const reasoning = computed<string>({
             <Field
               label="Top K"
               hint="Limits word choices to the K most likely options at each step."
+              hint-placement="top"
               grow
             >
               <NumberInput v-model="params.top_k" :min="0" :max="999999999" :step="1" />
@@ -107,6 +122,7 @@ const reasoning = computed<string>({
             <Field
               label="Min P"
               hint="Drops word choices that are far less likely than the best option. Higher is stricter."
+              hint-placement="top"
               grow
             >
               <NumberInput v-model="params.min_p" :min="0" :max="1" :step="0.05" />
@@ -116,6 +132,7 @@ const reasoning = computed<string>({
             <Field
               label="Repeat Penalty"
               hint="Discourages repeating the same words. Higher values reduce repetition."
+              hint-placement="top"
               grow
             >
               <NumberInput v-model="params.repeat_penalty" :min="1" :max="2" :step="0.05" />
@@ -123,6 +140,7 @@ const reasoning = computed<string>({
             <Field
               label="Freq. Penalty"
               hint="Lowers the chance of words that have already appeared often in the response."
+              hint-placement="top"
               grow
             >
               <NumberInput v-model="params.frequency_penalty" :min="-2" :max="2" :step="0.1" />
@@ -131,6 +149,7 @@ const reasoning = computed<string>({
           <div class="field-row">
             <Field
               label="Pres. Penalty"
+              hint-placement="top"
               hint="Lowers the chance of words that have appeared at all, nudging the model toward new topics."
               grow
             >
@@ -139,17 +158,12 @@ const reasoning = computed<string>({
             <Field
               label="Seed"
               hint="Fixes the randomness so the same input gives the same output. Leave empty for random results."
+              hint-placement="top"
               grow
             >
               <NumberInput v-model="params.seed" :step="1" />
             </Field>
           </div>
-          <Field
-            label="Reasoning"
-            hint="Requests a reasoning effort level from models that support it. Unsupported models ignore this."
-          >
-            <Select v-model="reasoning" :options="reasoningOptions" />
-          </Field>
         </Collapse>
       </div>
     </ScrollArea>
@@ -160,6 +174,7 @@ const reasoning = computed<string>({
 .settings-panel {
   :deep(.panel__body) {
     padding: 0;
+    overflow: hidden;
   }
 }
 
@@ -169,6 +184,10 @@ const reasoning = computed<string>({
 
   > .field-row {
     padding: 14px;
+  }
+
+  > .field-row:first-child {
+    padding: 14px 14px 0 14px;
   }
 }
 
@@ -187,6 +206,7 @@ const reasoning = computed<string>({
 
 .models-error {
   margin: 0;
+  padding: 0 14px 14px 14px;
   font-size: var(--text-xs);
   color: var(--error);
 }

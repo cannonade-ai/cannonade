@@ -23,7 +23,7 @@ export function useTestRunMenus(): { runMenuItems: (run: TestRun) => ContextMenu
       label: 'Edit Test Suite',
       icon: IconEdit,
       action: () => {
-        navigationStore.openTestSuite(run.config.suiteId)
+        navigationStore.navigate('test-suites', { suiteId: run.config.suiteId })
       }
     })
 

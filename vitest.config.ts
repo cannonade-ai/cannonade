@@ -10,6 +10,7 @@ export default defineConfig({
     }
   },
   test: {
-    environment: 'node'
+    environment: 'node',
+    silent: 'passed-only'
   }
 })

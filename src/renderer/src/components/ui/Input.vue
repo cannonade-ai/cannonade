@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { IconX } from '@tabler/icons-vue'
 
 const model = defineModel<string>({ required: true })
 
@@ -36,27 +37,83 @@ function onKeydown(e: KeyboardEvent): void {
     emit('submit')
   }
 }
+
+function onClear(): void {
+  model.value = ''
+  validationError.value = false
+  inputRef.value?.focus()
+}
 </script>
 
 <template>
-  <input
-    ref="inputRef"
-    v-model="model"
-    class="input"
-    :class="{ 'input--error': error || validationError, 'input--right': alignRight }"
-    :type="type"
-    :placeholder="placeholder"
-    :disabled="disabled"
-    :maxlength="maxlength"
-    @input="onInput"
-    @keydown="onKeydown"
-  />
+  <div class="input-wrap">
+    <input
+      ref="inputRef"
+      v-model="model"
+      class="input"
+      :class="{ 'input--error': error || validationError, 'input--right': alignRight }"
+      :type="type"
+      :placeholder="placeholder"
+      :disabled="disabled"
+      :maxlength="maxlength"
+      @input="onInput"
+      @keydown="onKeydown"
+    />
+    <Transition name="clear-fade">
+      <button
+        v-if="model && !disabled"
+        class="input-wrap__clear"
+        type="button"
+        tabindex="-1"
+        @mousedown.prevent
+        @click="onClear"
+      >
+        <IconX :size="14" />
+      </button>
+    </Transition>
+  </div>
 </template>
 
 <style scoped lang="scss">
+.input-wrap {
+  position: relative;
+  width: 100%;
+
+  &__clear {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+}
+
+.clear-fade-enter-active,
+.clear-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.clear-fade-enter-from,
+.clear-fade-leave-to {
+  opacity: 0;
+}
+
 .input {
   width: 100%;
-  padding: 6px 8px;
+  padding: 6px 26px 6px 8px;
   font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
@@ -71,6 +128,10 @@ function onKeydown(e: KeyboardEvent): void {
 
   &::placeholder {
     color: var(--text-muted);
+  }
+
+  &::-webkit-search-cancel-button {
+    display: none;
   }
 
   &:focus {

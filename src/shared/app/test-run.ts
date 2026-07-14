@@ -22,7 +22,12 @@ export interface RegistryModelRef {
   modelId: string
 }
 
-export type ModelRef = InstalledModelRef | HuggingFaceModelRef | RegistryModelRef
+export interface ExternalModelRef {
+  source: 'external'
+  modelId: string
+}
+
+export type ModelRef = InstalledModelRef | HuggingFaceModelRef | RegistryModelRef | ExternalModelRef
 
 export interface TestRunConfig {
   suiteId: string

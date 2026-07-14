@@ -23,7 +23,7 @@ function submit(): void {
 }
 
 function onEnter(e: KeyboardEvent): void {
-  if (e.shiftKey) return
+  if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return
   e.preventDefault()
   submit()
 }
