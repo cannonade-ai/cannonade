@@ -22,6 +22,7 @@ export interface PlaygroundMessage {
   id: string
   role: 'user' | 'assistant'
   content: string
+  modelName?: string
   reasoning?: string
   stats?: ChatStats
   error?: string
@@ -109,6 +110,13 @@ export const usePlaygroundStore = defineStore('playground', () => {
     await loadModels()
   }
 
+  async function selectModel(instanceId: string, id: string): Promise<void> {
+    await selectProvider(instanceId)
+    if (models.value.some((m) => m.id === id)) {
+      modelId.value = id
+    }
+  }
+
   async function loadModels(): Promise<void> {
     if (!providerId.value) return
     modelsLoading.value = true
@@ -181,6 +189,7 @@ export const usePlaygroundStore = defineStore('playground', () => {
         id: crypto.randomUUID(),
         role: 'assistant',
         content,
+        modelName: modelId.value,
         reasoning: reasoning || undefined,
         stats: response.stats
       })
@@ -190,6 +199,7 @@ export const usePlaygroundStore = defineStore('playground', () => {
         id: crypto.randomUUID(),
         role: 'assistant',
         content: '',
+        modelName: modelId.value,
         error: message
       })
       log.error('Chat request failed:', message)
@@ -269,6 +279,7 @@ export const usePlaygroundStore = defineStore('playground', () => {
     canSend,
     init,
     selectProvider,
+    selectModel,
     loadModels,
     send,
     abort,

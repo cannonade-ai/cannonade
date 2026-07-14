@@ -3,7 +3,8 @@
   top: 0;
   left: 0;
   z-index: 2000;
-  max-width: 260px;
+  max-width: 360px;
+  max-height: 400px;
   padding: 6px 9px;
   font-family: var(--font-body);
   font-size: var(--text-sm);
@@ -42,6 +43,7 @@
   &__content {
     white-space: normal;
     word-break: break-word;
+    overflow: auto;
 
     a {
       color: var(--accent);

@@ -50,7 +50,7 @@ export function createOpenRouterProvider(
     },
 
     async fetchExternalModels(): Promise<ExternalModel[]> {
-      const res = await fetch(`${normalizedBase}/models`, { headers: { ...auth } })
+      const res = await fetch(`${normalizedBase}/models?limit=1000`, { headers: { ...auth } })
       if (!res.ok) throw mapError(res.status, await res.text())
       const data = (await res.json()) as ModelListResponse
       return data.data.map((m) => toExternalModel(m, instanceId))

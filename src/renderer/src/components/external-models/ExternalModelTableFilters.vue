@@ -29,7 +29,7 @@ const sortOptions: SelectOption<SortKey>[] = [
     <Input
       v-model="search"
       class="filters__search"
-      type="search"
+      type="text"
       placeholder="Search by name, id, or publisher…"
     />
     <Select v-model="modality" class="filters__select" :options="modalityOptions" />

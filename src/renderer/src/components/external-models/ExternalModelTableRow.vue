@@ -1,13 +1,32 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { Badge, Chevron, CopyButton } from '@renderer/components/ui'
+import { computed } from 'vue'
+import { IconDotsVertical } from '@tabler/icons-vue'
+import { Badge, Button, Chevron, CopyButton } from '@renderer/components/ui'
 import { isMultimodal } from '@shared/provider/external-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import { formatContext, formatDate, formatDay, formatPrice } from '@renderer/utils/format'
+import { useContextMenuStore } from '@renderer/stores/context-menu'
+import { useExternalModelsViewStore } from '@renderer/stores/external-models-view'
+import { useExternalModelMenus } from './useExternalModelMenus'
 
 const props = defineProps<{ model: ExternalModel }>()
 
-const expanded = ref(false)
+const viewStore = useExternalModelsViewStore()
+const expanded = computed(() => viewStore.isExpanded(props.model.id))
+
+const contextMenuStore = useContextMenuStore()
+const { externalModelMenuItems } = useExternalModelMenus()
+
+const menuItems = computed(() => externalModelMenuItems(props.model))
+
+function onContextMenu(event: MouseEvent): void {
+  if (!menuItems.value.length) return
+  contextMenuStore.open(menuItems.value, event)
+}
+
+function onMenuButton(event: MouseEvent): void {
+  contextMenuStore.openAt(menuItems.value, event.currentTarget as Element)
+}
 
 const isFree = computed(
   () =>
@@ -31,8 +50,8 @@ const modalitiesLabel = computed<string>(() => {
 </script>
 
 <template>
-  <div class="model-row" :class="{ expanded }">
-    <button type="button" class="row-main" @click="expanded = !expanded">
+  <div class="model-row" :class="{ expanded }" @contextmenu.prevent="onContextMenu">
+    <button type="button" class="row-main" @click="viewStore.toggleExpanded(model.id)">
       <span class="cell cell--name">
         <span class="model-name">{{ model.name }}</span>
         <span class="model-publisher">{{ model.publisher }}</span>
@@ -48,6 +67,12 @@ const modalitiesLabel = computed<string>(() => {
       <span class="cell cell--num">
         {{ model.pricing && !isFree ? formatPrice(model.pricing.outputPerMTokens) : '—' }}
       </span>
+      <Button
+        v-if="menuItems.length"
+        type="icon"
+        :icon="IconDotsVertical"
+        @click.stop="onMenuButton"
+      />
       <Chevron :expanded="expanded" />
     </button>
 

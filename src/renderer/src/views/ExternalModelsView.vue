@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
 import { IconRefresh, IconSettings, IconAlertCircle, IconKey } from '@tabler/icons-vue'
-import { computed, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
 import ExternalModelTable from '@renderer/components/external-models/ExternalModelTable.vue'
+import { useExternalModelsViewStore } from '@renderer/stores/external-models-view'
 import { useModelsStore } from '@renderer/stores/models'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { useProvidersStore } from '@renderer/stores/providers'
@@ -13,6 +14,30 @@ import { useProvidersStore } from '@renderer/stores/providers'
 const store = useModelsStore()
 const navStore = useNavigationStore()
 const providersStore = useProvidersStore()
+const viewStore = useExternalModelsViewStore()
+
+const rootEl = ref<HTMLElement | null>(null)
+
+function findScrollParent(el: HTMLElement | null): HTMLElement | null {
+  let node = el?.parentElement ?? null
+  while (node) {
+    const { overflowY } = getComputedStyle(node)
+    if (overflowY === 'auto' || overflowY === 'scroll') return node
+    node = node.parentElement
+  }
+  return null
+}
+
+onMounted(async () => {
+  await nextTick()
+  const scroller = findScrollParent(rootEl.value)
+  if (scroller) scroller.scrollTop = viewStore.scrollTop
+})
+
+onBeforeUnmount(() => {
+  const scroller = findScrollParent(rootEl.value)
+  if (scroller) viewStore.scrollTop = scroller.scrollTop
+})
 
 const providers = computed(() => providersStore.externalProviders)
 
@@ -54,7 +79,7 @@ useShortcut('F5', () => store.loadExternalModels(true), { preventDefault: true }
 </script>
 
 <template>
-  <div class="external-models">
+  <div ref="rootEl" class="external-models">
     <div v-if="providers.length === 0" class="no-providers">
       <IconSettings :size="24" :stroke-width="1.5" class="empty-icon" color="#ffffff30" />
       <span>No external providers configured</span>

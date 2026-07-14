@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { TooltipPlacement } from '@renderer/utils/tooltip.js'
 import InfoTooltip from './InfoTooltip.vue'
 
 defineProps<{
   label: string
   hint?: string
+  hintPlacement?: TooltipPlacement
   fill?: boolean
   grow?: boolean
   inline?: boolean
@@ -14,7 +16,7 @@ defineProps<{
   <div class="field" :class="{ 'field--fill': fill, 'field--grow': grow, 'field--inline': inline }">
     <label class="field--label">
       {{ label }}
-      <InfoTooltip v-if="hint" :content="hint" :size="13" placement="right" />
+      <InfoTooltip v-if="hint" :content="hint" :size="13" :placement="hintPlacement ?? 'right'" />
     </label>
     <slot />
   </div>
@@ -33,6 +35,7 @@ defineProps<{
 
   &--grow {
     flex: 1;
+    min-width: 0;
   }
 
   &--inline {

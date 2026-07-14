@@ -19,7 +19,7 @@ const confirm = useConfirmStore()
 const navigation = useNavigationStore()
 
 function editTestSuite(): void {
-  navigation.openTestSuite(props.run.config.suiteId)
+  navigation.navigate('test-suites', { suiteId: props.run.config.suiteId })
 }
 
 const isActive = computed(() => props.run.status === 'running' || props.run.status === 'pending')

@@ -20,6 +20,8 @@ const log = createLogger('new-run-panel')
 
 const props = defineProps<{
   suites: TestSuite[]
+  initialProviderId?: string | null
+  initialModelId?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -34,7 +36,7 @@ const navigationStore = useNavigationStore()
 const toastStore = useToastStore()
 
 function editSelectedSuite(): void {
-  if (form.suiteId) navigationStore.openTestSuite(form.suiteId)
+  if (form.suiteId) navigationStore.navigate('test-suites', { suiteId: form.suiteId })
 }
 
 const capabilities = ref<ProviderCapabilities | null>(null)
@@ -62,6 +64,7 @@ function isLocalProvider(instanceId: string): boolean {
 }
 
 const initialProvider =
+  props.initialProviderId ??
   providersStore.configuredProviders.find((p) => p.isDefault)?.instanceId ??
   providersStore.configuredProviders[0]?.instanceId ??
   'openrouter'
@@ -91,6 +94,9 @@ onMounted(() => {
     form.suiteId = lastId
   } else if (suites.length > 0) {
     form.suiteId = suites[0].id
+  }
+  if (props.initialModelId) {
+    form.models = [{ source: 'installed', modelKey: props.initialModelId }]
   }
 })
 

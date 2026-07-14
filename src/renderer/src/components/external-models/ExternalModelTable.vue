@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { Pagination } from '@renderer/components/ui'
 import { isMultimodal } from '@shared/provider/external-model'
 import type { ExternalModel } from '@shared/provider/external-model'
+import { useExternalModelsViewStore } from '@renderer/stores/external-models-view'
 import ExternalModelTableFilters from './ExternalModelTableFilters.vue'
-import type { ModalityFilter, SortKey } from './ExternalModelTableFilters.vue'
+import type { SortKey } from './ExternalModelTableFilters.vue'
 import ExternalModelTableRow from './ExternalModelTableRow.vue'
 
 const props = defineProps<{ models: ExternalModel[] }>()
 
 const PAGE_SIZE = 50
 
-const search = ref('')
-const modality = ref<ModalityFilter>('all')
-const sort = ref<SortKey>('newest')
-const page = ref(1)
+const viewStore = useExternalModelsViewStore()
+const { search, modality, sort, page } = storeToRefs(viewStore)
 
 watch([search, modality, sort, () => props.models], () => {
   page.value = 1

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { IconPlayerPlay, IconSettings } from '@tabler/icons-vue'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
@@ -17,10 +17,18 @@ const providers = useProvidersStore()
 const nav = useNavigationStore()
 
 const hasProviders = computed(() => providers.configuredProviders.length > 0)
+const initialProviderId = ref<string | null>(null)
+const initialModelId = ref<string | null>(null)
 
 onMounted(() => {
   if (suitesStore.suites.length === 0) suitesStore.load()
   if (store.runs.length === 0) store.load()
+  const payload = nav.consumePayload()
+  if (payload?.providerId && payload?.modelId) {
+    initialProviderId.value = payload.providerId
+    initialModelId.value = payload.modelId
+    store.startNewRun()
+  }
 })
 
 function onSubmit(config: TestRunConfig, suite: TestSuite): void {
@@ -58,6 +66,8 @@ function onSubmit(config: TestRunConfig, suite: TestSuite): void {
       <NewRunPanel
         v-if="store.isCreatingNew"
         :suites="suitesStore.suites"
+        :initial-provider-id="initialProviderId"
+        :initial-model-id="initialModelId"
         @cancel="store.cancelNewRun"
         @submit="onSubmit"
       />

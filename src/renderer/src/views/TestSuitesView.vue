@@ -21,7 +21,7 @@ const selectedSuite = computed<TestSuite | null>(
 
 onMounted(async () => {
   await store.load()
-  const pendingId = navigation.consumePendingSuiteId()
+  const pendingId = navigation.consumePayload()?.suiteId
   if (pendingId) selectedId.value = pendingId
 })
 

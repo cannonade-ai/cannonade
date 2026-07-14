@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
-import { IconTrash } from '@tabler/icons-vue'
+import { IconPlus, IconTrash } from '@tabler/icons-vue'
 import { Button, InfoTooltip, Panel, SplitPane } from '@renderer/components/ui'
+import SectionHeader from '@renderer/components/SectionHeader.vue'
 import {
   PlaygroundMessageList,
   PlaygroundComposer,
@@ -20,14 +21,28 @@ const { messages, sending, canSend } = storeToRefs(playground)
 onMounted(async () => {
   await promptsStore.ensureLoaded()
   await playground.init()
-  const pendingPromptId = navigationStore.consumePendingPlaygroundPromptId()
-  if (pendingPromptId) playground.loadPrompt(pendingPromptId, 'latest')
+  const payload = navigationStore.consumePayload()
+  if (payload?.promptId) playground.loadPrompt(payload.promptId, 'latest')
+  if (payload?.providerId && payload?.modelId) {
+    await playground.selectModel(payload.providerId, payload.modelId)
+  }
 })
 </script>
 
 <template>
   <div class="view">
-    <SplitPane :default-split="65" :min-start="360" :min-end="300">
+    <SectionHeader>
+      <Button
+        type="primary"
+        :icon="IconPlus"
+        :disabled="messages.length === 0 || sending"
+        @click="playground.clear"
+      >
+        New Conversation
+      </Button>
+    </SectionHeader>
+
+    <SplitPane class="playground-split" :default-split="65" :min-start="360" :min-end="300">
       <template #start>
         <Panel class="conversation-panel" title="Conversation">
           <template #title-addon>
@@ -75,6 +90,11 @@ onMounted(async () => {
   flex-direction: column;
   height: 100%;
   background: var(--bg);
+}
+
+.playground-split {
+  flex: 1;
+  min-height: 0;
 }
 
 .conversation-panel {

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
+import { IconX } from '@tabler/icons-vue'
+
 const model = defineModel<number | undefined>()
 
 const props = withDefaults(
@@ -12,6 +15,13 @@ const props = withDefaults(
   }>(),
   { disabled: false }
 )
+
+const inputRef = ref<HTMLInputElement | null>(null)
+const hasValue = ref(model.value !== undefined)
+
+watch(model, (value) => {
+  hasValue.value = value !== undefined
+})
 
 const ALLOWED_KEYS = new Set([
   'Backspace',
@@ -41,45 +51,114 @@ function onKeyDown(e: KeyboardEvent): void {
   e.preventDefault()
 }
 
+function onInput(e: Event): void {
+  hasValue.value = (e.target as HTMLInputElement).value !== ''
+}
+
 function onBlur(e: Event): void {
   const input = e.target as HTMLInputElement
   const val = input.value.trim()
   if (val === '' || val === '-') {
     model.value = undefined
     input.value = ''
+    hasValue.value = false
     return
   }
   let n = parseFloat(val)
   if (isNaN(n)) {
     model.value = undefined
     input.value = ''
+    hasValue.value = false
     return
   }
   if (props.min !== undefined && n < props.min) n = props.min
   if (props.max !== undefined && n > props.max) n = props.max
   model.value = n
   input.value = String(n)
+  hasValue.value = true
+}
+
+function onClear(): void {
+  model.value = undefined
+  if (inputRef.value) inputRef.value.value = ''
+  hasValue.value = false
+  inputRef.value?.focus()
 }
 </script>
 
 <template>
-  <input
-    class="number-input"
-    :class="{ 'number-input--right': alignRight }"
-    type="text"
-    inputmode="decimal"
-    :placeholder="placeholder"
-    :disabled="disabled"
-    :value="model ?? ''"
-    @keydown="onKeyDown"
-    @blur="onBlur"
-  />
+  <div class="number-input-wrap">
+    <input
+      ref="inputRef"
+      class="number-input"
+      :class="{ 'number-input--right': alignRight }"
+      type="text"
+      inputmode="decimal"
+      :placeholder="placeholder"
+      :disabled="disabled"
+      :value="model ?? ''"
+      @keydown="onKeyDown"
+      @input="onInput"
+      @blur="onBlur"
+    />
+    <Transition name="clear-fade">
+      <button
+        v-if="hasValue && !disabled"
+        class="number-input-wrap__clear"
+        type="button"
+        tabindex="-1"
+        @mousedown.prevent
+        @click="onClear"
+      >
+        <IconX :size="14" />
+      </button>
+    </Transition>
+  </div>
 </template>
 
 <style scoped lang="scss">
+.number-input-wrap {
+  position: relative;
+  width: 100%;
+
+  &__clear {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: color 0.15s;
+
+    &:hover {
+      color: var(--text-primary);
+    }
+  }
+}
+
+.clear-fade-enter-active,
+.clear-fade-leave-active {
+  transition:
+    opacity 0.15s ease,
+    transform 0.15s ease;
+}
+
+.clear-fade-enter-from,
+.clear-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-50%) scale(0.6);
+}
+
 .number-input {
   width: 100%;
-  padding: 6px 8px;
+  padding: 6px 26px 6px 8px;
   font-size: var(--text-sm);
   font-family: var(--font-body);
   color: var(--text-primary);
