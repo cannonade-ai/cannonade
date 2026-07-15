@@ -2,7 +2,7 @@ import { ipcMain } from 'electron'
 import { getProvider } from '../../core/providers/registry'
 import { PROVIDER } from '@shared/provider/ipc-channels'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
-import { createLogger } from '../logger'
+import { createLogger } from '@main/logger'
 
 const log = createLogger('chat-handler')
 

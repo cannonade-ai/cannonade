@@ -4,7 +4,7 @@ import { join } from 'path'
 import { SETTINGS } from '@shared/app/ipc-channels'
 import { DEFAULT_APP_SETTINGS, type AppSettings } from '@shared/app/app-settings'
 import { buildRegistry } from '../../core/providers/registry'
-import { applyLogLevel, createLogger } from '../logger'
+import { applyLogLevel, createLogger } from '@main/logger'
 
 const log = createLogger('app-settings')
 
@@ -38,5 +38,6 @@ export function registerSettingsHandlers(): void {
     cache = settings
     applyLogLevel(settings.logLevel)
     await fs.writeFile(settingsPath(), JSON.stringify(settings, null, 2), 'utf-8')
+    log.debug('App settings saved successfully')
   })
 }

@@ -14,7 +14,9 @@ export const useModelsStore = defineStore('models', () => {
   const providersStore = useProvidersStore()
 
   const localModels = ref<LocalModel[]>([])
+  const localModelsInstanceId = ref<string | null>(null)
   const externalModels = ref<ExternalModel[]>([])
+  const externalModelsInstanceId = ref<string | null>(null)
   const externalModelsCache = ref<Record<string, ExternalModel[]>>({})
   const loading = ref(false)
   const error = ref<string | null>(null)
@@ -31,6 +33,10 @@ export const useModelsStore = defineStore('models', () => {
   async function loadLocalModels(): Promise<void> {
     const instanceId = providersStore.activeLocalProvider
     if (!instanceId) return
+    if (instanceId !== localModelsInstanceId.value) {
+      localModels.value = []
+      localModelsInstanceId.value = instanceId
+    }
     loading.value = true
     error.value = null
     try {
@@ -59,8 +65,13 @@ export const useModelsStore = defineStore('models', () => {
     const cached = externalModelsCache.value[instanceId]
     if (!force && cached) {
       externalModels.value = cached
+      externalModelsInstanceId.value = instanceId
       error.value = null
       return
+    }
+    if (instanceId !== externalModelsInstanceId.value) {
+      externalModels.value = []
+      externalModelsInstanceId.value = instanceId
     }
     loading.value = true
     error.value = null
