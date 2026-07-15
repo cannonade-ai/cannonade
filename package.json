@@ -1,6 +1,6 @@
 {
   "name": "cannonade",
-  "version": "0.3.12",
+  "version": "0.3.13",
   "description": "Simplest LLM Evaluation Tool",
   "main": "./out/main/index.js",
   "author": "example.com",
@@ -22,7 +22,7 @@
     "build:linux": "npm run build && electron-builder --linux",
     "test": "vitest run",
     "test:watch": "vitest",
-    "validate": "eslint --cache . --fix && npm run typecheck && electron-vite build && vitest run"
+    "validate": "npm run typecheck && electron-vite build && eslint --cache . --fix && vitest run"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

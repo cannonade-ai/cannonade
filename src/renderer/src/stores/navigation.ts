@@ -8,6 +8,7 @@ export type View =
   | 'test-runs'
   | 'prompts'
   | 'playground'
+  | 'logs'
 export type SettingsSection = 'general' | 'providers' | 'appearance' | 'test-runs'
 
 export interface NavigationPayload {

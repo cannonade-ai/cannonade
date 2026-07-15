@@ -20,6 +20,7 @@ const rendered = computed<string>(() => md.render(props.content))
 </script>
 
 <template>
+  <!-- eslint-disable-next-line vue/no-v-html -->
   <div class="markdown-content" v-html="rendered" />
 </template>
 

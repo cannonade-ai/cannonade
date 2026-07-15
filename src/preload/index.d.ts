@@ -9,7 +9,7 @@ import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
-import type { LogEntry } from '@shared/app/logging'
+import type { LogEntry, LogFile } from '@shared/app/logging'
 import type { TestCaseResult } from '@shared/app/test-suite'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 
@@ -93,6 +93,11 @@ export interface AppAPI {
   loadAppSettings(): Promise<AppSettings>
   saveAppSettings(settings: AppSettings): Promise<void>
   listLogs(): Promise<LogEntry[]>
+  getLogsDir(): Promise<string>
+  onLogEntry(cb: (entry: LogEntry) => void): void
+  listLogFiles(): Promise<LogFile[]>
+  readLogFile(name: string): Promise<LogEntry[]>
+  deleteLogFile(name: string): Promise<void>
   listTestRuns(): Promise<TestRun[]>
   deleteTestRun(id: string): Promise<void>
   startRun(run: TestRun, suite: TestSuite): Promise<void>

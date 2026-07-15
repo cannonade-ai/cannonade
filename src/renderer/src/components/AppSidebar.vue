@@ -7,7 +7,8 @@ import {
   IconFileDescription,
   IconMessageCircle,
   IconSettings,
-  IconCloudComputing
+  IconCloudComputing,
+  IconLogs
 } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import SidebarNavItem from './SidebarNavItem.vue'
@@ -64,6 +65,13 @@ const collapsed = ref(false)
     </nav>
 
     <div class="sidebar-bottom">
+      <SidebarNavItem
+        :icon="IconLogs"
+        label="Logs"
+        :active="nav.current === 'logs'"
+        :collapsed="collapsed"
+        @click="nav.navigate('logs')"
+      />
       <SidebarNavItem
         :icon="IconSettings"
         label="Settings"

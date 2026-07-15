@@ -37,11 +37,14 @@ export const shell = {
   openPath: vi.fn((): Promise<string> => Promise.resolve(''))
 }
 
-export const BrowserWindow = vi.fn(() => ({
-  loadURL: vi.fn(),
-  loadFile: vi.fn(),
-  on: vi.fn(),
-  webContents: { send: vi.fn(), on: vi.fn() }
-}))
+export const BrowserWindow = Object.assign(
+  vi.fn(() => ({
+    loadURL: vi.fn(),
+    loadFile: vi.fn(),
+    on: vi.fn(),
+    webContents: { send: vi.fn(), on: vi.fn() }
+  })),
+  { getAllWindows: vi.fn((): unknown[] => []) }
+)
 
 export default { app, safeStorage, ipcMain, ipcRenderer, contextBridge, shell, BrowserWindow }

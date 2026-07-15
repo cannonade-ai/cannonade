@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { useSettingsStore } from '@renderer/stores/settings'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
+import { useLogsStore } from '@renderer/stores/logs'
 import AppSidebar from '@renderer/components/AppSidebar.vue'
 import AppTitleBar from '@renderer/components/AppTitleBar.vue'
 import ConfirmModal from '@renderer/components/ui/ConfirmModal.vue'
@@ -16,13 +17,16 @@ import {
   TestRunsView,
   PromptsView,
   PlaygroundView,
-  OnboardingView
+  OnboardingView,
+  LogsView
 } from '@renderer/views'
 
 const nav = useNavigationStore()
 const settings = useSettingsStore()
 const testRuns = useTestRunsStore()
+const logs = useLogsStore()
 testRuns.initEventListeners()
+void logs.init()
 
 const viewComponent = computed(() => {
   switch (nav.current) {
@@ -36,6 +40,8 @@ const viewComponent = computed(() => {
       return PromptsView
     case 'playground':
       return PlaygroundView
+    case 'logs':
+      return LogsView
     default:
       return LocalModelsView
   }

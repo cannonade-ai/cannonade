@@ -27,7 +27,12 @@ export const SETTINGS = {
 } as const
 
 export const LOGS = {
-  LIST: 'logs:list'
+  LIST: 'logs:list',
+  GET_DIR: 'logs:getDir',
+  ENTRY: 'logs:entry',
+  LIST_FILES: 'logs:listFiles',
+  READ_FILE: 'logs:readFile',
+  DELETE_FILE: 'logs:deleteFile'
 } as const
 
 export const TEST_RUNS = {

@@ -15,4 +15,4 @@ app.directive('tooltip', vTooltip)
 await useSettingsStore().init()
 
 app.mount('#app')
-log.info('Renderer mounted')
+log.info('Main renderer mounted')

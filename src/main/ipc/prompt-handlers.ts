@@ -3,6 +3,9 @@ import { promises as fs } from 'fs'
 import { join } from 'path'
 import { PROMPTS } from '@shared/app/ipc-channels'
 import type { Prompt } from '@shared/app/prompt'
+import { createLogger } from '@main/logger'
+
+const log = createLogger('prompt-handlers')
 
 function promptsDir(): string {
   return join(app.getPath('userData'), 'prompts')
@@ -28,15 +31,18 @@ export function registerPromptHandlers(): void {
         return JSON.parse(raw) as Prompt
       })
     )
+    log.debug(`Found ${prompts.length} prompt files`)
     return prompts.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
   })
 
   ipcMain.handle(PROMPTS.SAVE, async (_event, prompt: Prompt): Promise<void> => {
     await ensurePromptsDir()
     await fs.writeFile(promptPath(prompt.id), JSON.stringify(prompt, null, 2), 'utf-8')
+    log.debug(`Saved prompt: ${prompt.id}`)
   })
 
   ipcMain.handle(PROMPTS.DELETE, async (_event, id: string): Promise<void> => {
     await fs.rm(promptPath(id), { force: true })
+    log.info(`Deleted prompt: ${id}`)
   })
 }

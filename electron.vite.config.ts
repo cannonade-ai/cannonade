@@ -8,7 +8,12 @@ const sharedAlias = { '@shared': resolve('src/shared') }
 
 export default defineConfig({
   main: {
-    resolve: { alias: sharedAlias }
+    resolve: {
+      alias: {
+        '@main': resolve('src/main'),
+        ...sharedAlias
+      }
+    }
   },
   preload: {
     resolve: { alias: sharedAlias }

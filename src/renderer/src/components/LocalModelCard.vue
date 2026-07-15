@@ -153,6 +153,10 @@ function onMenuButton(event: MouseEvent): void {
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+
+  .badge {
+    text-transform: capitalize;
+  }
 }
 
 .model-name {

@@ -4,6 +4,9 @@ import { join } from 'path'
 import slugify from 'slugify'
 import { TEST_RUNS } from '@shared/app/ipc-channels'
 import type { TestRun } from '@shared/app/test-run'
+import { createLogger } from '@main/logger'
+
+const log = createLogger('test-run-handlers')
 
 function runsDir(): string {
   return join(app.getPath('userData'), 'runs')
@@ -23,6 +26,7 @@ async function ensureRunsDir(): Promise<void> {
 export async function saveTestRun(run: TestRun): Promise<void> {
   await ensureRunsDir()
   await fs.writeFile(runPath(run.id, run.suiteName), JSON.stringify(run, null, 2), 'utf-8')
+  log.debug(`Saved test run: ${run.id}`)
 }
 
 export function registerTestRunHandlers(): void {
@@ -37,12 +41,18 @@ export function registerTestRunHandlers(): void {
         return JSON.parse(raw) as TestRun
       })
     )
+    log.debug(`Found ${runs.length} test run files`)
     return runs.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   })
 
   ipcMain.handle(TEST_RUNS.DELETE, async (_event, id: string): Promise<void> => {
     const files = await fs.readdir(runsDir())
     const match = files.find((f) => f.startsWith(`${id}-`) && f.endsWith('.json'))
-    if (match) await fs.rm(join(runsDir(), match), { force: true })
+    if (match) {
+      await fs.rm(join(runsDir(), match), { force: true })
+      log.info(`Deleted test run: ${id}`)
+    } else {
+      log.warn(`Test run not found for deletion: ${id}`)
+    }
   })
 }

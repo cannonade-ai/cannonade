@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
-import { IconRefresh, IconSettings, IconAlertCircle, IconKey } from '@tabler/icons-vue'
+import { IconRefresh, IconSettings, IconAlertCircle, IconKey, IconLoader2 } from '@tabler/icons-vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
+import { formatDate } from '@renderer/utils/format'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
 import ExternalModelTable from '@renderer/components/external-models/ExternalModelTable.vue'
@@ -90,11 +91,18 @@ useShortcut('F5', () => store.loadExternalModels(true), { preventDefault: true }
 
     <template v-else>
       <SectionHeader>
+        <span v-if="store.externalModelsUpdatedAt" v-tooltip="'Last updated'" class="updated-at">
+          {{ formatDate(store.externalModelsUpdatedAt, true) }}
+        </span>
         <span v-if="providers.length === 1" class="provider-label">
           {{ providerLabel }}
         </span>
         <Select v-else v-model="provider" :options="providerOptions" class="provider-select" />
-        <Button :icon="IconRefresh" @click="store.loadExternalModels(true)">Refresh</Button>
+        <Button :disabled="store.loading" @click="store.loadExternalModels(true)">
+          <IconLoader2 v-if="store.loading" :size="14" class="spin" />
+          <IconRefresh v-else :size="14" />
+          Refresh
+        </Button>
       </SectionHeader>
 
       <div v-if="missingApiKey" class="key-notice">
@@ -106,7 +114,7 @@ useShortcut('F5', () => store.loadExternalModels(true), { preventDefault: true }
         </Button>
       </div>
 
-      <div v-if="store.loading" class="state-message">
+      <div v-if="store.loading && store.externalModels.length === 0" class="state-message">
         <span class="spinner" />
         Loading models from {{ providerLabel }}...
       </div>
@@ -159,6 +167,14 @@ useShortcut('F5', () => store.loadExternalModels(true), { preventDefault: true }
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--text-muted);
+}
+
+.updated-at {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
 }
 
 .provider-select {

@@ -4,6 +4,9 @@ import { join } from 'path'
 import { SUITES } from '@shared/app/ipc-channels'
 import { DEFAULT_SUITE } from './default-suite'
 import type { TestSuite } from '@shared/app/test-suite'
+import { createLogger } from '@main/logger'
+
+const log = createLogger('suite-handlers')
 
 function suitesDir(): string {
   return join(app.getPath('userData'), 'suites')
@@ -39,9 +42,11 @@ export function registerSuiteHandlers(): void {
     await ensureSuitesDir()
     const files = await fs.readdir(suitesDir())
     const jsonFiles = files.filter((f) => f.endsWith('.json'))
+    log.debug(`Found ${jsonFiles.length} suite files`)
 
     if (jsonFiles.length <= 0) {
       if (await isInitialized()) return []
+      log.debug('No suites found, writing default suite')
       await markInitialized()
       await fs.writeFile(
         suitePath(DEFAULT_SUITE.id),
@@ -57,15 +62,18 @@ export function registerSuiteHandlers(): void {
         return JSON.parse(raw) as TestSuite
       })
     )
+    log.debug('Loaded suites', suites.length)
     return suites.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
   })
 
   ipcMain.handle(SUITES.SAVE, async (_event, suite: TestSuite): Promise<void> => {
+    log.debug('Saving suite', suite.id)
     await ensureSuitesDir()
     await fs.writeFile(suitePath(suite.id), JSON.stringify(suite, null, 2), 'utf-8')
   })
 
   ipcMain.handle(SUITES.DELETE, async (_event, id: string): Promise<void> => {
+    log.debug('Deleting suite', id)
     await fs.rm(suitePath(id), { force: true })
   })
 }
