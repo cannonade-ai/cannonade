@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
-import { IconRefresh, IconSettings, IconAlertCircle } from '@tabler/icons-vue'
+import { IconRefresh, IconSettings, IconAlertCircle, IconLoader2 } from '@tabler/icons-vue'
 import { computed, watch } from 'vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
+import { formatDate } from '@renderer/utils/format'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import LocalModelCard from '@renderer/components/LocalModelCard.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
@@ -67,14 +68,21 @@ useShortcut('F5', () => store.loadLocalModels(), { preventDefault: true })
 
     <template v-else>
       <SectionHeader>
+        <span v-if="store.localModelsUpdatedAt" v-tooltip="'Last updated'" class="updated-at">
+          {{ formatDate(store.localModelsUpdatedAt, true) }}
+        </span>
         <span v-if="providers.length === 1" class="provider-label">
           {{ providerLabel }}
         </span>
         <Select v-else v-model="provider" :options="providerOptions" class="provider-select" />
-        <Button :icon="IconRefresh" @click="store.loadLocalModels()">Refresh</Button>
+        <Button :disabled="store.loading" @click="store.loadLocalModels()">
+          <IconLoader2 v-if="store.loading" :size="14" class="spin" />
+          <IconRefresh v-else :size="14" />
+          Refresh
+        </Button>
       </SectionHeader>
 
-      <div v-if="store.loading" class="state-message">
+      <div v-if="store.loading && store.localModels.length === 0" class="state-message">
         <span class="spinner" />
         Connecting to {{ providerLabel }}...
       </div>
@@ -156,6 +164,14 @@ useShortcut('F5', () => store.loadLocalModels(), { preventDefault: true })
   font-size: var(--text-xs);
   font-weight: 600;
   color: var(--text-muted);
+}
+
+.updated-at {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-align: right;
 }
 
 .provider-select {
