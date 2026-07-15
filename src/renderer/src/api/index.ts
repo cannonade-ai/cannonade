@@ -8,7 +8,7 @@ import type { AppSettings } from '@shared/app/app-settings'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun } from '@shared/app/test-run'
-import type { LogEntry } from '@shared/app/logging'
+import type { LogEntry, LogFile } from '@shared/app/logging'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 import type {
   RunStartedPayload,
@@ -70,6 +70,11 @@ export const api = {
   loadAppSettings: (): Promise<AppSettings> => window.api.loadAppSettings(),
   saveAppSettings: (settings: AppSettings): Promise<void> => window.api.saveAppSettings(settings),
   listLogs: (): Promise<LogEntry[]> => window.api.listLogs(),
+  getLogsDir: (): Promise<string> => window.api.getLogsDir(),
+  listLogFiles: (): Promise<LogFile[]> => window.api.listLogFiles(),
+  readLogFile: (name: string): Promise<LogEntry[]> => window.api.readLogFile(name),
+  deleteLogFile: (name: string): Promise<void> => window.api.deleteLogFile(name),
+  onLogEntry: (cb: (entry: LogEntry) => void): void => window.api.onLogEntry(cb),
   listTestRuns: (): Promise<TestRun[]> => window.api.listTestRuns(),
   deleteTestRun: (id: string): Promise<void> => window.api.deleteTestRun(id),
   startRun: (run: TestRun, suite: TestSuite): Promise<void> => window.api.startRun(run, suite),

@@ -4,7 +4,7 @@ import 'electron-log/preload'
 import electronLog from 'electron-log/renderer'
 import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
 import { APP, SUITES, PROMPTS, SETTINGS, TEST_RUNS, RUN, LOGS } from '@shared/app/ipc-channels'
-import type { LogEntry } from '@shared/app/logging'
+import type { LogEntry, LogFile } from '@shared/app/logging'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
@@ -62,6 +62,13 @@ const api = {
   saveAppSettings: (settings: AppSettings): Promise<void> =>
     ipcRenderer.invoke(SETTINGS.SAVE, settings),
   listLogs: (): Promise<LogEntry[]> => ipcRenderer.invoke(LOGS.LIST),
+  getLogsDir: (): Promise<string> => ipcRenderer.invoke(LOGS.GET_DIR),
+  listLogFiles: (): Promise<LogFile[]> => ipcRenderer.invoke(LOGS.LIST_FILES),
+  readLogFile: (name: string): Promise<LogEntry[]> => ipcRenderer.invoke(LOGS.READ_FILE, name),
+  deleteLogFile: (name: string): Promise<void> => ipcRenderer.invoke(LOGS.DELETE_FILE, name),
+  onLogEntry: (cb: (entry: LogEntry) => void): void => {
+    ipcRenderer.on(LOGS.ENTRY, (_e, entry) => cb(entry))
+  },
   listTestRuns: (): Promise<TestRun[]> => ipcRenderer.invoke(TEST_RUNS.LIST),
   deleteTestRun: (id: string): Promise<void> => ipcRenderer.invoke(TEST_RUNS.DELETE, id),
   startRun: (run: TestRun, suite: TestSuite): Promise<void> =>

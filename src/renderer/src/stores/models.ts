@@ -15,9 +15,12 @@ export const useModelsStore = defineStore('models', () => {
 
   const localModels = ref<LocalModel[]>([])
   const localModelsInstanceId = ref<string | null>(null)
+  const localModelsUpdatedAt = ref<string | null>(null)
   const externalModels = ref<ExternalModel[]>([])
   const externalModelsInstanceId = ref<string | null>(null)
+  const externalModelsUpdatedAt = ref<string | null>(null)
   const externalModelsCache = ref<Record<string, ExternalModel[]>>({})
+  const externalModelsUpdatedAtCache = ref<Record<string, string>>({})
   const loading = ref(false)
   const error = ref<string | null>(null)
   const modelOperations = ref<Record<string, ModelOperation>>({})
@@ -41,8 +44,10 @@ export const useModelsStore = defineStore('models', () => {
     error.value = null
     try {
       localModels.value = await api.fetchLocalModels(instanceId)
+      localModelsUpdatedAt.value = new Date().toISOString()
     } catch (e) {
       localModels.value = []
+      localModelsUpdatedAt.value = null
       if (e instanceof Error) {
         const providerName = providersStore.getProvider(instanceId)?.displayName ?? instanceId
         if (e.message.includes('fetch failed')) {
@@ -66,6 +71,7 @@ export const useModelsStore = defineStore('models', () => {
     if (!force && cached) {
       externalModels.value = cached
       externalModelsInstanceId.value = instanceId
+      externalModelsUpdatedAt.value = externalModelsUpdatedAtCache.value[instanceId] ?? null
       error.value = null
       return
     }
@@ -79,8 +85,11 @@ export const useModelsStore = defineStore('models', () => {
       const models = await api.fetchExternalModels(instanceId)
       externalModelsCache.value[instanceId] = models
       externalModels.value = models
+      externalModelsUpdatedAt.value = new Date().toISOString()
+      externalModelsUpdatedAtCache.value[instanceId] = externalModelsUpdatedAt.value
     } catch (e) {
       externalModels.value = []
+      externalModelsUpdatedAt.value = null
       if (e instanceof Error) {
         error.value = e.message
       } else {
@@ -94,7 +103,9 @@ export const useModelsStore = defineStore('models', () => {
 
   return {
     localModels,
+    localModelsUpdatedAt,
     externalModels,
+    externalModelsUpdatedAt,
     loading,
     error,
     modelOperations,

@@ -41,8 +41,7 @@ interface RunTestCaseOutcome {
 }
 
 async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcome> {
-  const { provider, modelRun, modelRunState, testCase, modelKey, run, suite, send, abortSignal } =
-    params
+  const { provider, modelRun, modelRunState, testCase, modelKey, suite, send, abortSignal } = params
 
   const caseRunState = modelRunState.caseRuns.find((c) => c.testCaseId === testCase.id)!
   caseRunState.status = 'running'
@@ -57,7 +56,7 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
 
   try {
     const response = await runChat(provider, request, abortSignal, timeoutMs)
-    log.debug(`run.id: ${run.id}, modelRun.id: ${modelRun.id}, case: ${testCase.name}:`, response)
+    log.debug(`response for modelRun.id: ${modelRun.id}, case: ${testCase.name}:`, response)
 
     const output = extractTextOutput(response.output)
     const reasoning = extractReasoningOutput(response.output)

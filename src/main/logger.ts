@@ -1,15 +1,17 @@
 import path from 'node:path'
 import fs from 'node:fs'
-import { app } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import type { LogFunctions, LogMessage, Transport } from 'electron-log'
 import type { LogEntry, LogLevel } from '@shared/app/logging'
 import { DEFAULT_APP_SETTINGS } from '@shared/app/app-settings'
+import { LOGS } from '@shared/app/ipc-channels'
 
 const MAX_BUFFER_SIZE = 1000
 const MAX_LOG_FILE_SIZE = 10 * 1024 * 1024
 const CURRENT_LOG_FILE = 'main.log'
 const buffer: LogEntry[] = []
+let sequence = 0
 
 export function getLogsDirectory(): string {
   return app.getPath('logs')
@@ -19,22 +21,24 @@ function formatArchiveDate(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
   const day = String(date.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day}_${hours}-${minutes}`
 }
 
-function getNextArchivePath(date: Date): string {
-  const dir = getLogsDirectory()
-  const dateLabel = formatArchiveDate(date)
-  let sequence = 1
-  while (fs.existsSync(path.join(dir, `${dateLabel}.${sequence}.log`))) {
-    sequence++
-  }
-  return path.join(dir, `${dateLabel}.${sequence}.log`)
+function getArchivePath(date: Date): string {
+  return path.join(getLogsDirectory(), `${formatArchiveDate(date)}.log`)
 }
 
 function archiveLogFile(filePath: string, date: Date): void {
+  const archivePath = getArchivePath(date)
   try {
-    fs.renameSync(filePath, getNextArchivePath(date))
+    if (fs.existsSync(archivePath)) {
+      fs.appendFileSync(archivePath, fs.readFileSync(filePath))
+      fs.unlinkSync(filePath)
+    } else {
+      fs.renameSync(filePath, archivePath)
+    }
   } catch (error) {
     log.warn('Failed to archive log file', filePath, error)
   }
@@ -61,15 +65,24 @@ function formatDataItem(item: unknown): string {
   }
 }
 
+function broadcastEntry(entry: LogEntry): void {
+  for (const win of BrowserWindow.getAllWindows()) {
+    if (!win.isDestroyed()) win.webContents.send(LOGS.ENTRY, entry)
+  }
+}
+
 const bufferTransport = Object.assign(
   (message: LogMessage): void => {
-    buffer.push({
+    const entry: LogEntry = {
+      seq: sequence++,
       timestamp: message.date.toISOString(),
       level: message.level,
       scope: message.scope ?? 'main',
       message: message.data.map(formatDataItem).join(' ')
-    })
+    }
+    buffer.push(entry)
     if (buffer.length > MAX_BUFFER_SIZE) buffer.shift()
+    broadcastEntry(entry)
   },
   { level: 'info' as LogLevel, transforms: [] }
 ) as Transport

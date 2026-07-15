@@ -1,10 +1,15 @@
 import { app, ipcMain, BrowserWindow, shell } from 'electron'
 import { APP, LOGS } from '@shared/app/ipc-channels'
 import { join } from 'path'
-import { getBufferedLogs } from '@main/logger'
+import { getBufferedLogs, getLogsDirectory } from '@main/logger'
+import { listLogFiles, readLogFile, deleteLogFile } from '../services/log-files'
 
 export function registerAppHandlers(): void {
   ipcMain.handle(LOGS.LIST, () => getBufferedLogs())
+  ipcMain.handle(LOGS.GET_DIR, () => getLogsDirectory())
+  ipcMain.handle(LOGS.LIST_FILES, () => listLogFiles())
+  ipcMain.handle(LOGS.READ_FILE, (_event, name: string) => readLogFile(name))
+  ipcMain.handle(LOGS.DELETE_FILE, (_event, name: string) => deleteLogFile(name))
 
   ipcMain.handle(APP.GET_VERSION, () => app.getVersion())
   ipcMain.handle(APP.GET_SUITES_DIR, () => join(app.getPath('userData'), 'suites'))
