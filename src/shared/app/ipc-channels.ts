@@ -1,8 +1,5 @@
 export const APP = {
-  GET_VERSION: 'app:getVersion',
-  GET_SUITES_DIR: 'app:getSuitesDir',
-  GET_RUNS_DIR: 'app:getRunsDir',
-  GET_PROMPTS_DIR: 'app:getPromptsDir',
+  GET_INFO: 'app:getInfo',
   OPEN_PATH: 'app:openPath',
   MINIMIZE: 'app:minimize',
   MAXIMIZE: 'app:maximize',

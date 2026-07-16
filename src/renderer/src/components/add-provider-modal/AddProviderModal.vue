@@ -52,7 +52,7 @@ const props = defineProps<{
 const providers = useProvidersStore()
 
 const step = ref<1 | 2>(1)
-const selectedType = ref<ProviderType>('lmstudio')
+const selectedType = ref<ProviderType>('custom')
 const displayName = ref('')
 const url = ref('')
 const isRemote = ref(false)

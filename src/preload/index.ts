@@ -10,6 +10,7 @@ import type { Prompt } from '@shared/app/prompt'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { ProbeAuth } from '@shared/provider/api-key'
 import type { AppSettings } from '@shared/app/app-settings'
+import type { AppInfo } from '@shared/app/app-info'
 import type { TestRun } from '@shared/app/test-run'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 
@@ -44,10 +45,7 @@ const api = {
   setSecret: (instanceId: string, value: string) =>
     ipcRenderer.invoke(SECRETS.SET, instanceId, value),
   deleteSecret: (instanceId: string) => ipcRenderer.invoke(SECRETS.DELETE, instanceId),
-  getAppVersion: (): Promise<string> => ipcRenderer.invoke(APP.GET_VERSION),
-  getSuitesDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_SUITES_DIR),
-  getRunsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_RUNS_DIR),
-  getPromptsDir: (): Promise<string> => ipcRenderer.invoke(APP.GET_PROMPTS_DIR),
+  getAppInfo: (): Promise<AppInfo> => ipcRenderer.invoke(APP.GET_INFO),
   openPath: (path: string): Promise<void> => ipcRenderer.invoke(APP.OPEN_PATH, path),
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
   maximize: (): void => ipcRenderer.send(APP.MAXIMIZE),

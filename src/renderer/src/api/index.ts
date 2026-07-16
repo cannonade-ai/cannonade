@@ -5,6 +5,7 @@ import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
+import type { AppInfo } from '@shared/app/app-info'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun } from '@shared/app/test-run'
@@ -53,10 +54,7 @@ export const api = {
   setSecret: (instanceId: string, value: string): Promise<void> =>
     window.api.setSecret(instanceId, value),
   deleteSecret: (instanceId: string): Promise<void> => window.api.deleteSecret(instanceId),
-  getAppVersion: (): Promise<string> => window.api.getAppVersion(),
-  getSuitesDir: (): Promise<string> => window.api.getSuitesDir(),
-  getRunsDir: (): Promise<string> => window.api.getRunsDir(),
-  getPromptsDir: (): Promise<string> => window.api.getPromptsDir(),
+  getAppInfo: (): Promise<AppInfo> => window.api.getAppInfo(),
   openPath: (path: string): Promise<void> => window.api.openPath(path),
   minimize: (): void => window.api.minimize(),
   maximize: (): void => window.api.maximize(),

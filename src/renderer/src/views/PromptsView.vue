@@ -6,10 +6,12 @@ import SectionHeader from '@renderer/components/SectionHeader.vue'
 import { Button, Panel, Badge, InfoTooltip } from '@renderer/components/ui'
 import { storeToRefs } from 'pinia'
 import { usePromptsStore } from '@renderer/stores/prompts'
+import { useAppInfoStore } from '@renderer/stores/app-info'
 import { api } from '@renderer/api'
 import { PromptList, PromptDetail } from '@renderer/components/prompts'
 
 const store = usePromptsStore()
+const appInfo = useAppInfoStore()
 const { prompts } = storeToRefs(store)
 const selectedId = ref<string | null>(null)
 const isNew = ref(false)
@@ -45,8 +47,7 @@ function onCreated(id: string): void {
 }
 
 async function openPromptsFolder(): Promise<void> {
-  const dir = await api.getPromptsDir()
-  await api.openPath(dir)
+  await api.openPath(appInfo.promptsDir)
 }
 </script>
 

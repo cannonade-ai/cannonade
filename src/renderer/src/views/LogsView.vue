@@ -5,6 +5,7 @@ import { storeToRefs } from 'pinia'
 import { LOG_LEVELS, type LogEntry, type LogFile, type LogLevel } from '@shared/app/logging'
 import { Badge, Button, Input, InfoTooltip, Panel, Select } from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
+import SectionHeader from '@renderer/components/SectionHeader.vue'
 import { useLogsStore } from '@renderer/stores/logs'
 import { useConfirmStore } from '@renderer/stores/confirm'
 import { useToastStore } from '@renderer/stores/toast'
@@ -104,6 +105,25 @@ async function deleteSelectedFile(): Promise<void> {
   }
 }
 
+async function deleteLogHistory(): Promise<void> {
+  const ok = await confirmStore.confirm({
+    title: 'Delete Log History',
+    message: `Delete all ${logFiles.value.length} archived log files? The current session is not affected. This cannot be undone.`,
+    confirmText: 'Delete All',
+    danger: true
+  })
+  if (!ok) return
+  try {
+    await Promise.all(logFiles.value.map((file) => api.deleteLogFile(file.name)))
+    selectedSource.value = CURRENT_SESSION
+    toastStore.success('Log history deleted')
+  } catch (error) {
+    log.error('Failed to delete log history:', error)
+    toastStore.error('Failed to delete log history')
+  }
+  await loadLogFiles()
+}
+
 function formatTimestamp(timestamp: string): string {
   const date = new Date(timestamp)
   const pad = (value: number, length = 2): string => String(value).padStart(length, '0')
@@ -144,6 +164,16 @@ async function openLogsFolder(): Promise<void> {
 
 <template>
   <div class="view">
+    <SectionHeader>
+      <Button
+        type="danger-outline"
+        :icon="IconTrash"
+        :disabled="logFiles.length === 0"
+        @click="deleteLogHistory"
+      >
+        Delete Log History
+      </Button>
+    </SectionHeader>
     <Panel class="logs-panel" title="Logs">
       <template #title-addon>
         <Badge>{{ filteredEntries.length }}</Badge>

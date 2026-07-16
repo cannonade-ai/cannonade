@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive, ref, toRefs, watch } from 'vue'
+import { reactive, toRefs, watch } from 'vue'
 import { api } from '../api'
 import {
   DEFAULT_APP_SETTINGS as DEFAULTS,
@@ -24,9 +24,6 @@ export const useSettingsStore = defineStore('settings', () => {
     ...DEFAULTS,
     isDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   })
-  const appVersion = ref('')
-  const suitesDir = ref('')
-
   applyTheme(settings.isDark)
 
   watch(
@@ -46,13 +43,7 @@ export const useSettingsStore = defineStore('settings', () => {
   )
 
   async function init(): Promise<void> {
-    const [version, dir, loadedSettings] = await Promise.all([
-      api.getAppVersion(),
-      api.getSuitesDir(),
-      api.loadAppSettings()
-    ])
-    appVersion.value = version
-    suitesDir.value = dir
+    const loadedSettings = await api.loadAppSettings()
     Object.assign(settings, loadedSettings, {
       onboardingComplete: loadedSettings.onboardingComplete ?? false
     })
@@ -77,8 +68,6 @@ export const useSettingsStore = defineStore('settings', () => {
 
   return {
     ...toRefs(settings),
-    appVersion,
-    suitesDir,
     init,
     toggleTheme,
     reset,

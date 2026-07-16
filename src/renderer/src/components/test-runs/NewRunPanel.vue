@@ -66,8 +66,7 @@ function isLocalProvider(instanceId: string): boolean {
 const initialProvider =
   props.initialProviderId ??
   providersStore.configuredProviders.find((p) => p.isDefault)?.instanceId ??
-  providersStore.configuredProviders[0]?.instanceId ??
-  'openrouter'
+  providersStore.configuredProviders[0]?.instanceId
 
 const form = reactive<{
   suiteId: string

@@ -31,7 +31,7 @@ const settings = useSettingsStore()
     </SettingsModalRow>
     <SettingsModalRow
       label="Parallel runs"
-      hint="Run multiple models simultaneously (OpenRouter only)"
+      hint="Run multiple models simultaneously (External providers only)"
     >
       <Toggle v-model="settings.parallelRuns" />
     </SettingsModalRow>

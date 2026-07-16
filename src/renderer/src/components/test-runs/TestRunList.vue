@@ -5,11 +5,13 @@ import { formatDate } from '@renderer/utils/format'
 import { IconFolderOpen } from '@tabler/icons-vue'
 import { api } from '@renderer/api'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
+import { useAppInfoStore } from '@renderer/stores/app-info'
 import { useTestRunMenus } from './useTestRunMenus'
 
+const appInfo = useAppInfoStore()
+
 async function openRunsFolder(): Promise<void> {
-  const dir = await api.getRunsDir()
-  await api.openPath(dir)
+  await api.openPath(appInfo.runsDir)
 }
 
 defineProps<{

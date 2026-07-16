@@ -6,11 +6,13 @@ import SectionHeader from '@renderer/components/SectionHeader.vue'
 import { Button, Panel, Badge, InfoTooltip } from '@renderer/components/ui'
 import { storeToRefs } from 'pinia'
 import { useTestSuitesStore } from '@renderer/stores/test-suites'
+import { useAppInfoStore } from '@renderer/stores/app-info'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { api } from '@renderer/api'
 import { TestSuiteList, TestSuiteDetail } from '@renderer/components/test-suites'
 
 const store = useTestSuitesStore()
+const appInfo = useAppInfoStore()
 const navigation = useNavigationStore()
 const { suites } = storeToRefs(store)
 const selectedId = ref<string | null>(null)
@@ -38,8 +40,7 @@ async function onSave(updated: TestSuite): Promise<void> {
 }
 
 async function openSuitesFolder(): Promise<void> {
-  const dir = await api.getSuitesDir()
-  await api.openPath(dir)
+  await api.openPath(appInfo.suitesDir)
 }
 
 async function onNewSuite(): Promise<void> {

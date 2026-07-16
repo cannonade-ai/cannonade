@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useSettingsStore } from '@renderer/stores/settings'
+import { useAppInfoStore } from '@renderer/stores/app-info'
 import Button from '@renderer/components/ui/Button.vue'
 import Select, { type SelectOption } from '@renderer/components/ui/Select.vue'
 import { useConfirmStore } from '@renderer/stores/confirm'
@@ -15,10 +16,11 @@ const logLevelOptions: SelectOption<LogLevel>[] = LOG_LEVELS.map((level) => ({
 }))
 
 const settings = useSettingsStore()
+const appInfo = useAppInfoStore()
 const confirmStore = useConfirmStore()
 
 async function openSuitesFolder(): Promise<void> {
-  if (settings.suitesDir) await api.openPath(settings.suitesDir)
+  if (appInfo.suitesDir) await api.openPath(appInfo.suitesDir)
 }
 
 function openGithubIssues(): void {
@@ -40,12 +42,12 @@ async function handleReset(): Promise<void> {
   <div class="section">
     <SettingsModalDivider label="Version" />
     <SettingsModalRow label="Cannonade">
-      <span class="mono-val">{{ settings.appVersion || '—' }}</span>
+      <span class="mono-val">{{ appInfo.version || '—' }}</span>
     </SettingsModalRow>
     <SettingsModalDivider label="Files" />
     <SettingsModalRow label="Suites folder" hint="Where test suite files are stored on disk">
       <div class="path-row">
-        <span class="path-value">{{ settings.suitesDir }}</span>
+        <span class="path-value">{{ appInfo.suitesDir }}</span>
         <Button
           v-tooltip="'Open suites folder'"
           type="icon"

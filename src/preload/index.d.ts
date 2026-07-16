@@ -6,6 +6,7 @@ import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
+import type { AppInfo } from '@shared/app/app-info'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
@@ -76,10 +77,7 @@ export interface AppAPI {
   getSecretInfo(envVarName: string, instanceId: string | null): Promise<SecretInfo>
   setSecret(instanceId: string, value: string): Promise<void>
   deleteSecret(instanceId: string): Promise<void>
-  getAppVersion(): Promise<string>
-  getSuitesDir(): Promise<string>
-  getRunsDir(): Promise<string>
-  getPromptsDir(): Promise<string>
+  getAppInfo(): Promise<AppInfo>
   openPath(path: string): Promise<void>
   minimize(): void
   maximize(): void
