@@ -39,7 +39,8 @@
     "ollama": "^0.6.3",
     "pinia": "^3.0.4",
     "slugify": "^1.6.9",
-    "vm2": "^3.11.3"
+    "vm2": "^3.11.3",
+    "write-file-atomic": "^8.0.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "3.0.0",
@@ -47,6 +48,7 @@
     "@electron-toolkit/tsconfig": "^2.0.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^24.12.4",
+    "@types/write-file-atomic": "^4.0.3",
     "@vitejs/plugin-vue": "^6.0.2",
     "electron": "^40.10.0",
     "electron-builder": "^26.8.1",

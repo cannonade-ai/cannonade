@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { EvaluationConfig } from '@shared/app/test-suite'
-import { EvaluationResult } from '@shared/app/test-run'
+import { EvaluationResult } from '@shared/app/evaluation-result'
 
 vi.mock('@huggingface/transformers', () => ({
   pipeline: vi.fn(),

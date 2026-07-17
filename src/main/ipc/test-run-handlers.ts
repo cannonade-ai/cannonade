@@ -2,6 +2,7 @@ import { ipcMain, app } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import slugify from 'slugify'
+import writeFileAtomic from 'write-file-atomic'
 import { TEST_RUNS } from '@shared/app/ipc-channels'
 import type { TestRun } from '@shared/app/test-run'
 import { createLogger } from '@main/logger'
@@ -25,7 +26,7 @@ async function ensureRunsDir(): Promise<void> {
 
 export async function saveTestRun(run: TestRun): Promise<void> {
   await ensureRunsDir()
-  await fs.writeFile(runPath(run.id, run.suiteName), JSON.stringify(run, null, 2), 'utf-8')
+  await writeFileAtomic(runPath(run.id, run.suiteName), JSON.stringify(run, null, 2))
   log.debug(`Saved test run: ${run.id}`)
 }
 

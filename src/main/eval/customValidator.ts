@@ -1,11 +1,11 @@
 ﻿import { VM } from 'vm2'
 import type { EvaluationConfig } from '@shared/app/test-suite'
-import type { EvaluationResult } from '@shared/app/test-run'
+import type { EvaluationResult } from '@shared/app/evaluation-result'
 import { createLogger } from '../logger'
+import { PASS_THRESHOLD } from './metrics'
 
 const log = createLogger('custom-validator')
 
-const PASS_THRESHOLD = 0.9
 const CODE_RUN_TIMEOUT = 5000
 
 export function runCustomValidator(output: string, evaluation: EvaluationConfig): EvaluationResult {

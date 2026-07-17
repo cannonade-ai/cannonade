@@ -2,12 +2,12 @@
 import { join } from 'node:path'
 import type { FeatureExtractionPipeline } from '@huggingface/transformers'
 import type { EvaluationConfig } from '@shared/app/test-suite'
-import type { EvaluationResult } from '@shared/app/test-run'
+import type { EvaluationResult } from '@shared/app/evaluation-result'
 import { createLogger } from '../logger'
 
 const log = createLogger('cosine-similarity')
 
-const PASS_THRESHOLD = 0.8
+const COSINE_PASS_THRESHOLD = 0.8
 
 let extractor: FeatureExtractionPipeline | null = null
 
@@ -47,7 +47,7 @@ export async function runCosineSimilarity(
       normB += b[i] * b[i]
     }
     const score = parseFloat((dot / (Math.sqrt(normA) * Math.sqrt(normB))).toFixed(4))
-    return { score, passed: score >= (evaluation.threshold ?? PASS_THRESHOLD) }
+    return { score, passed: score >= (evaluation.threshold ?? COSINE_PASS_THRESHOLD) }
   } catch (err) {
     log.error('Cosine similarity evaluation failed:', err)
     return { score: 0, passed: false, error: `Cosine similarity error: ${err}` }

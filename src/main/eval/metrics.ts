@@ -26,6 +26,12 @@ export function evaluateBleu(output: string, evaluation: EvaluationConfig): Eval
 
 export function evaluateF1(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
+  if (!expected) {
+    return { score: 0, passed: false, error: 'No expected value provided' }
+  }
+  if (output.length === 0) {
+    return { score: 0, passed: false, error: 'Model output was empty' }
+  }
 
   const predSet = new Set(normalizeCase(output, evaluation.caseSensitive).split(' '))
   const refSet = new Set(normalizeCase(expected, evaluation.caseSensitive).split(' '))

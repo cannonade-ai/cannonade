@@ -1,6 +1,7 @@
 import { app, BrowserWindow, screen, type Rectangle } from 'electron'
-import { readFileSync, writeFileSync } from 'fs'
+import { readFileSync } from 'fs'
 import { join } from 'path'
+import writeFileAtomic from 'write-file-atomic'
 import { createLogger } from './logger'
 
 const log = createLogger('window-state')
@@ -67,7 +68,7 @@ export function createWindowStateManager(): WindowStateManager {
           manager.bounds = window.getBounds()
         }
         try {
-          writeFileSync(
+          writeFileAtomic.sync(
             windowStatePath(),
             JSON.stringify(
               {
@@ -77,8 +78,7 @@ export function createWindowStateManager(): WindowStateManager {
               },
               null,
               2
-            ),
-            'utf-8'
+            )
           )
         } catch (err) {
           log.error('Persist error:', err)

@@ -1,6 +1,7 @@
 import { ipcMain, app } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
+import writeFileAtomic from 'write-file-atomic'
 import { PROMPTS } from '@shared/app/ipc-channels'
 import type { Prompt } from '@shared/app/prompt'
 import { createLogger } from '@main/logger'
@@ -37,7 +38,7 @@ export function registerPromptHandlers(): void {
 
   ipcMain.handle(PROMPTS.SAVE, async (_event, prompt: Prompt): Promise<void> => {
     await ensurePromptsDir()
-    await fs.writeFile(promptPath(prompt.id), JSON.stringify(prompt, null, 2), 'utf-8')
+    await writeFileAtomic(promptPath(prompt.id), JSON.stringify(prompt, null, 2))
     log.debug(`Saved prompt: ${prompt.id}`)
   })
 
