@@ -16,7 +16,10 @@ export default defineConfig({
     }
   },
   preload: {
-    resolve: { alias: sharedAlias }
+    resolve: { alias: sharedAlias },
+    build: {
+      externalizeDeps: { exclude: ['electron-log'] }
+    }
   },
   renderer: {
     resolve: {

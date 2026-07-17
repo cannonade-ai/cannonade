@@ -1,4 +1,3 @@
-import { ElectronAPI } from '@electron-toolkit/preload'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
@@ -112,7 +111,6 @@ export interface AppAPI {
 
 declare global {
   interface Window {
-    electron: ElectronAPI
     api: AppAPI
   }
 }

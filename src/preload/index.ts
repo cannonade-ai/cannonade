@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
 import 'electron-log/preload'
 import electronLog from 'electron-log/renderer'
 import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
@@ -98,16 +97,8 @@ const api = {
   }
 }
 
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    log.error('Failed to expose context bridge APIs:', error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
+try {
+  contextBridge.exposeInMainWorld('api', api)
+} catch (error) {
+  log.error('Failed to expose context bridge APIs:', error)
 }
