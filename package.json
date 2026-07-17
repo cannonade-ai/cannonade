@@ -38,8 +38,8 @@
     "markdown-it": "^14.3.0",
     "ollama": "^0.6.3",
     "pinia": "^3.0.4",
+    "quickjs-emscripten": "^0.32.0",
     "slugify": "^1.6.9",
-    "vm2": "^3.11.3",
     "write-file-atomic": "^8.0.0"
   },
   "devDependencies": {
