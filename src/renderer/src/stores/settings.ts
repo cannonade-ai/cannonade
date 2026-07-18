@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { reactive, toRefs, watch } from 'vue'
+import { nextTick, reactive, toRefs, watch } from 'vue'
 import { api } from '../api'
 import {
   DEFAULT_APP_SETTINGS as DEFAULTS,
@@ -31,13 +31,22 @@ export const useSettingsStore = defineStore('settings', () => {
     (dark) => applyTheme(dark)
   )
 
+  let initialized = false
+  let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+  function saveSettings(): void {
+    api.saveAppSettings({
+      ...settings,
+      configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p }))
+    })
+  }
+
   watch(
     [settings, () => providersStore.configuredProviders],
     () => {
-      api.saveAppSettings({
-        ...settings,
-        configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p }))
-      })
+      if (!initialized) return
+      if (saveTimer !== null) clearTimeout(saveTimer)
+      saveTimer = setTimeout(saveSettings, 500)
     },
     { deep: true }
   )
@@ -48,6 +57,8 @@ export const useSettingsStore = defineStore('settings', () => {
       onboardingComplete: loadedSettings.onboardingComplete ?? false
     })
     providersStore.init(loadedSettings.configuredProviders ?? [])
+    await nextTick()
+    initialized = true
   }
 
   function toggleTheme(): void {
