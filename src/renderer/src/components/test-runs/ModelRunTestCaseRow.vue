@@ -190,17 +190,15 @@ const hasMetrics = computed<boolean>(() => {
         />
       </div>
 
-      <div class="outputs-grid">
-        <div v-if="caseRun.result.output" class="output-col">
-          <span class="detail-label">Actual Output</span>
-          <Textarea
-            :model-value="caseRun.result.output"
-            variant="display"
-            readonly
-            copyable
-            class="field-textarea"
-          />
-        </div>
+      <div v-if="caseRun.result.output" class="detail-block">
+        <span class="detail-label">Actual Output</span>
+        <Textarea
+          :model-value="caseRun.result.output"
+          variant="display"
+          readonly
+          copyable
+          class="field-textarea"
+        />
       </div>
 
       <div v-if="caseRun.result.evalResults?.length" class="detail-block">
@@ -566,22 +564,6 @@ const hasMetrics = computed<boolean>(() => {
         color: #ef4444;
       }
     }
-  }
-
-  .outputs-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-
-    &:has(.output-col:only-child) {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  .output-col {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
   }
 }
 </style>
