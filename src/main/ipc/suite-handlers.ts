@@ -53,12 +53,26 @@ export function registerSuiteHandlers(): void {
       return [DEFAULT_SUITE]
     }
 
-    const suites = await Promise.all(
-      jsonFiles.map(async (f) => {
-        const raw = await fs.readFile(join(suitesDir(), f), 'utf-8')
-        return JSON.parse(raw) as TestSuite
+    const results = await Promise.all(
+      jsonFiles.map(async (f): Promise<TestSuite | null> => {
+        try {
+          const raw = await fs.readFile(join(suitesDir(), f), 'utf-8')
+          const suite = JSON.parse(raw) as TestSuite
+          if (typeof suite.id !== 'string' || typeof suite.createdAt !== 'string') {
+            log.warn(`Skipping suite file with unexpected shape: ${f}`)
+            return null
+          }
+          return suite
+        } catch (error) {
+          log.error(`Skipping unreadable suite file: ${f}`, error)
+          return null
+        }
       })
     )
+    const suites: TestSuite[] = []
+    for (const s of results) {
+      if (s !== null) suites.push(s)
+    }
     log.debug('Loaded suites', suites.length)
     return suites.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
   })

@@ -36,12 +36,26 @@ export function registerTestRunHandlers(): void {
     const files = await fs.readdir(runsDir())
     const jsonFiles = files.filter((f) => f.endsWith('.json'))
     if (jsonFiles.length === 0) return []
-    const runs = await Promise.all(
-      jsonFiles.map(async (f) => {
-        const raw = await fs.readFile(join(runsDir(), f), 'utf-8')
-        return JSON.parse(raw) as TestRun
+    const results = await Promise.all(
+      jsonFiles.map(async (f): Promise<TestRun | null> => {
+        try {
+          const raw = await fs.readFile(join(runsDir(), f), 'utf-8')
+          const run = JSON.parse(raw) as TestRun
+          if (typeof run.id !== 'string' || typeof run.createdAt !== 'string') {
+            log.warn(`Skipping test run file with unexpected shape: ${f}`)
+            return null
+          }
+          return run
+        } catch (error) {
+          log.error(`Skipping unreadable test run file: ${f}`, error)
+          return null
+        }
       })
     )
+    const runs: TestRun[] = []
+    for (const r of results) {
+      if (r !== null) runs.push(r)
+    }
     log.debug(`Found ${runs.length} test run files`)
     return runs.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   })
