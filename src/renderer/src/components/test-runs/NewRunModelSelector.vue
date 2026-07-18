@@ -124,7 +124,7 @@ function modelChipLabel(ref: ModelRef): string {
     <div v-if="modelValue.length > 0" class="selected-chips">
       <Badge
         v-for="(m, i) in modelValue"
-        :key="i"
+        :key="`${m.source}:${refKey(m)}`"
         :type="m.source === 'installed' ? 'secondary' : 'default'"
         :icon="badgeIcon(m)"
         removable
