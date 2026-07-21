@@ -1,4 +1,4 @@
-appId: com.cannonadeai.app
+appId: app.cannonade
 productName: Cannonade
 directories:
   buildResources: build
@@ -25,12 +25,11 @@ nsis:
 mac:
   files:
     - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,linux}/**'
+  category: public.app-category.developer-tools
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
-    - NSCameraUsageDescription: Application requests access to the device's camera.
-    - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+    - NSDocumentsFolderUsageDescription: Cannonade needs access to your Documents folder to import and export test suites.
+    - NSDownloadsFolderUsageDescription: Cannonade needs access to your Downloads folder to import and export test suites.
   notarize: false
 dmg:
   artifactName: ${name}-${version}.${ext}
@@ -41,11 +40,12 @@ linux:
     - AppImage
     - snap
     - deb
-  maintainer: electronjs.org
-  category: Utility
+  maintainer: Cannonade <https://cannonade.app>
+  category: Development
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
 publish:
-  provider: generic
-  url: https://example.com/auto-updates
+  provider: github
+  owner: bekiruzun
+  repo: cannonade

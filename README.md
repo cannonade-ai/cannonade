@@ -1,34 +1,65 @@
-# cannonade
+# Cannonade
 
-An Electron application with Vue and TypeScript
+<p align="center">
+  <a href="https://cannonade.app">
+    <img src="https://raw.githubusercontent.com/BekirUzun/cannonade/main/resources/icon.png" alt="cannonade" width="200"/>
+  </a>
+</p>
+<p align="center"><a href="https://cannonade.app">cannonade.app</a></p>
 
-## Recommended IDE Setup
+Cannonade is a cross-platform desktop app for building test suites, running them against
+multiple models at once, and comparing the results without writing an eval
+harness or shipping your prompts to a third-party service.
 
-- [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
+## Features
 
-## Project Setup
+- **Local models:** view, load, unload, and delete the local models of your configured LLM providers.
+- **External models:** view cloud model details and pricing from your configured LLM providers.
+- **Playground:** chat with any configured model, tweak sampling parameters, and inspect
+  token and timing stats.
+- **Prompt library:** keep system prompts in one place and reuse them across the
+  playground and test suites.
+- **Test suites:** define test cases and configure evaluators once, then run them against any number of local or cloud models.
+- **Test runs:** every run is saved locally with results, scores, and stats for each case.
+- **Model downloads:** download models from the model registry of a configured provider or from huggingface.
+- **Local first:** prompts, test suites, and test runs are all stored locally in JSON files.
 
-### Install
+## Supported providers
+
+| Provider   | Notes                                    |
+| ---------- | ---------------------------------------- |
+| LM Studio  | Local or remote LM Studio server         |
+| Ollama     | Local or remote Ollama server            |
+| OpenRouter | Hundreds of cloud models via one API key |
+| Custom     | Any OpenAI-compatible endpoint           |
+| More       | More supported providers are coming soon |
+
+## Development
+
+Built with Electron, Vue 3, TypeScript, Vite, Pinia, and Sass.
 
 ```bash
-$ npm install
+npm ci
+npm run dev
 ```
 
-### Development
+### Checks
 
 ```bash
-$ npm run dev
+npm run validate # typecheck + build + lint:fix + tests
+npm run build
+npm test
+npm run lint:fix
 ```
 
-### Build
+### Packaging
 
 ```bash
-# For windows
-$ npm run build:win
-
-# For macOS
-$ npm run build:mac
-
-# For Linux
-$ npm run build:linux
+npm run build:win
+npm run build:mac
+npm run build:linux
 ```
+
+## Contributing
+
+Bug reports and feature requests: [GitHub Issues](https://github.com/BekirUzun/cannonade/issues).

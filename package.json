@@ -1,10 +1,25 @@
 {
   "name": "cannonade",
-  "version": "0.3.14",
-  "description": "Simplest LLM Evaluation Tool",
+  "version": "0.4.1",
+  "description": "The simplest way to test and compare local or cloud LLMs and prompts",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "Cannonade",
+  "homepage": "https://cannonade.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BekirUzun/cannonade.git"
+  },
+  "bugs": {
+    "url": "https://github.com/BekirUzun/cannonade/issues"
+  },
+  "keywords": [
+    "llm",
+    "evaluation",
+    "prompt-engineering",
+    "ai",
+    "local-llm",
+    "eval"
+  ],
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
