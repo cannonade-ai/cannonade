@@ -14,6 +14,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   const testRuns = ref<TestRun[]>([])
   const selectedRunId = ref<string | null>(null)
   const isCreatingNew = ref(false)
+  let listenersInitialized = false
 
   const selectedRun = computed<TestRun | null>(
     () => testRuns.value.find((r) => r.id === selectedRunId.value) ?? null
@@ -50,6 +51,8 @@ export const useTestRunsStore = defineStore('test-runs', () => {
   }
 
   function initEventListeners(): void {
+    if (listenersInitialized) return
+    listenersInitialized = true
     api.onRunStarted(({ runId }) => {
       const testRun = testRuns.value.find((r) => r.id === runId)
       if (!testRun) return
