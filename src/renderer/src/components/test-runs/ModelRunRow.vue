@@ -13,7 +13,7 @@ import {
   IconMinus,
   IconX
 } from '@tabler/icons-vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const filteredTestCases = computed(() =>
   props.testCases.filter((tc) => caseRunFor(tc.id) !== undefined)
@@ -104,6 +104,13 @@ const runProgress = computed<number>(() => {
   return done / total
 })
 
+const stickyAction = ref<string>('')
+watch(currentAction, (action) => {
+  if (action) stickyAction.value = action
+})
+
+const actionVisible = computed<boolean>(() => isActive.value && stickyAction.value.length > 0)
+
 function remainingTime(estimatedCompletion: string): string {
   const estCompletion = new Date(estimatedCompletion).getTime()
   const now = Date.now()
@@ -168,10 +175,12 @@ function remainingTime(estimatedCompletion: string): string {
         </div>
       </div>
 
-      <div v-if="currentAction" class="row-action">{{ currentAction }}</div>
+      <div class="row-action-slot" :class="{ visible: actionVisible }">
+        <div class="row-action">{{ stickyAction }}</div>
+      </div>
     </button>
 
-    <div v-if="isActive" class="row-progress">
+    <div class="row-progress" :class="{ visible: isActive }">
       <div class="row-progress-fill" :style="{ width: `${runProgress * 100}%` }" />
     </div>
 
@@ -292,7 +301,6 @@ function remainingTime(estimatedCompletion: string): string {
   .row-summary {
     display: flex;
     flex-direction: column;
-    gap: 4px;
     width: 100%;
     padding: 12px;
     background: none;
@@ -306,9 +314,14 @@ function remainingTime(estimatedCompletion: string): string {
 
   .row-progress {
     width: 100%;
-    height: 3px;
+    height: 0;
     background: var(--border);
     overflow: hidden;
+    transition: height 0.2s var(--ease-out);
+
+    &.visible {
+      height: 3px;
+    }
 
     .row-progress-fill {
       height: 100%;
@@ -325,14 +338,29 @@ function remainingTime(estimatedCompletion: string): string {
     width: 100%;
   }
 
+  .row-action-slot {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows 0.2s var(--ease-out),
+      opacity 0.15s var(--ease-out);
+
+    &.visible {
+      grid-template-rows: 1fr;
+      opacity: 1;
+    }
+  }
+
   .row-action {
+    min-height: 0;
     font-size: var(--text-xs);
     color: var(--text-muted);
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-top: 4px;
+    padding-top: 4px;
   }
 
   .summary-left {
