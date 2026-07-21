@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
 import 'electron-log/preload'
 import electronLog from 'electron-log/renderer'
 import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
@@ -8,7 +7,11 @@ import type { LogEntry, LogFile } from '@shared/app/logging'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
-import type { ProbeAuth } from '@shared/provider/api-key'
+import type { ProbeAuth, SecretInfo } from '@shared/provider/api-key'
+import type { LocalModel } from '@shared/provider/local-model'
+import type { ExternalModel } from '@shared/provider/external-model'
+import type { ProviderCapabilities } from '@shared/provider/capabilities'
+import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { AppInfo } from '@shared/app/app-info'
 import type { TestRun } from '@shared/app/test-run'
@@ -17,34 +20,40 @@ import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 const log = electronLog.scope('preload')
 
 const api = {
-  fetchLocalModels: (instanceId: string) =>
+  fetchLocalModels: (instanceId: string): Promise<LocalModel[]> =>
     ipcRenderer.invoke(PROVIDER.FETCH_LOCAL_MODELS, instanceId),
-  fetchExternalModels: (instanceId: string) =>
+  fetchExternalModels: (instanceId: string): Promise<ExternalModel[]> =>
     ipcRenderer.invoke(PROVIDER.FETCH_EXTERNAL_MODELS, instanceId),
-  getCapabilities: (instanceId: string) =>
+  getCapabilities: (instanceId: string): Promise<ProviderCapabilities> =>
     ipcRenderer.invoke(PROVIDER.GET_CAPABILITIES, instanceId),
-  deleteModel: (instanceId: string, modelId: string) =>
+  deleteModel: (instanceId: string, modelId: string): Promise<void> =>
     ipcRenderer.invoke(PROVIDER.DELETE_MODEL, instanceId, modelId),
-  loadModel: (instanceId: string, modelId: string) =>
+  loadModel: (instanceId: string, modelId: string): Promise<void> =>
     ipcRenderer.invoke(PROVIDER.LOAD_MODEL, instanceId, modelId),
-  unloadModel: (instanceId: string, loadedInstanceId: string) =>
+  unloadModel: (instanceId: string, loadedInstanceId: string): Promise<void> =>
     ipcRenderer.invoke(PROVIDER.UNLOAD_MODEL, instanceId, loadedInstanceId),
-  serverStatus: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_STATUS, instanceId),
-  serverStart: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_START, instanceId),
-  serverStop: (instanceId: string) => ipcRenderer.invoke(PROVIDER.SERVER_STOP, instanceId),
-  testConnection: (instanceId: string) => ipcRenderer.invoke(PROVIDER.TEST_CONNECTION, instanceId),
-  testConnectionUrl: (type: ProviderType, url: string, auth?: ProbeAuth) =>
+  serverStatus: (instanceId: string): Promise<ServerStatusResponse> =>
+    ipcRenderer.invoke(PROVIDER.SERVER_STATUS, instanceId),
+  serverStart: (instanceId: string): Promise<ServerStatusResponse> =>
+    ipcRenderer.invoke(PROVIDER.SERVER_START, instanceId),
+  serverStop: (instanceId: string): Promise<ServerStatusResponse> =>
+    ipcRenderer.invoke(PROVIDER.SERVER_STOP, instanceId),
+  testConnection: (instanceId: string): Promise<boolean> =>
+    ipcRenderer.invoke(PROVIDER.TEST_CONNECTION, instanceId),
+  testConnectionUrl: (type: ProviderType, url: string, auth?: ProbeAuth): Promise<boolean> =>
     ipcRenderer.invoke(PROVIDER.TEST_CONNECTION_URL, type, url, auth),
-  syncProviders: (providers: ConfiguredProvider[]) => ipcRenderer.invoke(PROVIDER.SYNC, providers),
+  syncProviders: (providers: ConfiguredProvider[]): Promise<void> =>
+    ipcRenderer.invoke(PROVIDER.SYNC, providers),
   chat: (instanceId: string, requestId: string, request: ChatRequest): Promise<ChatResponse> =>
     ipcRenderer.invoke(PROVIDER.CHAT, instanceId, requestId, request),
   abortChat: (requestId: string): Promise<void> =>
     ipcRenderer.invoke(PROVIDER.CHAT_ABORT, requestId),
-  getSecretInfo: (envVarName: string, instanceId: string | null) =>
+  getSecretInfo: (envVarName: string, instanceId: string | null): Promise<SecretInfo> =>
     ipcRenderer.invoke(SECRETS.GET_INFO, envVarName, instanceId),
-  setSecret: (instanceId: string, value: string) =>
+  setSecret: (instanceId: string, value: string): Promise<void> =>
     ipcRenderer.invoke(SECRETS.SET, instanceId, value),
-  deleteSecret: (instanceId: string) => ipcRenderer.invoke(SECRETS.DELETE, instanceId),
+  deleteSecret: (instanceId: string): Promise<void> =>
+    ipcRenderer.invoke(SECRETS.DELETE, instanceId),
   getAppInfo: (): Promise<AppInfo> => ipcRenderer.invoke(APP.GET_INFO),
   openPath: (path: string): Promise<void> => ipcRenderer.invoke(APP.OPEN_PATH, path),
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
@@ -98,16 +107,8 @@ const api = {
   }
 }
 
-if (process.contextIsolated) {
-  try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
-  } catch (error) {
-    log.error('Failed to expose context bridge APIs:', error)
-  }
-} else {
-  // @ts-ignore (define in dts)
-  window.electron = electronAPI
-  // @ts-ignore (define in dts)
-  window.api = api
+try {
+  contextBridge.exposeInMainWorld('api', api)
+} catch (error) {
+  log.error('Failed to expose context bridge APIs:', error)
 }

@@ -658,6 +658,88 @@ describe('executeTestRun – timeout and cancellation', () => {
   })
 })
 
+describe('executeTestRun – parallel execution', () => {
+  const externalCapabilities = {
+    ...capabilities,
+    localModels: false,
+    externalModels: true,
+    downloadModel: false,
+    downloadStatus: false,
+    deleteModel: false,
+    loadModel: false,
+    serverControl: false,
+    requiresApiKey: true
+  }
+
+  function useExternalProvider(): void {
+    mockGetProvider.mockReturnValue({
+      id: 'openrouter',
+      capabilities: externalCapabilities,
+      chat: mockChat
+    })
+  }
+
+  function trackConcurrency(): { readonly max: number } {
+    const tracker = { active: 0, max: 0 }
+    mockChat.mockImplementation(async () => {
+      tracker.active++
+      tracker.max = Math.max(tracker.max, tracker.active)
+      await new Promise((resolve) => setTimeout(resolve, 10))
+      tracker.active--
+      return makeChatResponse('ok')
+    })
+    return tracker
+  }
+
+  function makeExternalModelRuns(): PerModelRun[] {
+    return [
+      makeModelRun({ id: 'mr-1', modelRef: { source: 'external', modelId: 'openai/gpt-4' } }),
+      makeModelRun({ id: 'mr-2', modelRef: { source: 'external', modelId: 'openai/gpt-4o' } })
+    ]
+  }
+
+  it('runs model runs concurrently when parallelRun is enabled', async () => {
+    useExternalProvider()
+    const tracker = trackConcurrency()
+    const send = makeSend()
+    const run = makeRun(makeExternalModelRuns())
+    run.config.parallelRun = true
+    await executeTestRun(run, makeSuite(), send)
+    expect(tracker.max).toBe(2)
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'completed' })
+    const modelCompletedCalls = send.mock.calls.filter(([ch]) => ch === RUN.MODEL_COMPLETED)
+    expect(modelCompletedCalls).toHaveLength(2)
+  })
+
+  it('runs model runs sequentially when parallelRun is not enabled', async () => {
+    useExternalProvider()
+    const tracker = trackConcurrency()
+    const run = makeRun(makeExternalModelRuns())
+    await executeTestRun(run, makeSuite(), makeSend())
+    expect(tracker.max).toBe(1)
+  })
+
+  it('ignores parallelRun for providers with local models', async () => {
+    const tracker = trackConcurrency()
+    const run = makeRun([makeModelRun({ id: 'mr-1' }), makeModelRun({ id: 'mr-2' })])
+    run.config.parallelRun = true
+    await executeTestRun(run, makeSuite(), makeSend())
+    expect(tracker.max).toBe(1)
+  })
+
+  it('marks the run failed when one parallel model run fails', async () => {
+    useExternalProvider()
+    mockChat
+      .mockRejectedValueOnce(new Error('rate limited'))
+      .mockResolvedValueOnce(makeChatResponse('ok'))
+    const send = makeSend()
+    const run = makeRun(makeExternalModelRuns())
+    run.config.parallelRun = true
+    await executeTestRun(run, makeSuite(), send)
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'failed' })
+  })
+})
+
 describe('executeTestRun – aggregate metrics', () => {
   it('computes correct aggregate for all passing results', async () => {
     mockChat.mockResolvedValue(makeChatResponse('ok', 60, 0.1))

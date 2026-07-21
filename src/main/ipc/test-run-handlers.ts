@@ -2,6 +2,7 @@ import { ipcMain, app } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import slugify from 'slugify'
+import writeFileAtomic from 'write-file-atomic'
 import { TEST_RUNS } from '@shared/app/ipc-channels'
 import type { TestRun } from '@shared/app/test-run'
 import { createLogger } from '@main/logger'
@@ -25,7 +26,7 @@ async function ensureRunsDir(): Promise<void> {
 
 export async function saveTestRun(run: TestRun): Promise<void> {
   await ensureRunsDir()
-  await fs.writeFile(runPath(run.id, run.suiteName), JSON.stringify(run, null, 2), 'utf-8')
+  await writeFileAtomic(runPath(run.id, run.suiteName), JSON.stringify(run, null, 2))
   log.debug(`Saved test run: ${run.id}`)
 }
 
@@ -35,12 +36,26 @@ export function registerTestRunHandlers(): void {
     const files = await fs.readdir(runsDir())
     const jsonFiles = files.filter((f) => f.endsWith('.json'))
     if (jsonFiles.length === 0) return []
-    const runs = await Promise.all(
-      jsonFiles.map(async (f) => {
-        const raw = await fs.readFile(join(runsDir(), f), 'utf-8')
-        return JSON.parse(raw) as TestRun
+    const results = await Promise.all(
+      jsonFiles.map(async (f): Promise<TestRun | null> => {
+        try {
+          const raw = await fs.readFile(join(runsDir(), f), 'utf-8')
+          const run = JSON.parse(raw) as TestRun
+          if (typeof run.id !== 'string' || typeof run.createdAt !== 'string') {
+            log.warn(`Skipping test run file with unexpected shape: ${f}`)
+            return null
+          }
+          return run
+        } catch (error) {
+          log.error(`Skipping unreadable test run file: ${f}`, error)
+          return null
+        }
       })
     )
+    const runs: TestRun[] = []
+    for (const r of results) {
+      if (r !== null) runs.push(r)
+    }
     log.debug(`Found ${runs.length} test run files`)
     return runs.sort((a, b) => b.createdAt.localeCompare(a.createdAt))
   })

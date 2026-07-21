@@ -42,15 +42,24 @@ const systemPrompt = ref('')
 const promptRef = ref<TestCasePromptRef | null>(null)
 const promptFieldRef = ref<InstanceType<typeof TestCaseEditorPromptField> | null>(null)
 const userInput = ref('')
-const evaluations = ref<EvaluationConfig[]>([])
+interface EditorEvaluation {
+  key: string
+  config: EvaluationConfig
+}
+
+const evaluations = ref<EditorEvaluation[]>([])
 const passingLogic = ref<'all' | 'any'>('all')
 
-function defaultEvaluation(): EvaluationConfig {
-  return {
+function toEditorEvaluation(config: EvaluationConfig): EditorEvaluation {
+  return { key: crypto.randomUUID(), config }
+}
+
+function defaultEvaluation(): EditorEvaluation {
+  return toEditorEvaluation({
     type: 'exact_match',
     expected: undefined,
     threshold: undefined
-  }
+  })
 }
 
 watch(
@@ -63,7 +72,8 @@ watch(
       promptRef.value = tc.promptRef ?? null
       userInput.value =
         tc.input.messages?.find((m) => m.role === 'user')?.content ?? tc.input.prompt ?? ''
-      evaluations.value = tc.evaluations.length > 0 ? [...tc.evaluations] : [defaultEvaluation()]
+      evaluations.value =
+        tc.evaluations.length > 0 ? tc.evaluations.map(toEditorEvaluation) : [defaultEvaluation()]
       passingLogic.value = tc.passingLogic ?? 'all'
     } else {
       name.value = ''
@@ -95,7 +105,7 @@ async function onSave(): Promise<void> {
     description: description.value || undefined,
     input: { type: 'chat', messages },
     promptRef: promptRef.value ?? undefined,
-    evaluations: evaluations.value,
+    evaluations: evaluations.value.map((ev) => ev.config),
     passingLogic: passingLogic.value
   }
 
@@ -114,7 +124,7 @@ function removeEvaluation(index: number): void {
 }
 
 function updateEvaluation(index: number, updated: EvaluationConfig): void {
-  evaluations.value[index] = updated
+  evaluations.value[index].config = updated
 }
 
 async function onDelete(): Promise<void> {
@@ -227,8 +237,8 @@ useShortcut(
             <div class="eval-methods">
               <TestCaseEvaluationMethod
                 v-for="(ev, i) in evaluations"
-                :key="i"
-                :evaluation="ev"
+                :key="ev.key"
+                :evaluation="ev.config"
                 :index="i"
                 @update="updateEvaluation(i, $event)"
                 @remove="removeEvaluation(i)"

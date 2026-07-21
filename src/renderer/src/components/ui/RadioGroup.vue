@@ -49,11 +49,13 @@ const model = defineModel<T>({ required: true })
     }
 
     &.rounded-first {
-      border-radius: var(--radius) 0 0 var(--radius);
+      border-top-left-radius: var(--radius);
+      border-bottom-left-radius: var(--radius);
     }
 
     &.rounded-last {
-      border-radius: 0 var(--radius) var(--radius) 0;
+      border-top-right-radius: var(--radius);
+      border-bottom-right-radius: var(--radius);
     }
 
     &.active {

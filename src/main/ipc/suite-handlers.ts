@@ -1,6 +1,7 @@
 import { ipcMain, app } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
+import writeFileAtomic from 'write-file-atomic'
 import { SUITES } from '@shared/app/ipc-channels'
 import { DEFAULT_SUITE } from './default-suite'
 import type { TestSuite } from '@shared/app/test-suite'
@@ -48,20 +49,30 @@ export function registerSuiteHandlers(): void {
       if (await isInitialized()) return []
       log.debug('No suites found, writing default suite')
       await markInitialized()
-      await fs.writeFile(
-        suitePath(DEFAULT_SUITE.id),
-        JSON.stringify(DEFAULT_SUITE, null, 2),
-        'utf-8'
-      )
+      await writeFileAtomic(suitePath(DEFAULT_SUITE.id), JSON.stringify(DEFAULT_SUITE, null, 2))
       return [DEFAULT_SUITE]
     }
 
-    const suites = await Promise.all(
-      jsonFiles.map(async (f) => {
-        const raw = await fs.readFile(join(suitesDir(), f), 'utf-8')
-        return JSON.parse(raw) as TestSuite
+    const results = await Promise.all(
+      jsonFiles.map(async (f): Promise<TestSuite | null> => {
+        try {
+          const raw = await fs.readFile(join(suitesDir(), f), 'utf-8')
+          const suite = JSON.parse(raw) as TestSuite
+          if (typeof suite.id !== 'string' || typeof suite.createdAt !== 'string') {
+            log.warn(`Skipping suite file with unexpected shape: ${f}`)
+            return null
+          }
+          return suite
+        } catch (error) {
+          log.error(`Skipping unreadable suite file: ${f}`, error)
+          return null
+        }
       })
     )
+    const suites: TestSuite[] = []
+    for (const s of results) {
+      if (s !== null) suites.push(s)
+    }
     log.debug('Loaded suites', suites.length)
     return suites.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
   })
@@ -69,7 +80,7 @@ export function registerSuiteHandlers(): void {
   ipcMain.handle(SUITES.SAVE, async (_event, suite: TestSuite): Promise<void> => {
     log.debug('Saving suite', suite.id)
     await ensureSuitesDir()
-    await fs.writeFile(suitePath(suite.id), JSON.stringify(suite, null, 2), 'utf-8')
+    await writeFileAtomic(suitePath(suite.id), JSON.stringify(suite, null, 2))
   })
 
   ipcMain.handle(SUITES.DELETE, async (_event, id: string): Promise<void> => {

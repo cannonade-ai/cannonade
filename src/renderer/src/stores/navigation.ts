@@ -1,5 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { createLogger } from '@renderer/utils/logger'
+
+const log = createLogger('navigation-store')
 
 export type View =
   | 'local-models'
@@ -25,6 +28,7 @@ export const useNavigationStore = defineStore('navigation', () => {
   const settingsSection = ref<SettingsSection>('general')
 
   function navigate(view: View, data?: NavigationPayload): void {
+    log.debug(`navigating to ${view} with payload: ${data ?? null}`)
     payload.value = data ?? null
     current.value = view
   }

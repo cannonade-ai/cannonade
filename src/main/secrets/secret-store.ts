@@ -1,6 +1,7 @@
 import { app, safeStorage } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
+import writeFileAtomic from 'write-file-atomic'
 import type { ProbeAuth, SecretInfo } from '@shared/provider/api-key'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import {
@@ -53,7 +54,7 @@ async function persist(): Promise<void> {
   for (const [key, value] of Object.entries(cache)) {
     encoded[key] = safeStorage.encryptString(value).toString('base64')
   }
-  await fs.writeFile(credentialsPath(), JSON.stringify(encoded, null, 2), 'utf-8')
+  await writeFileAtomic(credentialsPath(), JSON.stringify(encoded, null, 2))
 }
 
 export function resolveApiKey(provider: ConfiguredProvider): string | undefined {

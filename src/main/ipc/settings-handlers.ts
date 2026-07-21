@@ -1,6 +1,7 @@
 import { ipcMain, app } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
+import writeFileAtomic from 'write-file-atomic'
 import { SETTINGS } from '@shared/app/ipc-channels'
 import { DEFAULT_APP_SETTINGS, type AppSettings } from '@shared/app/app-settings'
 import { buildRegistry } from '../../core/providers/registry'
@@ -37,7 +38,7 @@ export function registerSettingsHandlers(): void {
   ipcMain.handle(SETTINGS.SAVE, async (_event, settings: AppSettings): Promise<void> => {
     cache = settings
     applyLogLevel(settings.logLevel)
-    await fs.writeFile(settingsPath(), JSON.stringify(settings, null, 2), 'utf-8')
+    await writeFileAtomic(settingsPath(), JSON.stringify(settings, null, 2))
     log.debug('App settings saved successfully')
   })
 }

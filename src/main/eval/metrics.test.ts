@@ -378,6 +378,12 @@ describe('f1', () => {
     expect(result.score).toBe(0)
   })
 
+  it('returns zero score when output is empty string', () => {
+    const result = evaluateF1(' ', { ...base, expected: 'hello world' })
+    expect(result.passed).toBe(false)
+    expect(result.score).toBe(0)
+  })
+
   it('returns zero score when expected is empty', () => {
     const result = evaluateF1('hello world', { ...base, expected: '' })
     expect(result.passed).toBe(false)
