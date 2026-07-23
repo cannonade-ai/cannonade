@@ -54,7 +54,7 @@ export function toChatResponse(response: OpenAIChatResponse): ChatResponse {
       total_output_tokens: response.usage?.completion_tokens ?? 0,
       reasoning_output_tokens: 0,
       tokens_per_second: 0,
-      time_to_first_token_seconds: 0
+      time_to_first_token_ms: 0
     }
   }
 }

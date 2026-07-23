@@ -14,7 +14,7 @@ export function buildCaseMetrics(
 ): TestCaseMetrics {
   const metrics: TestCaseMetrics = {
     tokensPerSecond: stats.tokens_per_second,
-    timeToFirstTokenMs: stats.time_to_first_token_seconds * 1000,
+    timeToFirstTokenMs: stats.time_to_first_token_ms,
     score,
     durationMs,
     inputTokens: stats.input_tokens,

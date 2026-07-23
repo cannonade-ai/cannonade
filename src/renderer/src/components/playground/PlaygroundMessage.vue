@@ -38,8 +38,8 @@ function formatStat(value: number, digits = 1): string {
         <template v-if="message.stats.tokens_per_second > 0">
           · {{ formatStat(message.stats.tokens_per_second) }} tok/s
         </template>
-        <template v-if="message.stats.time_to_first_token_seconds > 0">
-          · TTFT {{ formatStat(message.stats.time_to_first_token_seconds, 2) }}s
+        <template v-if="message.stats.time_to_first_token_ms > 0">
+          · TTFT {{ formatStat(message.stats.time_to_first_token_ms, 0) }}ms
         </template>
         <InfoTooltip placement="right" interactive :size="12">
           <pre class="message__stats-json">{{ JSON.stringify(message.stats, null, 2) }}</pre>

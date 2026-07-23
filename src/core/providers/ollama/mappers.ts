@@ -109,7 +109,7 @@ export function toChatResponse(
       total_output_tokens: finalChunk.eval_count,
       reasoning_output_tokens: 0,
       tokens_per_second: finalChunk.eval_count / (finalChunk.eval_duration / 1e9),
-      time_to_first_token_seconds: finalChunk.prompt_eval_duration / 1e9
+      time_to_first_token_ms: finalChunk.prompt_eval_duration / 1e6
     }
   }
 }

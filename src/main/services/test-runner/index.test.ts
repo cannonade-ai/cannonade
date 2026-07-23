@@ -102,7 +102,7 @@ function makeSuite(testCases: TestCase[] = [makeTestCase()]): TestSuite {
   }
 }
 
-function makeChatResponse(content: string, tps = 50, ttft = 0.1): ChatResponse {
+function makeChatResponse(content: string, tps = 50, ttft = 100): ChatResponse {
   return {
     model_instance_id: 'model-1',
     output: [{ type: 'message', content }],
@@ -111,7 +111,7 @@ function makeChatResponse(content: string, tps = 50, ttft = 0.1): ChatResponse {
       total_output_tokens: 20,
       reasoning_output_tokens: 0,
       tokens_per_second: tps,
-      time_to_first_token_seconds: ttft
+      time_to_first_token_ms: ttft
     }
   }
 }
@@ -414,7 +414,7 @@ describe('executeTestRun – output extraction', () => {
 
 describe('executeTestRun – case result construction', () => {
   it('maps response stats to result metrics', async () => {
-    mockChat.mockResolvedValue(makeChatResponse('hello', 100, 0.2))
+    mockChat.mockResolvedValue(makeChatResponse('hello', 100, 200))
     mockEvaluate.mockResolvedValue({ passed: true, score: 1, evalResults: [] })
     const send = makeSend()
     await executeTestRun(makeRun(), makeSuite(), send)
@@ -750,7 +750,7 @@ describe('executeTestRun – parallel execution', () => {
 
 describe('executeTestRun – aggregate metrics', () => {
   it('computes correct aggregate for all passing results', async () => {
-    mockChat.mockResolvedValue(makeChatResponse('ok', 60, 0.1))
+    mockChat.mockResolvedValue(makeChatResponse('ok', 60, 100))
     mockEvaluate.mockResolvedValue({ passed: true, score: 1, evalResults: [] })
     const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
     const send = makeSend()
@@ -824,8 +824,8 @@ describe('executeTestRun – aggregate metrics', () => {
     const testCases = [makeTestCase()]
     const modelRuns = [makeModelRun({ id: 'mr-1' }), makeModelRun({ id: 'mr-2' })]
     mockChat
-      .mockResolvedValueOnce(makeChatResponse('ok', 40, 0.05))
-      .mockResolvedValueOnce(makeChatResponse('ok', 80, 0.15))
+      .mockResolvedValueOnce(makeChatResponse('ok', 40, 50))
+      .mockResolvedValueOnce(makeChatResponse('ok', 80, 150))
     mockEvaluate.mockResolvedValue({ passed: true, score: 1, evalResults: [] })
     const send = makeSend()
     await executeTestRun(makeRun(modelRuns, testCases), makeSuite(testCases), send)

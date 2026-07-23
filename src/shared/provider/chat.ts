@@ -102,7 +102,7 @@ export interface ChatStats {
   total_output_tokens: number
   reasoning_output_tokens: number
   tokens_per_second: number
-  time_to_first_token_seconds: number
+  time_to_first_token_ms: number
   model_load_time_seconds?: number
   cached_input_tokens?: number
   cost?: number
