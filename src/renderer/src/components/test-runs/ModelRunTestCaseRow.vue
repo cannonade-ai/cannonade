@@ -472,10 +472,8 @@ const hasMetrics = computed<boolean>(() => {
   }
 
   .detail-label {
-    font-size: 10px;
+    font-size: var(--text-xs);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     color: var(--text-muted);
   }
 
@@ -501,10 +499,9 @@ const hasMetrics = computed<boolean>(() => {
     gap: 3px;
 
     .message-role {
-      font-size: 10px;
+      font-size: var(--text-xs);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      text-transform: capitalize;
     }
 
     &.user .message-role {
@@ -526,10 +523,8 @@ const hasMetrics = computed<boolean>(() => {
     gap: 2px;
 
     .case-metric-label {
-      font-size: 10px;
+      font-size: var(--text-xs);
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--text-muted);
     }
 

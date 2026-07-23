@@ -72,8 +72,7 @@ function formatDurationMs(ms: number | undefined): string {
 }
 
 function formatCost(cost: number): string {
-  if (cost >= 1) return `$${cost.toFixed(2)}`
-  if (cost >= 0.01) return `$${cost.toFixed(4)}`
+  if (!cost) return '0'
   return `$${cost.toFixed(6)}`
 }
 
@@ -539,10 +538,8 @@ function remainingTime(estimatedCompletion: string): string {
     gap: 2px;
 
     .metric-label {
-      font-size: 10px;
+      font-size: var(--text-xs);
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--text-muted);
     }
 
