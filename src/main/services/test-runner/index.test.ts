@@ -286,7 +286,11 @@ describe('executeTestRun – model key resolution', () => {
     const modelRun = makeModelRun({
       modelRef: { source: 'registry', modelId: 'liquid/lfm2-350m' }
     })
-    await executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
+    vi.useFakeTimers()
+    const runPromise = executeTestRun(makeRun([modelRun]), makeSuite(), makeSend())
+    await vi.runAllTimersAsync()
+    await runPromise
+    vi.useRealTimers()
     expect(mockDownloadModel).toHaveBeenCalledWith('liquid/lfm2-350m')
     expect(mockChat).toHaveBeenCalledWith(
       expect.objectContaining({ model: 'liquid/lfm2-350m' }),
@@ -424,7 +428,11 @@ describe('executeTestRun – case result construction', () => {
             tokensPerSecond: 100,
             timeToFirstTokenMs: 200,
             score: 1,
-            durationMs: expect.any(Number)
+            durationMs: expect.any(Number),
+            inputTokens: 10,
+            outputTokens: 20,
+            totalTokens: 30,
+            reasoningTokens: 0
           }
         }),
         aggregate: expect.objectContaining({

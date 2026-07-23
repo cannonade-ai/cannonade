@@ -16,13 +16,14 @@ interface ValidatorOutput {
 
 export async function runCustomValidator(
   output: string,
-  evaluation: EvaluationConfig
+  evaluation: EvaluationConfig,
+  timeoutMs: number = CODE_RUN_TIMEOUT
 ): Promise<EvaluationResult> {
   if (!evaluation.customValidator?.code) {
     return { score: 0, passed: false, error: 'No custom validator code provided' }
   }
   try {
-    const result = await executeInSandbox(evaluation.customValidator.code, output)
+    const result = await executeInSandbox(evaluation.customValidator.code, output, timeoutMs)
     const score = Math.min(1, Math.max(0, result.score))
     return {
       score,
@@ -35,11 +36,15 @@ export async function runCustomValidator(
   }
 }
 
-async function executeInSandbox(code: string, output: string): Promise<ValidatorOutput> {
+async function executeInSandbox(
+  code: string,
+  output: string,
+  timeoutMs: number
+): Promise<ValidatorOutput> {
   const quickJS = await getQuickJS()
   const runtime = quickJS.newRuntime()
   runtime.setMemoryLimit(MEMORY_LIMIT_BYTES)
-  runtime.setInterruptHandler(shouldInterruptAfterDeadline(Date.now() + CODE_RUN_TIMEOUT))
+  runtime.setInterruptHandler(shouldInterruptAfterDeadline(Date.now() + timeoutMs))
   const context = runtime.newContext()
   try {
     const outputHandle = context.newString(output)

@@ -14,7 +14,9 @@ import {
   IconX
 } from '@tabler/icons-vue'
 import { computed, ref, watch } from 'vue'
+import { createLogger } from '@renderer/utils/logger'
 
+const log = createLogger('model-run-row')
 const filteredTestCases = computed(() =>
   props.testCases.filter((tc) => caseRunFor(tc.id) !== undefined)
 )
@@ -57,6 +59,7 @@ const currentAction = computed<string | null>(() => {
 })
 
 function duration(mr: PerModelRun): string {
+  log.debug(mr.aggregate)
   if (!mr.startedAt || !mr.completedAt) return '—'
   const ms = new Date(mr.completedAt).getTime() - new Date(mr.startedAt).getTime()
   return formatDurationMs(ms)
@@ -66,6 +69,16 @@ function formatDurationMs(ms: number | undefined): string {
   if (ms == null) return '—'
   if (ms < 1000) return `${ms.toFixed(0)}ms`
   return `${(ms / 1000).toFixed(1)}s`
+}
+
+function formatCost(cost: number): string {
+  if (cost >= 1) return `$${cost.toFixed(2)}`
+  if (cost >= 0.01) return `$${cost.toFixed(4)}`
+  return `$${cost.toFixed(6)}`
+}
+
+function formatTokens(count: number): string {
+  return count.toLocaleString()
 }
 
 function passRate(mr: PerModelRun): string {
@@ -264,6 +277,34 @@ function remainingTime(estimatedCompletion: string): string {
                 <span class="metric-label">Total</span>
                 <span class="metric-value">
                   {{ formatDurationMs(modelRun.aggregate.totalDurationMs) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-if="modelRun.aggregate.totalTokens">
+          <div class="metric-group">
+            <span class="group-label">Tokens</span>
+            <div class="group-values">
+              <div class="metric">
+                <span class="metric-label">Total</span>
+                <span class="metric-value">
+                  {{ formatTokens(modelRun.aggregate.totalTokens) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-if="modelRun.aggregate.totalCost != null">
+          <div class="metric-group">
+            <span class="group-label">Cost</span>
+            <div class="group-values">
+              <div class="metric">
+                <span class="metric-label">Total</span>
+                <span class="metric-value">
+                  {{ formatCost(modelRun.aggregate.totalCost) }}
                 </span>
               </div>
             </div>

@@ -146,16 +146,22 @@ describe('runCustomValidator', () => {
   })
 
   it('terminates an infinite loop via the timeout', async () => {
-    const result = await runCustomValidator('hello', {
-      ...base,
-      customValidator: {
-        language: 'javascript',
-        code: '(output) => { while (true) {} }'
-      }
-    })
+    const result = await runCustomValidator(
+      'hello',
+      {
+        ...base,
+        customValidator: {
+          language: 'javascript',
+          code: '(output) => { while (true) {} }'
+        }
+      },
+      50
+    )
+
     expect(result.passed).toBe(false)
     expect(result.error).toBeTruthy()
-  }, 15000)
+    expect(result.error).contain('interrupted')
+  })
 })
 
 describe('word-count custom validator', () => {
