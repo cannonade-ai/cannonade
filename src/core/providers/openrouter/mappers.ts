@@ -47,7 +47,7 @@ export function toChatResponse(response: ChatCompletionResponse): ChatResponse {
     total_output_tokens: usage?.completion_tokens ?? 0,
     reasoning_output_tokens: usage?.completion_tokens_details?.reasoning_tokens ?? 0,
     tokens_per_second: 0,
-    time_to_first_token_ms: 0
+    time_to_first_token_seconds: 0
   }
   if (usage?.prompt_tokens_details?.cached_tokens !== undefined) {
     stats.cached_input_tokens = usage.prompt_tokens_details.cached_tokens

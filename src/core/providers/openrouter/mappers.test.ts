@@ -180,7 +180,7 @@ describe('openrouter toChatResponse', () => {
       total_output_tokens: 10,
       reasoning_output_tokens: 5,
       tokens_per_second: 0,
-      time_to_first_token_ms: 0,
+      time_to_first_token_seconds: 0,
       cached_input_tokens: 2,
       cost: 0.0012,
       cost_details: {
