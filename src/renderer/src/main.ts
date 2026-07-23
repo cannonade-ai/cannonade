@@ -13,6 +13,7 @@ const app = createApp(App)
 app.use(pinia)
 app.directive('tooltip', vTooltip)
 
+log.info('Renderer script running, initializing stores')
 await Promise.all([useSettingsStore().init(), useAppInfoStore().init()])
 
 app.mount('#app')
