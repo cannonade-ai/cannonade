@@ -151,6 +151,27 @@ export interface EvaluationMethodResult {
   error?: string
 }
 
+export interface RunCostBreakdown {
+  promptCost?: number
+  completionCost?: number
+}
+
+export interface TestCaseMetrics {
+  tokensPerSecond?: number
+  timeToFirstTokenMs?: number
+  score?: number
+  durationMs?: number
+
+  inputTokens?: number
+  outputTokens?: number
+  totalTokens?: number
+  reasoningTokens?: number
+  cachedInputTokens?: number
+
+  cost?: number
+  costBreakdown?: RunCostBreakdown
+}
+
 export interface TestCaseResult {
   testCaseId: string
 
@@ -158,12 +179,7 @@ export interface TestCaseResult {
 
   reasoning?: string
 
-  metrics: {
-    tokensPerSecond?: number
-    timeToFirstTokenMs?: number
-    score?: number
-    durationMs?: number
-  }
+  metrics: TestCaseMetrics
 
   passed: boolean
 
@@ -189,6 +205,9 @@ export interface AggregateMetrics {
   minDurationMs?: number
   maxDurationMs?: number
   totalDurationMs?: number
+
+  totalCost?: number
+  totalTokens?: number
 
   avgScore?: number
 }

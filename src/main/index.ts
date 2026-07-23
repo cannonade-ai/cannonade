@@ -38,6 +38,7 @@ function createWindow(): BrowserWindow {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    log.info('Window ready to show')
   })
 
   function setZoom(level: number): void {
@@ -71,8 +72,12 @@ function createWindow(): BrowserWindow {
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+    log.info('Loading renderer from dev server (Vite)', {
+      url: process.env['ELECTRON_RENDERER_URL']
+    })
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
+    log.info('Loading renderer from production build')
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
 
@@ -84,6 +89,7 @@ function createWindow(): BrowserWindow {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
   initLogger()
+  log.info('Electron ready')
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('app.cannonade')
@@ -99,6 +105,7 @@ app.whenReady().then(async () => {
   await initAppSettings()
   log.info('App starting', { version: app.getVersion() })
   registerHandlers()
+  log.info('init phases done, creating window')
   createWindow()
 
   app.on('activate', function () {
@@ -110,6 +117,7 @@ app.whenReady().then(async () => {
 
 // Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {
+  log.debug(`window-all-closed called. platform: ${process.platform}`)
   if (process.platform !== 'darwin') {
     app.quit()
   }

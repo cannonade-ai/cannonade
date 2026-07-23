@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Badge, Chevron, CopyButton, Textarea } from '@renderer/components/ui'
 import type { TestCaseRun } from '@shared/app/test-run'
-import type { TestCase, TestCaseResult } from '@shared/app/test-suite'
+import type { TestCase, TestCaseMetrics, TestCaseResult } from '@shared/app/test-suite'
 import type { ChatMessage } from '@shared/provider/chat'
 import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
 import { computed, ref } from 'vue'
@@ -65,6 +65,18 @@ function formatMetricValue(value: number | undefined, suffix: string): string {
   return value.toFixed(1) + suffix
 }
 
+const metrics = computed<TestCaseMetrics | undefined>(() => props.caseRun?.result?.metrics)
+
+function formatCost(cost: number): string {
+  if (cost >= 1) return `$${cost.toFixed(2)}`
+  if (cost >= 0.01) return `$${cost.toFixed(4)}`
+  return `$${cost.toFixed(6)}`
+}
+
+function formatTokens(count: number): string {
+  return count.toLocaleString()
+}
+
 function ttft(result: TestCaseResult): string {
   if (result.metrics.timeToFirstTokenMs == null) return '—'
   return result.metrics.timeToFirstTokenMs.toFixed(0) + 'ms'
@@ -124,9 +136,9 @@ const hasMetrics = computed<boolean>(() => {
         </span>
         <div class="case-info">
           <span class="case-name">{{ testCase.name }}</span>
-          <span v-if="testCase.description" class="case-description">{{
-            testCase.description
-          }}</span>
+          <span v-if="testCase.description" class="case-description">
+            {{ testCase.description }}
+          </span>
         </div>
       </div>
 
@@ -249,13 +261,13 @@ const hasMetrics = computed<boolean>(() => {
 
       <div v-if="hasMetrics" class="detail-block">
         <div class="case-metrics">
-          <div v-if="caseRun.result.metrics.tokensPerSecond != null" class="case-metric">
+          <div v-if="caseRun.result.metrics.tokensPerSecond" class="case-metric">
             <span class="case-metric-label">Tok/s</span>
-            <span class="case-metric-value">{{
-              formatMetricValue(caseRun.result.metrics.tokensPerSecond, '')
-            }}</span>
+            <span class="case-metric-value">
+              {{ formatMetricValue(caseRun.result.metrics.tokensPerSecond, '') }}
+            </span>
           </div>
-          <div v-if="caseRun.result.metrics.timeToFirstTokenMs != null" class="case-metric">
+          <div v-if="caseRun.result.metrics.timeToFirstTokenMs" class="case-metric">
             <span class="case-metric-label">TTFT</span>
             <span class="case-metric-value">{{ ttft(caseRun.result) }}</span>
           </div>
@@ -266,6 +278,42 @@ const hasMetrics = computed<boolean>(() => {
           <div v-if="caseRun.startedAt && caseRun.completedAt" class="case-metric">
             <span class="case-metric-label">Duration</span>
             <span class="case-metric-value">{{ getDurationLabel(caseRun) }}</span>
+          </div>
+          <div v-if="metrics?.inputTokens" class="case-metric">
+            <span class="case-metric-label">Input</span>
+            <span class="case-metric-value">{{ formatTokens(metrics.inputTokens) }}</span>
+          </div>
+          <div v-if="metrics?.outputTokens" class="case-metric">
+            <span class="case-metric-label">Output</span>
+            <span class="case-metric-value">{{ formatTokens(metrics.outputTokens) }}</span>
+          </div>
+          <div v-if="metrics?.reasoningTokens" class="case-metric">
+            <span class="case-metric-label">Reasoning</span>
+            <span class="case-metric-value">{{ formatTokens(metrics.reasoningTokens) }}</span>
+          </div>
+          <div v-if="metrics?.cachedInputTokens" class="case-metric">
+            <span class="case-metric-label">Cached</span>
+            <span class="case-metric-value">{{ formatTokens(metrics.cachedInputTokens) }}</span>
+          </div>
+          <div v-if="metrics?.totalTokens" class="case-metric">
+            <span class="case-metric-label">Total Tokens</span>
+            <span class="case-metric-value">{{ formatTokens(metrics.totalTokens) }}</span>
+          </div>
+          <div v-if="metrics?.cost != null" class="case-metric">
+            <span class="case-metric-label">Cost</span>
+            <span class="case-metric-value">{{ formatCost(metrics.cost) }}</span>
+          </div>
+          <div v-if="metrics?.costBreakdown?.promptCost != null" class="case-metric">
+            <span class="case-metric-label">Prompt Cost</span>
+            <span class="case-metric-value">
+              {{ formatCost(metrics.costBreakdown.promptCost) }}
+            </span>
+          </div>
+          <div v-if="metrics?.costBreakdown?.completionCost != null" class="case-metric">
+            <span class="case-metric-label">Completion Cost</span>
+            <span class="case-metric-value">
+              {{ formatCost(metrics.costBreakdown.completionCost) }}
+            </span>
           </div>
         </div>
       </div>
@@ -424,10 +472,8 @@ const hasMetrics = computed<boolean>(() => {
   }
 
   .detail-label {
-    font-size: 10px;
+    font-size: var(--text-xs);
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
     color: var(--text-muted);
   }
 
@@ -453,10 +499,9 @@ const hasMetrics = computed<boolean>(() => {
     gap: 3px;
 
     .message-role {
-      font-size: 10px;
+      font-size: var(--text-xs);
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
+      text-transform: capitalize;
     }
 
     &.user .message-role {
@@ -478,10 +523,8 @@ const hasMetrics = computed<boolean>(() => {
     gap: 2px;
 
     .case-metric-label {
-      font-size: 10px;
+      font-size: var(--text-xs);
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--text-muted);
     }
 

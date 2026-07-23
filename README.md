@@ -7,7 +7,7 @@
 </p>
 <p align="center"><a href="https://cannonade.app">cannonade.app</a></p>
 
-Cannonade is a cross-platform desktop app for building test suites, running them against
+Cannonade is a cross-platform local-first desktop app for building test suites, running them against
 multiple models at once, and comparing the results without writing an eval
 harness or shipping your prompts to a third-party service.
 

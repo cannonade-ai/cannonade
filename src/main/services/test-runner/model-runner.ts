@@ -5,7 +5,7 @@ import type { TestSuite, TestCase, TestCaseResult } from '@shared/app/test-suite
 import type { LLMProvider } from '../../../core/providers/base'
 import { runChat } from './chat-handler'
 import { buildRequest, extractTextOutput, extractReasoningOutput } from './mappers'
-import { computeAggregate } from './metric-aggregator'
+import { buildCaseMetrics, computeAggregate } from './metric-builder'
 import {
   toHuggingFaceUrl,
   extractHfModelId,
@@ -66,12 +66,7 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
       testCaseId: testCase.id,
       output,
       reasoning,
-      metrics: {
-        tokensPerSecond: response.stats.tokens_per_second,
-        timeToFirstTokenMs: response.stats.time_to_first_token_seconds * 1000,
-        score: evaluation.score,
-        durationMs
-      },
+      metrics: buildCaseMetrics(response.stats, evaluation.score, durationMs),
       passed: evaluation.passed,
       evalResults: evaluation.evalResults,
       error: evaluation.error

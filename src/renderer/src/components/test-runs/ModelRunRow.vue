@@ -14,7 +14,9 @@ import {
   IconX
 } from '@tabler/icons-vue'
 import { computed, ref, watch } from 'vue'
+import { createLogger } from '@renderer/utils/logger'
 
+const log = createLogger('model-run-row')
 const filteredTestCases = computed(() =>
   props.testCases.filter((tc) => caseRunFor(tc.id) !== undefined)
 )
@@ -57,6 +59,7 @@ const currentAction = computed<string | null>(() => {
 })
 
 function duration(mr: PerModelRun): string {
+  log.debug(mr.aggregate)
   if (!mr.startedAt || !mr.completedAt) return '—'
   const ms = new Date(mr.completedAt).getTime() - new Date(mr.startedAt).getTime()
   return formatDurationMs(ms)
@@ -66,6 +69,15 @@ function formatDurationMs(ms: number | undefined): string {
   if (ms == null) return '—'
   if (ms < 1000) return `${ms.toFixed(0)}ms`
   return `${(ms / 1000).toFixed(1)}s`
+}
+
+function formatCost(cost: number): string {
+  if (!cost) return '0'
+  return `$${cost.toFixed(6)}`
+}
+
+function formatTokens(count: number): string {
+  return count.toLocaleString()
 }
 
 function passRate(mr: PerModelRun): string {
@@ -186,7 +198,7 @@ function remainingTime(estimatedCompletion: string): string {
 
     <div v-if="expanded" class="row-details">
       <div v-if="modelRun.aggregate && !modelRun.error" class="metrics-grid">
-        <template v-if="modelRun.aggregate.avgTokensPerSecond != null">
+        <template v-if="modelRun.aggregate.avgTokensPerSecond">
           <div class="metric-group">
             <span class="group-label">Tokens/s</span>
             <div class="group-values">
@@ -196,13 +208,13 @@ function remainingTime(estimatedCompletion: string): string {
                   {{ modelRun.aggregate.avgTokensPerSecond.toFixed(1) }}
                 </span>
               </div>
-              <div v-if="modelRun.aggregate.minTokensPerSecond != null" class="metric">
+              <div v-if="modelRun.aggregate.minTokensPerSecond" class="metric">
                 <span class="metric-label">Min</span>
                 <span class="metric-value">
                   {{ modelRun.aggregate.minTokensPerSecond.toFixed(1) }}
                 </span>
               </div>
-              <div v-if="modelRun.aggregate.maxTokensPerSecond != null" class="metric">
+              <div v-if="modelRun.aggregate.maxTokensPerSecond" class="metric">
                 <span class="metric-label">Max</span>
                 <span class="metric-value">
                   {{ modelRun.aggregate.maxTokensPerSecond.toFixed(1) }}
@@ -212,8 +224,7 @@ function remainingTime(estimatedCompletion: string): string {
           </div>
         </template>
 
-        <template v-if="modelRun.aggregate.avgTimeToFirstTokenMs != null">
-          <div class="metric-group-divider" />
+        <template v-if="modelRun.aggregate.avgTimeToFirstTokenMs">
           <div class="metric-group">
             <span class="group-label">Time To First Token</span>
             <div class="group-values">
@@ -223,13 +234,13 @@ function remainingTime(estimatedCompletion: string): string {
                   {{ modelRun.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms
                 </span>
               </div>
-              <div v-if="modelRun.aggregate.minTimeToFirstTokenMs != null" class="metric">
+              <div v-if="modelRun.aggregate.minTimeToFirstTokenMs" class="metric">
                 <span class="metric-label">Min</span>
                 <span class="metric-value">
                   {{ modelRun.aggregate.minTimeToFirstTokenMs.toFixed(0) }}ms
                 </span>
               </div>
-              <div v-if="modelRun.aggregate.maxTimeToFirstTokenMs != null" class="metric">
+              <div v-if="modelRun.aggregate.maxTimeToFirstTokenMs" class="metric">
                 <span class="metric-label">Max</span>
                 <span class="metric-value">
                   {{ modelRun.aggregate.maxTimeToFirstTokenMs.toFixed(0) }}ms
@@ -239,8 +250,7 @@ function remainingTime(estimatedCompletion: string): string {
           </div>
         </template>
 
-        <template v-if="modelRun.aggregate.avgDurationMs != null">
-          <div class="metric-group-divider" />
+        <template v-if="modelRun.aggregate.avgDurationMs">
           <div class="metric-group">
             <span class="group-label">Duration</span>
             <div class="group-values">
@@ -250,22 +260,50 @@ function remainingTime(estimatedCompletion: string): string {
                   {{ formatDurationMs(modelRun.aggregate.avgDurationMs) }}
                 </span>
               </div>
-              <div v-if="modelRun.aggregate.minDurationMs != null" class="metric">
+              <div v-if="modelRun.aggregate.minDurationMs" class="metric">
                 <span class="metric-label">Min</span>
                 <span class="metric-value">
                   {{ formatDurationMs(modelRun.aggregate.minDurationMs) }}
                 </span>
               </div>
-              <div v-if="modelRun.aggregate.maxDurationMs != null" class="metric">
+              <div v-if="modelRun.aggregate.maxDurationMs" class="metric">
                 <span class="metric-label">Max</span>
                 <span class="metric-value">
                   {{ formatDurationMs(modelRun.aggregate.maxDurationMs) }}
                 </span>
               </div>
-              <div v-if="modelRun.aggregate.totalDurationMs != null" class="metric">
+              <div v-if="modelRun.aggregate.totalDurationMs" class="metric">
                 <span class="metric-label">Total</span>
                 <span class="metric-value">
                   {{ formatDurationMs(modelRun.aggregate.totalDurationMs) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-if="modelRun.aggregate.totalTokens">
+          <div class="metric-group">
+            <span class="group-label">Tokens</span>
+            <div class="group-values">
+              <div class="metric">
+                <span class="metric-label">Total</span>
+                <span class="metric-value">
+                  {{ formatTokens(modelRun.aggregate.totalTokens) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </template>
+
+        <template v-if="modelRun.aggregate.totalCost != null">
+          <div class="metric-group">
+            <span class="group-label">Cost</span>
+            <div class="group-values">
+              <div class="metric">
+                <span class="metric-label">Total</span>
+                <span class="metric-value">
+                  {{ formatCost(modelRun.aggregate.totalCost) }}
                 </span>
               </div>
             </div>
@@ -470,17 +508,15 @@ function remainingTime(estimatedCompletion: string): string {
     padding: 0.5rem 0.75rem;
   }
 
-  .metric-group-divider {
-    width: 1px;
-    align-self: stretch;
-    background: var(--border);
-    flex-shrink: 0;
-  }
-
   .metric-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
+
+    &:not(:first-child) {
+      padding-left: 16px;
+      border-left: 1px solid var(--border);
+    }
 
     .group-label {
       font-size: 10px;
@@ -502,10 +538,8 @@ function remainingTime(estimatedCompletion: string): string {
     gap: 2px;
 
     .metric-label {
-      font-size: 10px;
+      font-size: var(--text-xs);
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
       color: var(--text-muted);
     }
 
