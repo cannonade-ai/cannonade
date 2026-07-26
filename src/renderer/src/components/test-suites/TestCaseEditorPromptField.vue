@@ -154,7 +154,7 @@ async function onSaveAsPrompt(): Promise<void> {
       placeholder="System instructions for the model..."
     />
     <span v-if="isReadonly" class="prompt-note">
-      Pinned to v{{ promptRef?.version }} — read-only. Select "Latest" to edit.
+      Pinned to v{{ promptRef?.version }}, read-only. Select "Latest" to edit.
     </span>
     <span v-else-if="selectedPromptId" class="prompt-note">
       Editing the latest version. Changes are saved as a new prompt version when the test case is

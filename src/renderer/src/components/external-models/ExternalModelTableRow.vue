@@ -53,12 +53,14 @@ const modalitiesLabel = computed<string>(() => {
   <div class="model-row" :class="{ expanded }" @contextmenu.prevent="onContextMenu">
     <button type="button" class="row-main" @click="viewStore.toggleExpanded(model.id)">
       <span class="cell cell--name">
-        <span class="model-name">{{ model.name }}</span>
-        <span class="model-publisher">{{ model.publisher }}</span>
-      </span>
-      <span class="cell cell--badges">
-        <Badge v-if="multimodal" type="info">Multimodal</Badge>
-        <Badge v-if="isFree" type="success">Free</Badge>
+        <span class="model-identity">
+          <span class="model-name">{{ model.name }}</span>
+          <span class="model-publisher">{{ model.publisher }}</span>
+        </span>
+        <span class="model-badges">
+          <Badge v-if="multimodal" type="info">Multimodal</Badge>
+          <Badge v-if="isFree" type="success">Free</Badge>
+        </span>
       </span>
       <span class="cell cell--num">{{ formatContext(model.contextLength) }}</span>
       <span class="cell cell--num">
@@ -67,12 +69,14 @@ const modalitiesLabel = computed<string>(() => {
       <span class="cell cell--num">
         {{ model.pricing && !isFree ? formatPrice(model.pricing.outputPerMTokens) : '—' }}
       </span>
-      <Button
-        v-if="menuItems.length"
-        type="icon"
-        :icon="IconDotsVertical"
-        @click.stop="onMenuButton"
-      />
+      <span class="cell cell--actions">
+        <Button
+          v-if="menuItems.length"
+          type="icon"
+          :icon="IconDotsVertical"
+          @click.stop="onMenuButton"
+        />
+      </span>
       <Chevron :expanded="expanded" />
     </button>
 
@@ -159,14 +163,15 @@ const modalitiesLabel = computed<string>(() => {
     flex: 1;
     min-width: 0;
     display: flex;
-    flex-direction: column;
-    gap: 1px;
+    align-items: center;
+    gap: 8px;
   }
 
-  &--badges {
+  &--actions {
     display: flex;
     align-items: center;
-    gap: 4px;
+    justify-content: flex-end;
+    width: 1.625rem;
     flex-shrink: 0;
   }
 
@@ -177,6 +182,21 @@ const modalitiesLabel = computed<string>(() => {
     color: var(--text-secondary);
     flex-shrink: 0;
   }
+}
+
+.model-identity {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.model-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .model-name {

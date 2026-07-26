@@ -2,49 +2,59 @@
 import { computed, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { Pagination } from '@renderer/components/ui'
-import { isMultimodal } from '@shared/provider/external-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import { useExternalModelsViewStore } from '@renderer/stores/external-models-view'
 import ExternalModelTableFilters from './ExternalModelTableFilters.vue'
-import type { SortKey } from './ExternalModelTableFilters.vue'
+import ExternalModelTableHeaderCell from './ExternalModelTableHeaderCell.vue'
 import ExternalModelTableRow from './ExternalModelTableRow.vue'
+import {
+  ANY_MODALITY,
+  collectModalities,
+  createModelComparator,
+  matchesModality,
+  matchesQuery
+} from './external-model-filters'
 
 const props = defineProps<{ models: ExternalModel[] }>()
 
 const PAGE_SIZE = 50
 
 const viewStore = useExternalModelsViewStore()
-const { search, modality, sort, page } = storeToRefs(viewStore)
+const { search, inputModality, outputModality, sort, sortDirection, page } = storeToRefs(viewStore)
 
-watch([search, modality, sort, () => props.models], () => {
+watch([search, inputModality, outputModality, sort, sortDirection, () => props.models], () => {
   page.value = 1
+})
+
+const inputModalities = computed<string[]>(() =>
+  collectModalities(props.models, (m) => m.inputModalities)
+)
+
+const outputModalities = computed<string[]>(() =>
+  collectModalities(props.models, (m) => m.outputModalities)
+)
+
+watch(inputModalities, (available) => {
+  if (!available.includes(inputModality.value)) inputModality.value = ANY_MODALITY
+})
+
+watch(outputModalities, (available) => {
+  if (!available.includes(outputModality.value)) outputModality.value = ANY_MODALITY
 })
 
 const filtered = computed<ExternalModel[]>(() => {
   const query = search.value.trim().toLowerCase()
-  return props.models.filter((m) => {
-    if (modality.value === 'text' && isMultimodal(m)) return false
-    if (modality.value === 'multimodal' && !isMultimodal(m)) return false
-    if (!query) return true
-    return (
-      m.name.toLowerCase().includes(query) ||
-      m.id.toLowerCase().includes(query) ||
-      m.publisher.toLowerCase().includes(query)
-    )
-  })
+  return props.models.filter(
+    (m) =>
+      matchesModality(m.inputModalities, inputModality.value) &&
+      matchesModality(m.outputModalities, outputModality.value) &&
+      matchesQuery(m, query)
+  )
 })
 
-const comparators: Record<SortKey, (a: ExternalModel, b: ExternalModel) => number> = {
-  newest: (a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0),
-  name: (a, b) => a.name.localeCompare(b.name),
-  'input-price': (a, b) =>
-    (a.pricing?.inputPerMTokens ?? -Infinity) - (b.pricing?.inputPerMTokens ?? -Infinity),
-  'output-price': (a, b) =>
-    (a.pricing?.outputPerMTokens ?? -Infinity) - (b.pricing?.outputPerMTokens ?? -Infinity),
-  context: (a, b) => b.contextLength - a.contextLength
-}
-
-const sorted = computed<ExternalModel[]>(() => [...filtered.value].sort(comparators[sort.value]))
+const sorted = computed<ExternalModel[]>(() =>
+  [...filtered.value].sort(createModelComparator(sort.value, sortDirection.value))
+)
 
 const paged = computed<ExternalModel[]>(() =>
   sorted.value.slice((page.value - 1) * PAGE_SIZE, page.value * PAGE_SIZE)
@@ -54,19 +64,34 @@ const paged = computed<ExternalModel[]>(() =>
 <template>
   <div class="model-table">
     <ExternalModelTableFilters
-      v-model:search="search"
-      v-model:modality="modality"
-      v-model:sort="sort"
+      :input-modalities="inputModalities"
+      :output-modalities="outputModalities"
     />
 
     <div v-if="sorted.length === 0" class="empty-state">No models match your filters.</div>
 
     <template v-else>
       <div class="table-header">
-        <span class="cell cell--name">Model</span>
-        <span class="cell cell--num">Context</span>
-        <span class="cell cell--num">Input</span>
-        <span class="cell cell--num">Output</span>
+        <ExternalModelTableHeaderCell class="cell cell--name" label="Model" sort-key="name" />
+        <ExternalModelTableHeaderCell
+          class="cell cell--num"
+          label="Context"
+          sort-key="context"
+          numeric
+        />
+        <ExternalModelTableHeaderCell
+          class="cell cell--num"
+          label="Input"
+          sort-key="input-price"
+          numeric
+        />
+        <ExternalModelTableHeaderCell
+          class="cell cell--num"
+          label="Output"
+          sort-key="output-price"
+          numeric
+        />
+        <span class="cell cell--actions" />
         <span class="cell cell--chevron" />
       </div>
 
@@ -107,6 +132,11 @@ const paged = computed<ExternalModel[]>(() =>
   &--num {
     width: 5.5rem;
     text-align: right;
+    flex-shrink: 0;
+  }
+
+  &--actions {
+    width: 1.625rem;
     flex-shrink: 0;
   }
 
