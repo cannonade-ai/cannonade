@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { IconDotsVertical } from '@tabler/icons-vue'
-import { Badge, Button, Chevron, CopyButton } from '@renderer/components/ui'
+import { Badge, Button, Chevron, CollapseTransition, CopyButton } from '@renderer/components/ui'
 import { isMultimodal } from '@shared/provider/external-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import { formatContext, formatDate, formatDay, formatPrice } from '@renderer/utils/format'
@@ -80,55 +80,57 @@ const modalitiesLabel = computed<string>(() => {
       <Chevron :expanded="expanded" />
     </button>
 
-    <div v-if="expanded" class="row-details">
-      <p v-if="model.description" class="description">{{ model.description }}</p>
+    <CollapseTransition :open="expanded">
+      <div class="row-details">
+        <p v-if="model.description" class="description">{{ model.description }}</p>
 
-      <div class="detail-grid">
-        <div class="detail">
-          <span class="detail-label">Model ID</span>
-          <CopyButton :value="model.id" inset>
-            <span class="detail-value detail-value--mono">{{ model.id }}</span>
-          </CopyButton>
+        <div class="detail-grid">
+          <div class="detail">
+            <span class="detail-label">Model ID</span>
+            <CopyButton :value="model.id" inset>
+              <span class="detail-value detail-value--mono">{{ model.id }}</span>
+            </CopyButton>
+          </div>
+          <div class="detail">
+            <span class="detail-label">Created</span>
+            <span class="detail-value">{{ createdLabel }}</span>
+          </div>
+          <div v-if="modalitiesLabel" class="detail">
+            <span class="detail-label">Modalities</span>
+            <span class="detail-value">{{ modalitiesLabel }}</span>
+          </div>
+          <div v-if="model.maxOutputTokens" class="detail">
+            <span class="detail-label">Max Output</span>
+            <span class="detail-value">{{ formatContext(model.maxOutputTokens) }} tokens</span>
+          </div>
+          <div v-if="model.knowledgeCutoff" class="detail">
+            <span class="detail-label">Knowledge Cutoff</span>
+            <span class="detail-value">{{ formatDay(model.knowledgeCutoff) }}</span>
+          </div>
+          <div v-if="model.isModerated !== undefined" class="detail">
+            <span class="detail-label">Moderated</span>
+            <span class="detail-value">{{ model.isModerated ? 'Yes' : 'No' }}</span>
+          </div>
+          <div v-if="model.expirationDate" class="detail">
+            <span class="detail-label">Expires</span>
+            <span class="detail-value">{{ formatDay(model.expirationDate) }}</span>
+          </div>
+          <div v-if="model.pricing?.cacheReadPerMTokens !== undefined" class="detail">
+            <span class="detail-label">Cache Read</span>
+            <span class="detail-value">{{ formatPrice(model.pricing.cacheReadPerMTokens) }}</span>
+          </div>
         </div>
-        <div class="detail">
-          <span class="detail-label">Created</span>
-          <span class="detail-value">{{ createdLabel }}</span>
-        </div>
-        <div v-if="modalitiesLabel" class="detail">
-          <span class="detail-label">Modalities</span>
-          <span class="detail-value">{{ modalitiesLabel }}</span>
-        </div>
-        <div v-if="model.maxOutputTokens" class="detail">
-          <span class="detail-label">Max Output</span>
-          <span class="detail-value">{{ formatContext(model.maxOutputTokens) }} tokens</span>
-        </div>
-        <div v-if="model.knowledgeCutoff" class="detail">
-          <span class="detail-label">Knowledge Cutoff</span>
-          <span class="detail-value">{{ formatDay(model.knowledgeCutoff) }}</span>
-        </div>
-        <div v-if="model.isModerated !== undefined" class="detail">
-          <span class="detail-label">Moderated</span>
-          <span class="detail-value">{{ model.isModerated ? 'Yes' : 'No' }}</span>
-        </div>
-        <div v-if="model.expirationDate" class="detail">
-          <span class="detail-label">Expires</span>
-          <span class="detail-value">{{ formatDay(model.expirationDate) }}</span>
-        </div>
-        <div v-if="model.pricing?.cacheReadPerMTokens !== undefined" class="detail">
-          <span class="detail-label">Cache Read</span>
-          <span class="detail-value">{{ formatPrice(model.pricing.cacheReadPerMTokens) }}</span>
+
+        <div v-if="model.supportedParameters?.length" class="detail">
+          <span class="detail-label">Supported Parameters</span>
+          <div class="param-badges">
+            <Badge v-for="param in model.supportedParameters" :key="param" square>
+              {{ param }}
+            </Badge>
+          </div>
         </div>
       </div>
-
-      <div v-if="model.supportedParameters?.length" class="detail">
-        <span class="detail-label">Supported Parameters</span>
-        <div class="param-badges">
-          <Badge v-for="param in model.supportedParameters" :key="param" square>
-            {{ param }}
-          </Badge>
-        </div>
-      </div>
-    </div>
+    </CollapseTransition>
   </div>
 </template>
 
@@ -138,10 +140,6 @@ const modalitiesLabel = computed<string>(() => {
 
   &.expanded {
     background: var(--surface);
-  }
-
-  &:hover {
-    background: var(--surface-hover);
   }
 }
 
@@ -156,6 +154,11 @@ const modalitiesLabel = computed<string>(() => {
   cursor: pointer;
   font-family: inherit;
   text-align: left;
+  transition: background 0.15s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
 }
 
 .cell {
@@ -218,6 +221,7 @@ const modalitiesLabel = computed<string>(() => {
   flex-direction: column;
   gap: 12px;
   padding: 4px 12px 14px;
+  border-top: 1px solid var(--border);
 }
 
 .description {
