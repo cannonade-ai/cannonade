@@ -4,6 +4,7 @@ import { IconDotsVertical, IconLoader2 } from '@tabler/icons-vue'
 import { formatBytes, formatContext } from '../utils/format'
 import Badge from './ui/Badge.vue'
 import Button from './ui/Button.vue'
+import CopyButton from './ui/CopyButton.vue'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
@@ -60,6 +61,9 @@ function onMenuButton(event: MouseEvent): void {
 
     <div class="card-meta">
       <span class="publisher">{{ model.meta.publisher }}</span>
+      <CopyButton :value="model.id" inset class="model-id">
+        <span v-tooltip="model.id" class="model-id-value">{{ model.id }}</span>
+      </CopyButton>
       <Badge type="secondary">{{ model.type === 'llm' ? 'LLM' : 'Embedding' }}</Badge>
       <Badge v-if="model.meta.format" type="secondary">
         {{ String(model.meta.format).toUpperCase() }}
@@ -164,6 +168,20 @@ function onMenuButton(event: MouseEvent): void {
   color: var(--text-primary);
   margin: 0;
   line-height: 1.3;
+}
+
+.model-id {
+  min-width: 0;
+
+  &-value {
+    display: block;
+    font-family: var(--font-mono, monospace);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .card-meta {
