@@ -95,10 +95,8 @@ function onMenuButton(event: MouseEvent): void {
 
     <div v-if="model.capabilities || isLoaded" class="card-footer">
       <template v-if="model.capabilities">
-        <Badge :type="model.capabilities.vision ? 'success' : 'default'" square>Vision</Badge>
-        <Badge :type="model.capabilities.trained_for_tool_use ? 'success' : 'default'" square>
-          Tool use
-        </Badge>
+        <Badge v-if="model.capabilities.vision" type="success" square>Vision</Badge>
+        <Badge v-if="model.capabilities.trained_for_tool_use" type="success" square>Tool use</Badge>
       </template>
 
       <div v-if="isLoaded" class="loaded-instances">
