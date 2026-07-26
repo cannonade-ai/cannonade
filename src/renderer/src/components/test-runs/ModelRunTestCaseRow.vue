@@ -4,6 +4,7 @@ import type { TestCaseRun } from '@shared/app/test-run'
 import type { TestCase, TestCaseMetrics, TestCaseResult } from '@shared/app/test-suite'
 import type { ChatMessage } from '@shared/provider/chat'
 import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
+import { DEFAULT_THRESHOLD, scoreColorStyle, scoreThreshold } from '@renderer/utils/score-color'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
@@ -28,6 +29,19 @@ function scoreLabel(result: TestCaseResult): string {
   if (result.metrics.score == null) return '—'
   return (result.metrics.score * 100).toFixed(0) + '%'
 }
+
+function thresholdTooltip(index: number): string {
+  const threshold = props.testCase.evaluations[index]?.threshold ?? DEFAULT_THRESHOLD
+  return `Passes at ${(threshold * 100).toFixed(0)}% or above`
+}
+
+const caseThreshold = computed<number>(() =>
+  scoreThreshold(props.testCase.evaluations, props.testCase.passingLogic)
+)
+
+const scoreStyle = computed<Record<string, string>>(() =>
+  scoreColorStyle(props.caseRun?.result?.metrics.score, caseThreshold.value)
+)
 
 const systemPrompt = computed<string | null>(() => {
   const msg = props.testCase.input.messages?.find((m) => m.role === 'system')
@@ -116,7 +130,7 @@ const hasMetrics = computed<boolean>(() => {
 
 <template>
   <div class="test-case-row" :class="effectiveStatus">
-    <button class="case-summary" :class="{ inactive: !caseRun?.result }" @click="toggle">
+    <button class="case-summary" :class="{ inactive: !caseRun?.result, expanded }" @click="toggle">
       <span class="status-bar" />
       <div class="summary-left">
         <span class="status-icon-wrap" :class="effectiveStatus">
@@ -143,7 +157,9 @@ const hasMetrics = computed<boolean>(() => {
       </div>
 
       <div v-if="caseRun?.result" class="summary-right">
-        <span class="score">{{ scoreLabel(caseRun.result) }}</span>
+        <span class="score score-value" :style="scoreStyle">
+          {{ scoreLabel(caseRun.result) }}
+        </span>
         <Chevron :expanded="expanded" />
       </div>
     </button>
@@ -249,6 +265,7 @@ const hasMetrics = computed<boolean>(() => {
                 {{ er.error }}
               </span>
               <span
+                v-tooltip="thresholdTooltip(i)"
                 class="eval-result__cell eval-result__score"
                 :class="er.passed ? 'pass' : 'fail'"
               >
@@ -358,8 +375,12 @@ const hasMetrics = computed<boolean>(() => {
     transition: background 0.15s;
     min-height: 2.75rem;
 
+    &.expanded {
+      background: var(--surface-elevated);
+    }
+
     &:hover {
-      background: var(--surface-hover, rgba(255, 255, 255, 0.04));
+      background: var(--surface-hover);
     }
 
     &.inactive {
@@ -455,6 +476,11 @@ const hasMetrics = computed<boolean>(() => {
     color: var(--text-primary);
     min-width: 36px;
     text-align: right;
+
+    &.score-value {
+      color: oklch(var(--score-l) var(--score-c) var(--score-h));
+      transition: color 0.2s var(--ease-out);
+    }
   }
 
   .case-details {
@@ -463,6 +489,7 @@ const hasMetrics = computed<boolean>(() => {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    box-shadow: inset 0 0 6px 2px var(--shadow);
   }
 
   .detail-block {
