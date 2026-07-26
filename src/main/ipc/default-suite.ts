@@ -3,12 +3,12 @@ import { TestSuite } from '@shared/app/test-suite'
 export const DEFAULT_SUITE: TestSuite = {
   id: 'default-tests',
   name: 'Default Tests',
-  version: '2.0.0',
+  version: '2.0.1',
   description: 'Easy tests for small language models',
   createdAt: '2026-04-18T09:41:59.077Z',
   updatedAt: '2026-06-27T14:25:13.012Z',
   defaultRunConfig: {
-    maxTokens: 1000
+    maxTokens: 2000
   },
   testCases: [
     {

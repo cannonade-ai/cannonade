@@ -141,6 +141,10 @@ const modalitiesLabel = computed<string>(() => {
   &.expanded {
     background: var(--surface);
   }
+
+  &.expanded .row-details {
+    background: var(--bg);
+  }
 }
 
 .row-main {
@@ -222,6 +226,7 @@ const modalitiesLabel = computed<string>(() => {
   gap: 12px;
   padding: 4px 12px 14px;
   border-top: 1px solid var(--border);
+  box-shadow: inset 0 0 6px 2px var(--shadow);
 }
 
 .description {

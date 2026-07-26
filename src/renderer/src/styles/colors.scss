@@ -77,6 +77,9 @@
   --diff-del: rgba(207, 34, 46, 0.15);
   --diff-del-text: #82071e;
   --shadow: rgba(0, 0, 0, 0.08);
+  --score-l: 0.55;
+  --score-c: 0.15;
+  --score-h: 132;
 }
 
 .dark {
@@ -110,4 +113,7 @@
   --diff-del: rgba(229, 83, 75, 0.18);
   --diff-del-text: #f08a84;
   --shadow: rgba(0, 0, 0, 0.4);
+  --score-l: 0.72;
+  --score-c: 0.16;
+  --score-h: 132;
 }

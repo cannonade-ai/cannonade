@@ -497,7 +497,6 @@ function remainingTime(estimatedCompletion: string): string {
     border-top: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    gap: 10px;
   }
 
   .metrics-grid {
@@ -506,6 +505,9 @@ function remainingTime(estimatedCompletion: string): string {
     gap: 16px;
     flex-wrap: wrap;
     padding: 0.5rem 0.75rem;
+    background: var(--surface);
+    box-shadow: inset 0 4px 6px -4px var(--shadow);
+    border-bottom: 1px solid var(--border);
   }
 
   .metric-group {
