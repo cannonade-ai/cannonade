@@ -1,17 +1,36 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import {
+  ANY_MODALITY,
+  defaultSortDirections
+} from '@renderer/components/external-models/external-model-filters'
 import type {
-  ModalityFilter,
+  SortDirection,
   SortKey
-} from '@renderer/components/external-models/ExternalModelTableFilters.vue'
+} from '@renderer/components/external-models/external-model-filters'
 
 export const useExternalModelsViewStore = defineStore('external-models-view', () => {
   const search = ref('')
-  const modality = ref<ModalityFilter>('all')
-  const sort = ref<SortKey>('newest')
+  const inputModality = ref<string>(ANY_MODALITY)
+  const outputModality = ref<string>(ANY_MODALITY)
+  const sort = ref<SortKey>('created')
+  const sortDirection = ref<SortDirection>('desc')
   const page = ref(1)
   const expandedModelIds = ref<string[]>([])
   const scrollTop = ref(0)
+
+  function setSort(key: SortKey): void {
+    if (sort.value === key) {
+      toggleSortDirection()
+      return
+    }
+    sort.value = key
+    sortDirection.value = defaultSortDirections[key]
+  }
+
+  function toggleSortDirection(): void {
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  }
 
   function isExpanded(modelId: string): boolean {
     return expandedModelIds.value.includes(modelId)
@@ -27,11 +46,15 @@ export const useExternalModelsViewStore = defineStore('external-models-view', ()
 
   return {
     search,
-    modality,
+    inputModality,
+    outputModality,
     sort,
+    sortDirection,
     page,
     expandedModelIds,
     scrollTop,
+    setSort,
+    toggleSortDirection,
     isExpanded,
     toggleExpanded
   }

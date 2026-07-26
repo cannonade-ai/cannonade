@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { IconTank } from '@tabler/icons-vue'
 import { api } from '../api'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useConfirmStore } from '@renderer/stores/confirm'
@@ -31,7 +30,6 @@ async function handleClose(): Promise<void> {
   <header class="title-bar">
     <div class="left" />
     <div class="center">
-      <IconTank color="rgb(151, 106, 0)" :size="22" :stroke-width="1" />
       <span class="app-name">Cannonade</span>
       <span class="app-version">v{{ appVersion }}</span>
     </div>

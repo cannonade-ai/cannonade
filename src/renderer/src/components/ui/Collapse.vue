@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import Chevron from './Chevron.vue'
+import CollapseTransition from './CollapseTransition.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -13,30 +14,6 @@ const props = withDefaults(
 )
 
 const open = ref(props.defaultOpen)
-
-function onEnter(el: Element, done: () => void): void {
-  const node = el as HTMLElement
-  node.style.height = '0'
-  node.style.overflow = 'hidden'
-  void node.offsetHeight
-  node.style.height = `${node.scrollHeight}px`
-  node.addEventListener('transitionend', done, { once: true })
-}
-
-function onAfterEnter(el: Element): void {
-  const node = el as HTMLElement
-  node.style.height = ''
-  node.style.overflow = ''
-}
-
-function onLeave(el: Element, done: () => void): void {
-  const node = el as HTMLElement
-  node.style.height = `${node.scrollHeight}px`
-  node.style.overflow = 'hidden'
-  void node.offsetHeight
-  node.style.height = '0'
-  node.addEventListener('transitionend', done, { once: true })
-}
 </script>
 
 <template>
@@ -48,13 +25,11 @@ function onLeave(el: Element, done: () => void): void {
       </span>
       <Chevron class="chevron" :expanded="open" />
     </button>
-    <Transition :css="false" @enter="onEnter" @after-enter="onAfterEnter" @leave="onLeave">
-      <div v-if="open" class="collapse__content">
-        <div class="collapse__inner">
-          <slot />
-        </div>
+    <CollapseTransition :open="open">
+      <div class="collapse__inner">
+        <slot />
       </div>
-    </Transition>
+    </CollapseTransition>
   </div>
 </template>
 
@@ -91,10 +66,6 @@ function onLeave(el: Element, done: () => void): void {
     display: flex;
     align-items: center;
     gap: 6px;
-  }
-
-  &__content {
-    transition: height 0.2s ease;
   }
 
   &__inner {
