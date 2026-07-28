@@ -14,6 +14,8 @@ import {
 import { evaluateHtmlValidation } from './html-validation'
 import { runCustomValidator } from './customValidator'
 import { runCosineSimilarity } from './cosineSimilarity'
+import { evaluateLlmRubric } from './llm-rubric'
+import type { EvaluationContext } from './evaluation-context'
 
 export interface MultiEvaluationResult {
   score: number
@@ -24,15 +26,18 @@ export interface MultiEvaluationResult {
 
 export async function evaluateAll(
   output: string,
-  testCase: TestCase
+  testCase: TestCase,
+  context?: EvaluationContext
 ): Promise<MultiEvaluationResult> {
   if (testCase.evaluations.length === 0) {
     return { score: 0, passed: false, evalResults: [], error: 'No evaluation methods configured' }
   }
 
+  const caseContext: EvaluationContext = { ...context, input: testCaseInputText(testCase) }
+
   const evalResults: EvaluationMethodResult[] = await Promise.all(
     testCase.evaluations.map(async (ev) => {
-      const result = await evaluate(output, ev)
+      const result = await evaluate(output, ev, caseContext)
       return { type: ev.type, ...result }
     })
   )
@@ -47,15 +52,31 @@ export async function evaluateAll(
   return { score, passed, evalResults }
 }
 
+function testCaseInputText(testCase: TestCase): string | undefined {
+  const { input } = testCase
+  if (input.messages?.length) {
+    return input.messages
+      .filter((m) => m.role !== 'system')
+      .map((m) => m.content)
+      .join('\n')
+  }
+  return input.prompt
+}
+
 export async function evaluate(
   output: string,
-  evaluation: EvaluationConfig
+  evaluation: EvaluationConfig,
+  context?: EvaluationContext
 ): Promise<EvaluationResult> {
-  const result = await runMetric(output, evaluation)
+  const result = await runMetric(output, evaluation, context)
   return evaluation.negate ? negateResult(result, evaluation) : result
 }
 
-async function runMetric(output: string, evaluation: EvaluationConfig): Promise<EvaluationResult> {
+async function runMetric(
+  output: string,
+  evaluation: EvaluationConfig,
+  context?: EvaluationContext
+): Promise<EvaluationResult> {
   switch (evaluation.type) {
     case 'exact_match':
       return evaluateExactMatch(output, evaluation)
@@ -79,6 +100,8 @@ async function runMetric(output: string, evaluation: EvaluationConfig): Promise<
       return runCustomValidator(output, evaluation)
     case 'cosine_similarity':
       return runCosineSimilarity(output, evaluation)
+    case 'llm_rubric':
+      return evaluateLlmRubric(output, evaluation, context)
     default:
       return {
         score: 0,

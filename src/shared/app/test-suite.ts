@@ -1,4 +1,5 @@
 import type { ChatMessage } from '../provider/chat'
+import type { JudgeUsage } from './judge'
 
 export interface TestSuite {
   id: string
@@ -78,27 +79,22 @@ export interface EvaluationConfig {
     | 'code_execution'
     | 'cosine_similarity'
     | 'html_validation'
+    | 'llm_rubric'
 
-  // inverts the result: the eval passes when it would otherwise fail
-  negate?: boolean
+  negate?: boolean // inverts the result: the eval passes when it would otherwise fail
+  caseSensitive?: boolean // for text-comparison metrics: whether matching distinguishes letter case
+  expected?: string | object // expected output (if applicable)
+  threshold?: number // threshold for similarity-based metrics
+  customValidator?: CustomValidator // for type: custom
+  codeExecution?: CodeExecutionConfig // for type: code_execution
+  htmlValidation?: HtmlValidationConfig // for type: html_validation
+  llmRubric?: LlmRubricConfig // for type: llm_rubric
+}
 
-  // for text-comparison metrics: whether matching distinguishes letter case
-  caseSensitive?: boolean
-
-  // expected output (if applicable)
-  expected?: string | object
-
-  // threshold for similarity-based metrics
-  threshold?: number
-
-  // for type: custom
-  customValidator?: CustomValidator
-
-  // for type: code_execution
-  codeExecution?: CodeExecutionConfig
-
-  // for type: html_validation
-  htmlValidation?: HtmlValidationConfig
+export interface LlmRubricConfig {
+  // free-text criterion the judge model grades the output against
+  // supports {{output}} and {{input}} placeholders
+  rubric: string
 }
 
 export interface HtmlValidationConfig {
@@ -161,6 +157,7 @@ export interface EvaluationMethodResult {
   passed: boolean
   details?: string
   error?: string
+  judge?: JudgeUsage
 }
 
 export interface RunCostBreakdown {
@@ -182,21 +179,16 @@ export interface TestCaseMetrics {
 
   cost?: number
   costBreakdown?: RunCostBreakdown
+  judge?: JudgeUsage
 }
 
 export interface TestCaseResult {
   testCaseId: string
-
   output: string
-
   reasoning?: string
-
   metrics: TestCaseMetrics
-
   passed: boolean
-
   evalResults: EvaluationMethodResult[]
-
   error?: string
 }
 
@@ -220,6 +212,9 @@ export interface AggregateMetrics {
 
   totalCost?: number
   totalTokens?: number
+
+  totalJudgeCost?: number
+  totalJudgeTokens?: number
 
   avgScore?: number
 }

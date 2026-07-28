@@ -377,7 +377,8 @@ describe('executeTestRun – output extraction', () => {
     await executeTestRun(makeRun(), makeSuite(), makeSend())
     expect(mockEvaluate).toHaveBeenCalledWith(
       'extracted output',
-      expect.objectContaining({ id: 'tc-1' })
+      expect.objectContaining({ id: 'tc-1' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
 
@@ -392,7 +393,8 @@ describe('executeTestRun – output extraction', () => {
     await executeTestRun(makeRun(), makeSuite(), makeSend())
     expect(mockEvaluate).toHaveBeenCalledWith(
       'final answer',
-      expect.objectContaining({ id: 'tc-1' })
+      expect.objectContaining({ id: 'tc-1' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
 
@@ -407,7 +409,8 @@ describe('executeTestRun – output extraction', () => {
     await executeTestRun(makeRun(), makeSuite(), makeSend())
     expect(mockEvaluate).toHaveBeenCalledWith(
       'part one\npart two',
-      expect.objectContaining({ id: 'tc-1' })
+      expect.objectContaining({ id: 'tc-1' }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
 })

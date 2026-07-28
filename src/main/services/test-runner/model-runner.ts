@@ -5,7 +5,7 @@ import type { TestSuite, TestCase, TestCaseResult } from '@shared/app/test-suite
 import type { LLMProvider } from '../../../core/providers/base'
 import { runChat } from './chat-handler'
 import { buildRequest, extractTextOutput, extractReasoningOutput } from './mappers'
-import { buildCaseMetrics, computeAggregate } from './metric-builder'
+import { buildCaseMetrics, computeAggregate, sumJudgeUsage } from './metric-builder'
 import {
   toHuggingFaceUrl,
   extractHfModelId,
@@ -56,17 +56,22 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
 
   try {
     const response = await runChat(provider, request, abortSignal, timeoutMs)
+    const durationMs = performance.now() - startTime
     log.debug(`response for modelRun.id: ${modelRun.id}, case: ${testCase.name}:`, response)
 
     const output = extractTextOutput(response.output)
     const reasoning = extractReasoningOutput(response.output)
-    const evaluation = await evaluateAll(output, testCase)
-    const durationMs = performance.now() - startTime
+    const evaluation = await evaluateAll(output, testCase, { abortSignal })
     const result: TestCaseResult = {
       testCaseId: testCase.id,
       output,
       reasoning,
-      metrics: buildCaseMetrics(response.stats, evaluation.score, durationMs),
+      metrics: buildCaseMetrics(
+        response.stats,
+        evaluation.score,
+        durationMs,
+        sumJudgeUsage(evaluation.evalResults)
+      ),
       passed: evaluation.passed,
       evalResults: evaluation.evalResults,
       error: evaluation.error
