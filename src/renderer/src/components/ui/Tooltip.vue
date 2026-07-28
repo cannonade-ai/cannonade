@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { IconInfoCircle } from '@tabler/icons-vue'
 import { ref } from 'vue'
 import { useTooltipPanel } from '@renderer/composables/useTooltipPanel'
 import type { TooltipPlacement } from '@renderer/utils/tooltip'
@@ -8,16 +7,16 @@ const props = withDefaults(
   defineProps<{
     content?: string
     placement?: TooltipPlacement
-    size?: number
     delay?: number
     interactive?: boolean
+    disabled?: boolean
   }>(),
   {
     content: '',
     placement: 'top',
-    size: 14,
     delay: 100,
-    interactive: false
+    interactive: false,
+    disabled: false
   }
 )
 
@@ -31,14 +30,14 @@ const { mounted, shown, scheduleShow, onTriggerLeave, onTriggerFocus, onPanelEnt
 <template>
   <span
     ref="triggerEl"
-    class="info-tooltip"
+    class="tooltip-trigger"
     tabindex="0"
     @mouseenter="scheduleShow"
     @mouseleave="onTriggerLeave"
     @focusin="onTriggerFocus"
     @focusout="onTriggerLeave"
   >
-    <IconInfoCircle :size="size" :stroke-width="2" />
+    <slot name="trigger" />
   </span>
   <Teleport to="body">
     <div
@@ -51,7 +50,7 @@ const { mounted, shown, scheduleShow, onTriggerLeave, onTriggerFocus, onPanelEnt
       @mouseleave="onPanelLeave"
     >
       <div class="v-tooltip__content">
-        <slot>{{ content }}</slot>
+        <slot name="content">{{ content }}</slot>
       </div>
       <div class="v-tooltip__arrow" />
     </div>
@@ -59,20 +58,12 @@ const { mounted, shown, scheduleShow, onTriggerLeave, onTriggerFocus, onPanelEnt
 </template>
 
 <style scoped lang="scss">
-.info-tooltip {
+.tooltip-trigger {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  color: var(--text-secondary);
-  cursor: help;
-  border-radius: var(--radius-full);
+  min-width: 0;
   outline: none;
-  transition: color 0.12s;
-
-  &:hover,
-  &:focus-visible {
-    color: var(--text-secondary);
-  }
+  border-radius: var(--radius-sm);
 
   &:focus-visible {
     box-shadow: 0 0 0 2px var(--accent-border);

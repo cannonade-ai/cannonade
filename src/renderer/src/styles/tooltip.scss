@@ -4,14 +4,13 @@
   left: 0;
   z-index: 2000;
   max-width: 360px;
-  max-height: 400px;
   padding: 6px 9px;
   font-family: var(--font-body);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.4;
   color: var(--text-primary);
-  background: var(--surface-elevated);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: 0 3px 6px var(--shadow);
@@ -41,9 +40,10 @@
   }
 
   &__content {
-    white-space: normal;
+    max-height: 25rem;
+    overflow-y: auto;
+    white-space: pre-wrap;
     word-break: break-word;
-    overflow: auto;
 
     a {
       color: var(--accent);
@@ -60,7 +60,7 @@
     position: absolute;
     width: 7px;
     height: 7px;
-    background: var(--surface-elevated);
+    background: var(--bg);
     border: 1px solid var(--border);
     transform: rotate(45deg);
   }
