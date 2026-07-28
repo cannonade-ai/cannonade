@@ -1,10 +1,18 @@
 <script setup lang="ts">
-import { Badge, Chevron, CopyButton, Textarea } from '@renderer/components/ui'
+import {
+  Badge,
+  Chevron,
+  CollapseTransition,
+  CopyButton,
+  Textarea,
+  Tooltip
+} from '@renderer/components/ui'
 import type { TestCaseRun } from '@shared/app/test-run'
 import type { TestCase, TestCaseMetrics, TestCaseResult } from '@shared/app/test-suite'
 import type { ChatMessage } from '@shared/provider/chat'
 import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
 import { DEFAULT_THRESHOLD, scoreColorStyle, scoreThreshold } from '@renderer/utils/score-color'
+import { summarizeEvaluation } from '@renderer/utils/evaluation-summary'
 import { computed, ref } from 'vue'
 
 const props = defineProps<{
@@ -30,11 +38,6 @@ function scoreLabel(result: TestCaseResult): string {
   return (result.metrics.score * 100).toFixed(0) + '%'
 }
 
-function thresholdTooltip(index: number): string {
-  const threshold = props.testCase.evaluations[index]?.threshold ?? DEFAULT_THRESHOLD
-  return `Passes at ${(threshold * 100).toFixed(0)}% or above`
-}
-
 const caseThreshold = computed<number>(() =>
   scoreThreshold(props.testCase.evaluations, props.testCase.passingLogic)
 )
@@ -56,23 +59,33 @@ const inputPrompt = computed<string | null>(() => {
   return props.testCase.input.prompt ?? null
 })
 
-function expectedForEval(index: number): string | null {
-  const exp = props.testCase.evaluations[index]?.expected
-  if (exp == null) return null
-  const str = typeof exp === 'string' ? exp : JSON.stringify(exp)
-  return str.length > 20 ? str.slice(0, 20) + '…' : str
+interface EvaluationDisplay {
+  expected: string
+  expectedPreview: string | null
+  negated: boolean
+  thresholdTooltip: string
 }
 
-function isNegated(index: number): boolean {
-  return props.testCase.evaluations[index]?.negate === true
+const PREVIEW_LENGTH = 20
+function previewOf(text: string | null): string | null {
+  if (!text) return null
+  return text.length > PREVIEW_LENGTH
+    ? text.replaceAll('\n', '').slice(0, PREVIEW_LENGTH) + '…'
+    : text
 }
 
-function fullExpectedForEval(index: number): string | null {
-  const exp = props.testCase.evaluations[index]?.expected
-  if (exp == null) return null
-  const str = typeof exp === 'string' ? exp : JSON.stringify(exp)
-  return str.length < 20 ? null : str
-}
+const evaluationDisplays = computed<EvaluationDisplay[]>(() =>
+  props.testCase.evaluations.map((evaluation) => {
+    const expected = summarizeEvaluation(evaluation)
+    const threshold = evaluation.threshold ?? DEFAULT_THRESHOLD
+    return {
+      expected: expected ?? '',
+      expectedPreview: previewOf(expected),
+      negated: evaluation.negate === true,
+      thresholdTooltip: `Passes at ${(threshold * 100).toFixed(0)}% or above`
+    }
+  })
+)
 
 function formatMetricValue(value: number | undefined, suffix: string): string {
   if (value == null) return '—'
@@ -102,28 +115,28 @@ function formatDurationMs(ms: number | undefined): string {
   return `${(ms / 1000).toFixed(1)}s`
 }
 
-function duration(cr: TestCaseRun): string {
-  if (!cr.startedAt || !cr.completedAt) return '—'
-  const ms = new Date(cr.completedAt).getTime() - new Date(cr.startedAt).getTime()
+function duration(caseRun: TestCaseRun): string {
+  if (!caseRun.startedAt || !caseRun.completedAt) return '—'
+  const ms = new Date(caseRun.completedAt).getTime() - new Date(caseRun.startedAt).getTime()
   return formatDurationMs(ms)
 }
 
-function getDurationLabel(cr: TestCaseRun): string {
-  if (cr.result?.metrics?.durationMs) {
-    return formatDurationMs(cr.result.metrics.durationMs)
+function getDurationLabel(caseRun: TestCaseRun): string {
+  if (caseRun.result?.metrics?.durationMs) {
+    return formatDurationMs(caseRun.result.metrics.durationMs)
   }
-  return duration(cr)
+  return duration(caseRun)
 }
 
 const hasMetrics = computed<boolean>(() => {
   if (props.caseRun?.startedAt && props.caseRun?.completedAt) return true
-  const m = props.caseRun?.result?.metrics
-  if (!m) return false
+  const metrics = props.caseRun?.result?.metrics
+  if (!metrics) return false
   return (
-    m.tokensPerSecond != null ||
-    m.timeToFirstTokenMs != null ||
-    m.durationMs != null ||
-    m.score != null
+    metrics.tokensPerSecond != null ||
+    metrics.timeToFirstTokenMs != null ||
+    metrics.durationMs != null ||
+    metrics.score != null
   )
 })
 </script>
@@ -164,177 +177,184 @@ const hasMetrics = computed<boolean>(() => {
       </div>
     </button>
 
-    <div v-if="expanded && caseRun?.result" class="case-details">
-      <div v-if="caseRun.result.error" class="detail-block error-block">
-        <span class="detail-label">Error</span>
-        <span class="detail-value error-text">{{ caseRun.result.error }}</span>
-      </div>
+    <CollapseTransition :open="expanded">
+      <div v-if="caseRun?.result" class="case-details">
+        <div v-if="caseRun.result.error" class="detail-block error-block">
+          <span class="detail-label">Error</span>
+          <span class="detail-value error-text">{{ caseRun.result.error }}</span>
+        </div>
 
-      <div v-if="systemPrompt" class="detail-block">
-        <span class="detail-label">System Prompt</span>
-        <Textarea
-          :model-value="systemPrompt ?? undefined"
-          variant="display"
-          readonly
-          copyable
-          class="field-textarea"
-        />
-      </div>
+        <div v-if="systemPrompt" class="detail-block">
+          <span class="detail-label">System Prompt</span>
+          <Textarea
+            :model-value="systemPrompt ?? undefined"
+            variant="display"
+            readonly
+            copyable
+            class="field-textarea"
+          />
+        </div>
 
-      <div v-if="inputMessages.length > 0" class="detail-block">
-        <div class="messages">
-          <div v-for="(msg, i) in inputMessages" :key="i" class="message" :class="msg.role">
-            <span class="message-role">{{ msg.role }}</span>
-            <Textarea
-              :model-value="msg.content"
-              variant="display"
-              readonly
-              copyable
-              class="field-textarea"
-            />
+        <div v-if="inputMessages.length > 0" class="detail-block">
+          <div class="messages">
+            <div
+              v-for="(message, i) in inputMessages"
+              :key="i"
+              class="message"
+              :class="message.role"
+            >
+              <span class="message-role">{{ message.role }}</span>
+              <Textarea
+                :model-value="message.content"
+                variant="display"
+                readonly
+                copyable
+                class="field-textarea"
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div v-else-if="inputPrompt" class="detail-block">
-        <span class="detail-label">Input</span>
-        <Textarea
-          :model-value="inputPrompt ?? undefined"
-          variant="display"
-          readonly
-          copyable
-          class="field-textarea"
-        />
-      </div>
+        <div v-else-if="inputPrompt" class="detail-block">
+          <span class="detail-label">Input</span>
+          <Textarea
+            :model-value="inputPrompt ?? undefined"
+            variant="display"
+            readonly
+            copyable
+            class="field-textarea"
+          />
+        </div>
 
-      <div v-if="caseRun.result.reasoning" class="detail-block">
-        <span class="detail-label">Thinking</span>
-        <Textarea
-          :model-value="caseRun.result.reasoning"
-          variant="display"
-          readonly
-          copyable
-          class="field-textarea"
-        />
-      </div>
+        <div v-if="caseRun.result.reasoning" class="detail-block">
+          <span class="detail-label">Thinking</span>
+          <Textarea
+            :model-value="caseRun.result.reasoning"
+            variant="display"
+            readonly
+            copyable
+            class="field-textarea"
+          />
+        </div>
 
-      <div v-if="caseRun.result.output" class="detail-block">
-        <span class="detail-label">Actual Output</span>
-        <Textarea
-          :model-value="caseRun.result.output"
-          variant="display"
-          readonly
-          copyable
-          class="field-textarea"
-        />
-      </div>
+        <div v-if="caseRun.result.output" class="detail-block">
+          <span class="detail-label">Actual Output</span>
+          <Textarea
+            :model-value="caseRun.result.output"
+            variant="display"
+            readonly
+            copyable
+            class="field-textarea"
+          />
+        </div>
 
-      <div v-if="caseRun.result.evalResults?.length" class="detail-block">
-        <span class="detail-label">
-          Evaluation {{ testCase.evaluations.length > 1 ? '- ' + testCase.passingLogic : '' }}
-        </span>
-        <div class="eval-results">
-          <div
-            v-for="(er, i) in caseRun.result.evalResults"
-            :key="i"
-            class="eval-result"
-            :class="er.passed ? 'passed' : 'failed'"
-          >
-            <div class="eval-result__row">
-              <div class="eval-result__cell eval-result__type">
-                <Badge v-if="isNegated(i)" type="info" square>Negated</Badge>
-                <span>{{ er.type.replace(/_/g, ' ') }}</span>
+        <div v-if="caseRun.result.evalResults?.length" class="detail-block">
+          <span class="detail-label">
+            Evaluation {{ testCase.evaluations.length > 1 ? '- ' + testCase.passingLogic : '' }}
+          </span>
+          <div class="eval-results">
+            <div
+              v-for="(result, i) in caseRun.result.evalResults"
+              :key="i"
+              class="eval-result"
+              :class="result.passed ? 'passed' : 'failed'"
+            >
+              <div class="eval-result__row">
+                <div class="eval-result__cell eval-result__type">
+                  <Badge v-if="evaluationDisplays[i]?.negated" type="info" square>Negated</Badge>
+                  <span>{{ result.type.replace(/_/g, ' ') }}</span>
+                </div>
+                <div
+                  v-if="evaluationDisplays[i]?.expectedPreview"
+                  class="eval-result__cell eval-result__expected"
+                >
+                  <CopyButton :value="evaluationDisplays[i].expected" inset>
+                    <Tooltip :delay="200" interactive>
+                      <template #trigger>{{ evaluationDisplays[i].expectedPreview }}</template>
+                      <template #content>
+                        {{ evaluationDisplays[i].expected }}
+                      </template>
+                    </Tooltip>
+                  </CopyButton>
+                </div>
+                <span v-if="result.details" class="eval-result__cell eval-result__detail">
+                  {{ result.details }}
+                </span>
+                <span v-if="result.error" class="eval-result__cell eval-result__error">
+                  {{ result.error }}
+                </span>
+                <span
+                  v-tooltip="evaluationDisplays[i]?.thresholdTooltip"
+                  class="eval-result__cell eval-result__score"
+                  :class="result.passed ? 'pass' : 'fail'"
+                >
+                  {{ (result.score * 100).toFixed(0) }}%
+                </span>
               </div>
-              <div v-if="expectedForEval(i)" class="eval-result__cell eval-result__expected">
-                <CopyButton :value="fullExpectedForEval(i) ?? ''" inset>
-                  <span
-                    v-tooltip="{
-                      content: fullExpectedForEval(i) ?? '',
-                      interactive: true,
-                      delay: 200
-                    }"
-                  >
-                    {{ expectedForEval(i) }}
-                  </span>
-                </CopyButton>
-              </div>
-              <span v-if="er.details" class="eval-result__cell eval-result__detail">
-                {{ er.details }}
+            </div>
+          </div>
+        </div>
+
+        <div v-if="hasMetrics" class="detail-block">
+          <div class="case-metrics">
+            <div v-if="caseRun.result.metrics.tokensPerSecond" class="case-metric">
+              <span class="case-metric-label">Tok/s</span>
+              <span class="case-metric-value">
+                {{ formatMetricValue(caseRun.result.metrics.tokensPerSecond, '') }}
               </span>
-              <span v-if="er.error" class="eval-result__cell eval-result__error">
-                {{ er.error }}
+            </div>
+            <div v-if="caseRun.result.metrics.timeToFirstTokenMs" class="case-metric">
+              <span class="case-metric-label">TTFT</span>
+              <span class="case-metric-value">{{ ttft(caseRun.result) }}</span>
+            </div>
+            <div v-if="caseRun.result.metrics.score != null" class="case-metric">
+              <span class="case-metric-label">Score</span>
+              <span class="case-metric-value">{{ scoreLabel(caseRun.result) }}</span>
+            </div>
+            <div v-if="caseRun.startedAt && caseRun.completedAt" class="case-metric">
+              <span class="case-metric-label">Duration</span>
+              <span class="case-metric-value">{{ getDurationLabel(caseRun) }}</span>
+            </div>
+            <div v-if="metrics?.inputTokens" class="case-metric">
+              <span class="case-metric-label">Input</span>
+              <span class="case-metric-value">{{ formatTokens(metrics.inputTokens) }}</span>
+            </div>
+            <div v-if="metrics?.outputTokens" class="case-metric">
+              <span class="case-metric-label">Output</span>
+              <span class="case-metric-value">{{ formatTokens(metrics.outputTokens) }}</span>
+            </div>
+            <div v-if="metrics?.reasoningTokens" class="case-metric">
+              <span class="case-metric-label">Reasoning</span>
+              <span class="case-metric-value">{{ formatTokens(metrics.reasoningTokens) }}</span>
+            </div>
+            <div v-if="metrics?.cachedInputTokens" class="case-metric">
+              <span class="case-metric-label">Cached</span>
+              <span class="case-metric-value">{{ formatTokens(metrics.cachedInputTokens) }}</span>
+            </div>
+            <div v-if="metrics?.totalTokens" class="case-metric">
+              <span class="case-metric-label">Total Tokens</span>
+              <span class="case-metric-value">{{ formatTokens(metrics.totalTokens) }}</span>
+            </div>
+            <div v-if="metrics?.cost != null" class="case-metric">
+              <span class="case-metric-label">Cost</span>
+              <span class="case-metric-value">{{ formatCost(metrics.cost) }}</span>
+            </div>
+            <div v-if="metrics?.costBreakdown?.promptCost != null" class="case-metric">
+              <span class="case-metric-label">Prompt Cost</span>
+              <span class="case-metric-value">
+                {{ formatCost(metrics.costBreakdown.promptCost) }}
               </span>
-              <span
-                v-tooltip="thresholdTooltip(i)"
-                class="eval-result__cell eval-result__score"
-                :class="er.passed ? 'pass' : 'fail'"
-              >
-                {{ (er.score * 100).toFixed(0) }}%
+            </div>
+            <div v-if="metrics?.costBreakdown?.completionCost != null" class="case-metric">
+              <span class="case-metric-label">Completion Cost</span>
+              <span class="case-metric-value">
+                {{ formatCost(metrics.costBreakdown.completionCost) }}
               </span>
             </div>
           </div>
         </div>
       </div>
-
-      <div v-if="hasMetrics" class="detail-block">
-        <div class="case-metrics">
-          <div v-if="caseRun.result.metrics.tokensPerSecond" class="case-metric">
-            <span class="case-metric-label">Tok/s</span>
-            <span class="case-metric-value">
-              {{ formatMetricValue(caseRun.result.metrics.tokensPerSecond, '') }}
-            </span>
-          </div>
-          <div v-if="caseRun.result.metrics.timeToFirstTokenMs" class="case-metric">
-            <span class="case-metric-label">TTFT</span>
-            <span class="case-metric-value">{{ ttft(caseRun.result) }}</span>
-          </div>
-          <div v-if="caseRun.result.metrics.score != null" class="case-metric">
-            <span class="case-metric-label">Score</span>
-            <span class="case-metric-value">{{ scoreLabel(caseRun.result) }}</span>
-          </div>
-          <div v-if="caseRun.startedAt && caseRun.completedAt" class="case-metric">
-            <span class="case-metric-label">Duration</span>
-            <span class="case-metric-value">{{ getDurationLabel(caseRun) }}</span>
-          </div>
-          <div v-if="metrics?.inputTokens" class="case-metric">
-            <span class="case-metric-label">Input</span>
-            <span class="case-metric-value">{{ formatTokens(metrics.inputTokens) }}</span>
-          </div>
-          <div v-if="metrics?.outputTokens" class="case-metric">
-            <span class="case-metric-label">Output</span>
-            <span class="case-metric-value">{{ formatTokens(metrics.outputTokens) }}</span>
-          </div>
-          <div v-if="metrics?.reasoningTokens" class="case-metric">
-            <span class="case-metric-label">Reasoning</span>
-            <span class="case-metric-value">{{ formatTokens(metrics.reasoningTokens) }}</span>
-          </div>
-          <div v-if="metrics?.cachedInputTokens" class="case-metric">
-            <span class="case-metric-label">Cached</span>
-            <span class="case-metric-value">{{ formatTokens(metrics.cachedInputTokens) }}</span>
-          </div>
-          <div v-if="metrics?.totalTokens" class="case-metric">
-            <span class="case-metric-label">Total Tokens</span>
-            <span class="case-metric-value">{{ formatTokens(metrics.totalTokens) }}</span>
-          </div>
-          <div v-if="metrics?.cost != null" class="case-metric">
-            <span class="case-metric-label">Cost</span>
-            <span class="case-metric-value">{{ formatCost(metrics.cost) }}</span>
-          </div>
-          <div v-if="metrics?.costBreakdown?.promptCost != null" class="case-metric">
-            <span class="case-metric-label">Prompt Cost</span>
-            <span class="case-metric-value">
-              {{ formatCost(metrics.costBreakdown.promptCost) }}
-            </span>
-          </div>
-          <div v-if="metrics?.costBreakdown?.completionCost != null" class="case-metric">
-            <span class="case-metric-label">Completion Cost</span>
-            <span class="case-metric-value">
-              {{ formatCost(metrics.costBreakdown.completionCost) }}
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
+    </CollapseTransition>
   </div>
 </template>
 
