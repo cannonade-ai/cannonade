@@ -77,6 +77,7 @@ export interface EvaluationConfig {
     | 'custom'
     | 'code_execution'
     | 'cosine_similarity'
+    | 'html_validation'
 
   // inverts the result: the eval passes when it would otherwise fail
   negate?: boolean
@@ -95,6 +96,17 @@ export interface EvaluationConfig {
 
   // for type: code_execution
   codeExecution?: CodeExecutionConfig
+
+  // for type: html_validation
+  htmlValidation?: HtmlValidationConfig
+}
+
+export interface HtmlValidationConfig {
+  // when set, only these tags count as valid; everything else lowers the score
+  allowedTags?: string[]
+
+  // these tags lower the score whenever they appear
+  blockedTags?: string[]
 }
 
 export const CASE_SENSITIVE_METRICS: EvaluationConfig['type'][] = [

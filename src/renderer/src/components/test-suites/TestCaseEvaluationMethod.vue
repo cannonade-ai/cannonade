@@ -2,6 +2,7 @@
 import {
   Field,
   InfoTooltip,
+  Input,
   NumberInput,
   Select,
   Textarea,
@@ -34,7 +35,8 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'bleu', label: 'BLEU' },
   { value: 'custom', label: 'Custom Validator' },
   { value: 'code_execution', label: 'Code Execution' },
-  { value: 'cosine_similarity', label: 'Cosine Similarity' }
+  { value: 'cosine_similarity', label: 'Cosine Similarity' },
+  { value: 'html_validation', label: 'HTML Validation' }
 ]
 
 const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
@@ -50,7 +52,8 @@ const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
   custom: 'Run your own JavaScript function to score the output however you like.',
   code_execution: 'Runs the output as code and checks whether it executes successfully.',
   cosine_similarity:
-    'Compares the meaning of the output and expected text. Uses a small built-in LLM to create embeddings.'
+    'Compares the meaning of the output and expected text. Uses a small built-in LLM to create embeddings.',
+  html_validation: 'Passes if the whole output is HTML markup with at least one recognized element.'
 }
 
 const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
@@ -59,10 +62,13 @@ const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
   'levenshtein',
   'f1',
   'custom',
-  'cosine_similarity'
+  'cosine_similarity',
+  'html_validation'
 ]
 
 const NON_NEGATABLE_TYPES: EvaluationConfig['type'][] = ['custom', 'code_execution']
+
+const NO_EXPECTED_TYPES: EvaluationConfig['type'][] = ['custom', 'html_validation']
 
 const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
   // output: full model output string
@@ -73,12 +79,26 @@ const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
   }
 }`
 
+function tagsToText(tags: string[] | undefined): string {
+  return tags?.join(', ') ?? ''
+}
+
+function textToTags(text: string): string[] | undefined {
+  const tags = text
+    .split(',')
+    .map((tag) => tag.trim())
+    .filter(Boolean)
+  return tags.length > 0 ? tags : undefined
+}
+
 const type = ref<EvaluationConfig['type']>(props.evaluation.type)
 const expected = ref(typeof props.evaluation.expected === 'string' ? props.evaluation.expected : '')
 const threshold = ref(props.evaluation.threshold ?? 0.9)
 const negate = ref(props.evaluation.negate ?? false)
 const caseSensitive = ref(props.evaluation.caseSensitive ?? props.evaluation.type === 'exact_match')
 const customCode = ref(props.evaluation.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER)
+const allowedTags = ref(tagsToText(props.evaluation.htmlValidation?.allowedTags))
+const blockedTags = ref(tagsToText(props.evaluation.htmlValidation?.blockedTags))
 
 watch(
   () => props.evaluation,
@@ -89,12 +109,14 @@ watch(
     negate.value = e.negate ?? false
     caseSensitive.value = e.caseSensitive ?? e.type === 'exact_match'
     customCode.value = e.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER
+    allowedTags.value = tagsToText(e.htmlValidation?.allowedTags)
+    blockedTags.value = tagsToText(e.htmlValidation?.blockedTags)
   }
 )
 
 const typeHint = computed(() => TYPE_HINTS[type.value])
 const showThreshold = computed(() => THRESHOLD_TYPES.includes(type.value))
-const showExpected = computed(() => type.value !== 'custom')
+const showExpected = computed(() => !NO_EXPECTED_TYPES.includes(type.value))
 const showNegate = computed(() => !NON_NEGATABLE_TYPES.includes(type.value))
 const showCaseSensitive = computed(() => CASE_SENSITIVE_METRICS.includes(type.value))
 const expectedLabel = computed(() => (type.value === 'regex' ? 'Pattern' : 'Expected'))
@@ -103,18 +125,28 @@ watch(type, (t) => {
   caseSensitive.value = t === 'exact_match'
 })
 
-watch([type, expected, threshold, negate, caseSensitive, customCode], () => {
-  emit('update', {
-    ...props.evaluation,
-    type: type.value,
-    expected: showExpected.value ? expected.value || undefined : undefined,
-    threshold: showThreshold.value ? threshold.value : undefined,
-    negate: showNegate.value && negate.value ? true : undefined,
-    caseSensitive: showCaseSensitive.value ? caseSensitive.value : undefined,
-    customValidator:
-      type.value === 'custom' ? { language: 'javascript', code: customCode.value } : undefined
-  })
-})
+watch(
+  [type, expected, threshold, negate, caseSensitive, customCode, allowedTags, blockedTags],
+  () => {
+    emit('update', {
+      ...props.evaluation,
+      type: type.value,
+      expected: showExpected.value ? expected.value || undefined : undefined,
+      threshold: showThreshold.value ? threshold.value : undefined,
+      negate: showNegate.value && negate.value ? true : undefined,
+      caseSensitive: showCaseSensitive.value ? caseSensitive.value : undefined,
+      customValidator:
+        type.value === 'custom' ? { language: 'javascript', code: customCode.value } : undefined,
+      htmlValidation:
+        type.value === 'html_validation'
+          ? {
+              allowedTags: textToTags(allowedTags.value),
+              blockedTags: textToTags(blockedTags.value)
+            }
+          : undefined
+    })
+  }
+)
 </script>
 
 <template>
@@ -144,6 +176,20 @@ watch([type, expected, threshold, negate, caseSensitive, customCode], () => {
           class="eval-method__code"
         />
       </Field>
+      <template v-if="type === 'html_validation'">
+        <Field
+          label="Allowed tags"
+          hint="Comma separated. Leave empty to accept any standard HTML tag. When set, only these tags count as valid."
+        >
+          <Input v-model="allowedTags" placeholder="e.g. section, article, h1, p" />
+        </Field>
+        <Field
+          label="Blocked tags"
+          hint="Comma separated. These lower the score whenever they appear in the output."
+        >
+          <Input v-model="blockedTags" placeholder="e.g. script, iframe, table" />
+        </Field>
+      </template>
       <Field
         v-if="showThreshold"
         label="Threshold (0 – 1)"
