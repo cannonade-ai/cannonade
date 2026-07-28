@@ -1,6 +1,6 @@
 {
   "name": "cannonade",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "The simplest way to test and compare local or cloud LLMs and prompts",
   "main": "./out/main/index.js",
   "author": "Cannonade",
@@ -53,6 +53,7 @@
     "js-rouge": "^3.2.0",
     "markdown-it": "^14.3.0",
     "ollama": "^0.6.3",
+    "parse5": "^8.0.1",
     "pinia": "^3.0.4",
     "quickjs-emscripten": "^0.32.0",
     "slugify": "^1.6.9",

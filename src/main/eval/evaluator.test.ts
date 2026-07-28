@@ -22,6 +22,10 @@ vi.mock('./cosineSimilarity', () => ({
   runCosineSimilarity: vi.fn().mockResolvedValue({ passed: true, score: 1 })
 }))
 
+vi.mock('./html-validation', () => ({
+  evaluateHtmlValidation: vi.fn().mockReturnValue({ passed: true, score: 1 })
+}))
+
 import {
   evaluateExactMatch,
   evaluateContains,
@@ -34,6 +38,7 @@ import {
 } from './metrics'
 import { runCustomValidator } from './customValidator'
 import { runCosineSimilarity } from './cosineSimilarity'
+import { evaluateHtmlValidation } from './html-validation'
 
 const OUTPUT = 'test output'
 
@@ -52,7 +57,8 @@ describe('evaluate routing', () => {
     ['json_match', evaluateJsonMatch],
     ['bleu', evaluateBleu],
     ['custom', runCustomValidator],
-    ['cosine_similarity', runCosineSimilarity]
+    ['cosine_similarity', runCosineSimilarity],
+    ['html_validation', evaluateHtmlValidation]
   ]
 
   for (const [type, fn] of cases) {
@@ -98,6 +104,18 @@ describe('negate', () => {
     const result = await evaluate(OUTPUT, { type: 'contains', negate: true, threshold: 0.4 })
     expect(result.score).toBe(0.5)
     expect(result.passed).toBe(true)
+  })
+
+  it('inverts a failing html_validation result and keeps its reason', async () => {
+    vi.mocked(evaluateHtmlValidation).mockReturnValueOnce({
+      passed: false,
+      score: 0,
+      details: 'Output has text outside of any HTML element'
+    })
+    const result = await evaluate(OUTPUT, { type: 'html_validation', negate: true })
+    expect(result.score).toBe(1)
+    expect(result.passed).toBe(true)
+    expect(result.details).toBe('Output has text outside of any HTML element')
   })
 
   it('does not negate a result that errored', async () => {

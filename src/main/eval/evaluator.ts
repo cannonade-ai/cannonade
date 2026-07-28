@@ -11,6 +11,7 @@ import {
   evaluateRouge,
   PASS_THRESHOLD
 } from './metrics'
+import { evaluateHtmlValidation } from './html-validation'
 import { runCustomValidator } from './customValidator'
 import { runCosineSimilarity } from './cosineSimilarity'
 
@@ -72,6 +73,8 @@ async function runMetric(output: string, evaluation: EvaluationConfig): Promise<
       return evaluateJsonMatch(output, evaluation)
     case 'bleu':
       return evaluateBleu(output, evaluation)
+    case 'html_validation':
+      return evaluateHtmlValidation(output, evaluation)
     case 'custom':
       return runCustomValidator(output, evaluation)
     case 'cosine_similarity':
