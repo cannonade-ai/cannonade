@@ -1,6 +1,6 @@
 {
   "name": "cannonade",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "The simplest way to test and compare local or cloud LLMs and prompts",
   "main": "./out/main/index.js",
   "author": "Cannonade",
