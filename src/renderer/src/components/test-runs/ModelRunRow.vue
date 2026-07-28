@@ -17,6 +17,11 @@ import { computed, ref, watch } from 'vue'
 import { createLogger } from '@renderer/utils/logger'
 
 const log = createLogger('model-run-row')
+
+const JUDGE_TOKENS_TOOLTIP =
+  'Tokens spent by the judge model on LLM-graded evals, not by this model'
+const JUDGE_COST_TOOLTIP = 'Cost of the judge model on LLM-graded evals, not of this model'
+
 const filteredTestCases = computed(() =>
   props.testCases.filter((tc) => caseRunFor(tc.id) !== undefined)
 )
@@ -282,28 +287,42 @@ function remainingTime(estimatedCompletion: string): string {
           </div>
         </template>
 
-        <template v-if="modelRun.aggregate.totalTokens">
+        <template v-if="modelRun.aggregate.totalTokens || modelRun.aggregate.totalJudgeTokens">
           <div class="metric-group">
             <span class="group-label">Tokens</span>
             <div class="group-values">
-              <div class="metric">
+              <div v-if="modelRun.aggregate.totalTokens" class="metric">
                 <span class="metric-label">Total</span>
                 <span class="metric-value">
                   {{ formatTokens(modelRun.aggregate.totalTokens) }}
+                </span>
+              </div>
+              <div v-if="modelRun.aggregate.totalJudgeTokens" class="metric">
+                <span v-tooltip="JUDGE_TOKENS_TOOLTIP" class="metric-label">Judge</span>
+                <span class="metric-value">
+                  {{ formatTokens(modelRun.aggregate.totalJudgeTokens) }}
                 </span>
               </div>
             </div>
           </div>
         </template>
 
-        <template v-if="modelRun.aggregate.totalCost != null">
+        <template
+          v-if="modelRun.aggregate.totalCost != null || modelRun.aggregate.totalJudgeCost != null"
+        >
           <div class="metric-group">
             <span class="group-label">Cost</span>
             <div class="group-values">
-              <div class="metric">
+              <div v-if="modelRun.aggregate.totalCost != null" class="metric">
                 <span class="metric-label">Total</span>
                 <span class="metric-value">
                   {{ formatCost(modelRun.aggregate.totalCost) }}
+                </span>
+              </div>
+              <div v-if="modelRun.aggregate.totalJudgeCost != null" class="metric">
+                <span v-tooltip="JUDGE_COST_TOOLTIP" class="metric-label">Judge</span>
+                <span class="metric-value">
+                  {{ formatCost(modelRun.aggregate.totalJudgeCost) }}
                 </span>
               </div>
             </div>

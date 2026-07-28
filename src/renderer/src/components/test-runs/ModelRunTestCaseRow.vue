@@ -8,9 +8,15 @@ import {
   Tooltip
 } from '@renderer/components/ui'
 import type { TestCaseRun } from '@shared/app/test-run'
-import type { TestCase, TestCaseMetrics, TestCaseResult } from '@shared/app/test-suite'
+import type {
+  EvaluationMethodResult,
+  TestCase,
+  TestCaseMetrics,
+  TestCaseResult
+} from '@shared/app/test-suite'
+import type { JudgeUsage } from '@shared/app/judge'
 import type { ChatMessage } from '@shared/provider/chat'
-import { IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
+import { IconAlertTriangle, IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
 import { DEFAULT_THRESHOLD, scoreColorStyle, scoreThreshold } from '@renderer/utils/score-color'
 import { summarizeEvaluation } from '@renderer/utils/evaluation-summary'
 import { computed, ref } from 'vue'
@@ -86,6 +92,18 @@ const evaluationDisplays = computed<EvaluationDisplay[]>(() =>
     }
   })
 )
+
+function evalResultState(result: EvaluationMethodResult): string {
+  if (result.error) return 'errored'
+  return result.passed ? 'passed' : 'failed'
+}
+
+function judgeTooltip(judge: JudgeUsage): string {
+  const parts = [`Graded by ${judge.model}`]
+  if (judge.totalTokens != null) parts.push(`${formatTokens(judge.totalTokens)} judge tokens`)
+  if (judge.cost != null) parts.push(`${formatCost(judge.cost)} judge cost`)
+  return parts.join(' · ')
+}
 
 function formatMetricValue(value: number | undefined, suffix: string): string {
   if (value == null) return '—'
@@ -257,7 +275,7 @@ const hasMetrics = computed<boolean>(() => {
               v-for="(result, i) in caseRun.result.evalResults"
               :key="i"
               class="eval-result"
-              :class="result.passed ? 'passed' : 'failed'"
+              :class="evalResultState(result)"
             >
               <div class="eval-result__row">
                 <div class="eval-result__cell eval-result__type">
@@ -281,9 +299,25 @@ const hasMetrics = computed<boolean>(() => {
                   {{ result.details }}
                 </span>
                 <span v-if="result.error" class="eval-result__cell eval-result__error">
+                  <IconAlertTriangle :size="13" :stroke-width="2" />
                   {{ result.error }}
                 </span>
                 <span
+                  v-if="result.judge"
+                  v-tooltip="judgeTooltip(result.judge)"
+                  class="eval-result__cell eval-result__judge"
+                >
+                  {{ result.judge.model }}
+                </span>
+                <span
+                  v-if="result.error"
+                  v-tooltip="'The grader itself failed, so this eval has no score'"
+                  class="eval-result__cell eval-result__score errored"
+                >
+                  n/a
+                </span>
+                <span
+                  v-else
                   v-tooltip="evaluationDisplays[i]?.thresholdTooltip"
                   class="eval-result__cell eval-result__score"
                   :class="result.passed ? 'pass' : 'fail'"
@@ -344,6 +378,14 @@ const hasMetrics = computed<boolean>(() => {
               <span class="case-metric-value">
                 {{ formatCost(metrics.costBreakdown.promptCost) }}
               </span>
+            </div>
+            <div v-if="metrics?.judge?.totalTokens != null" class="case-metric">
+              <span class="case-metric-label">Judge Tokens</span>
+              <span class="case-metric-value">{{ formatTokens(metrics.judge.totalTokens) }}</span>
+            </div>
+            <div v-if="metrics?.judge?.cost != null" class="case-metric">
+              <span class="case-metric-label">Judge Cost</span>
+              <span class="case-metric-value">{{ formatCost(metrics.judge.cost) }}</span>
             </div>
             <div v-if="metrics?.costBreakdown?.completionCost != null" class="case-metric">
               <span class="case-metric-label">Completion Cost</span>
@@ -601,6 +643,11 @@ const hasMetrics = computed<boolean>(() => {
     &.failed {
       border-left-color: #ef4444;
     }
+    &.errored {
+      border-left-color: #f59e0b;
+      border-style: dashed;
+      border-left-style: solid;
+    }
 
     &__row {
       display: flex;
@@ -635,11 +682,21 @@ const hasMetrics = computed<boolean>(() => {
     &__detail {
       font-size: var(--text-xs);
       color: var(--text-secondary);
+      white-space: normal;
+      max-width: 32rem;
     }
 
     &__error {
       font-size: var(--text-xs);
-      color: #ef4444;
+      color: #f59e0b;
+      white-space: normal;
+      max-width: 32rem;
+    }
+
+    &__judge {
+      font-size: var(--text-xs);
+      color: var(--text-muted);
+      font-family: var(--font-mono, monospace);
     }
 
     &__score {
@@ -652,6 +709,9 @@ const hasMetrics = computed<boolean>(() => {
       }
       &.fail {
         color: #ef4444;
+      }
+      &.errored {
+        color: #f59e0b;
       }
     }
   }

@@ -7,6 +7,9 @@ import {
   type FontSize
 } from '@shared/app/app-settings'
 import { useProvidersStore } from './providers'
+import { createLogger } from '../utils/logger'
+
+const log = createLogger('settings-store')
 
 export type { FontSize }
 
@@ -22,6 +25,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   const settings = reactive<PersistedSettings>({
     ...DEFAULTS,
+    judge: { ...DEFAULTS.judge },
     isDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   })
   applyTheme(settings.isDark)
@@ -35,10 +39,13 @@ export const useSettingsStore = defineStore('settings', () => {
   let saveTimer: ReturnType<typeof setTimeout> | null = null
 
   function saveSettings(): void {
-    api.saveAppSettings({
-      ...settings,
-      configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p }))
-    })
+    api
+      .saveAppSettings({
+        ...settings,
+        judge: { ...settings.judge },
+        configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p }))
+      })
+      .catch((err) => log.error('Failed to save app settings:', err))
   }
 
   watch(
@@ -54,7 +61,8 @@ export const useSettingsStore = defineStore('settings', () => {
   async function init(): Promise<void> {
     const loadedSettings = await api.loadAppSettings()
     Object.assign(settings, loadedSettings, {
-      onboardingComplete: loadedSettings.onboardingComplete ?? false
+      onboardingComplete: loadedSettings.onboardingComplete ?? false,
+      judge: loadedSettings.judge ? { ...loadedSettings.judge } : { ...DEFAULTS.judge }
     })
     providersStore.init(loadedSettings.configuredProviders ?? [])
     await nextTick()
@@ -67,6 +75,7 @@ export const useSettingsStore = defineStore('settings', () => {
 
   function reset(): void {
     Object.assign(settings, DEFAULTS, {
+      judge: { ...DEFAULTS.judge },
       isDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
       onboardingComplete: false
     })
