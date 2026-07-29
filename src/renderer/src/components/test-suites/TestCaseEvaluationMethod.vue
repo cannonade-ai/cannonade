@@ -36,7 +36,8 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'custom', label: 'Custom Validator' },
   { value: 'code_execution', label: 'Code Execution' },
   { value: 'cosine_similarity', label: 'Cosine Similarity' },
-  { value: 'html_validation', label: 'HTML Validation' }
+  { value: 'html_validation', label: 'HTML Validation' },
+  { value: 'llm_rubric', label: 'LLM Rubric' }
 ]
 
 const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
@@ -53,7 +54,10 @@ const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
   code_execution: 'Runs the output as code and checks whether it executes successfully.',
   cosine_similarity:
     'Compares the meaning of the output and expected text. Uses a small built-in LLM to create embeddings.',
-  html_validation: 'Passes if the whole output is HTML markup with at least one recognized element.'
+  html_validation:
+    'Requires the whole output to be HTML markup, then scores the share of elements that are accepted. Without allowed or blocked tags any recognized HTML tag is accepted.',
+  llm_rubric:
+    'A judge model decides whether the output satisfies a free-text criterion. The judge model is picked once in Settings > Test Runs.'
 }
 
 const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
@@ -63,12 +67,16 @@ const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
   'f1',
   'custom',
   'cosine_similarity',
-  'html_validation'
+  'html_validation',
+  'llm_rubric'
 ]
 
 const NON_NEGATABLE_TYPES: EvaluationConfig['type'][] = ['custom', 'code_execution']
 
-const NO_EXPECTED_TYPES: EvaluationConfig['type'][] = ['custom', 'html_validation']
+const NO_EXPECTED_TYPES: EvaluationConfig['type'][] = ['custom', 'html_validation', 'llm_rubric']
+
+const RUBRIC_HINT =
+  'What the judge model should check for, and optionally how to score it, such as giving partial credit when only part of the criterion is met. Placeholders {{output}} and {{input}} are replaced with the model output and the test case input.'
 
 const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
   // output: full model output string
@@ -91,31 +99,48 @@ function textToTags(text: string): string[] | undefined {
   return tags.length > 0 ? tags : undefined
 }
 
+const DEFAULT_THRESHOLD_VALUE = 0.9
+
+function defaultThreshold(evaluation: EvaluationConfig): number | undefined {
+  if (evaluation.threshold != null) return evaluation.threshold
+  return evaluation.type === 'llm_rubric' ? undefined : DEFAULT_THRESHOLD_VALUE
+}
+
 const type = ref<EvaluationConfig['type']>(props.evaluation.type)
 const expected = ref(typeof props.evaluation.expected === 'string' ? props.evaluation.expected : '')
-const threshold = ref(props.evaluation.threshold ?? 0.9)
+const threshold = ref<number | undefined>(defaultThreshold(props.evaluation))
 const negate = ref(props.evaluation.negate ?? false)
 const caseSensitive = ref(props.evaluation.caseSensitive ?? props.evaluation.type === 'exact_match')
 const customCode = ref(props.evaluation.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER)
 const allowedTags = ref(tagsToText(props.evaluation.htmlValidation?.allowedTags))
 const blockedTags = ref(tagsToText(props.evaluation.htmlValidation?.blockedTags))
+const rubric = ref(props.evaluation.llmRubric?.rubric ?? '')
 
 watch(
   () => props.evaluation,
   (e) => {
     type.value = e.type
     expected.value = typeof e.expected === 'string' ? e.expected : ''
-    threshold.value = e.threshold ?? 0.9
+    threshold.value = defaultThreshold(e)
     negate.value = e.negate ?? false
     caseSensitive.value = e.caseSensitive ?? e.type === 'exact_match'
     customCode.value = e.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER
     allowedTags.value = tagsToText(e.htmlValidation?.allowedTags)
     blockedTags.value = tagsToText(e.htmlValidation?.blockedTags)
+    rubric.value = e.llmRubric?.rubric ?? ''
   }
 )
 
 const typeHint = computed(() => TYPE_HINTS[type.value])
 const showThreshold = computed(() => THRESHOLD_TYPES.includes(type.value))
+const thresholdHint = computed(() =>
+  type.value === 'llm_rubric'
+    ? "Optional. When set, the judge's verdict must be a pass and its score at least this high."
+    : 'The minimum score the output must reach to pass. Higher values are stricter.'
+)
+const thresholdPlaceholder = computed(() =>
+  type.value === 'llm_rubric' ? 'No threshold' : '0.0 – 1.0'
+)
 const showExpected = computed(() => !NO_EXPECTED_TYPES.includes(type.value))
 const showNegate = computed(() => !NON_NEGATABLE_TYPES.includes(type.value))
 const showCaseSensitive = computed(() => CASE_SENSITIVE_METRICS.includes(type.value))
@@ -123,10 +148,11 @@ const expectedLabel = computed(() => (type.value === 'regex' ? 'Pattern' : 'Expe
 
 watch(type, (t) => {
   caseSensitive.value = t === 'exact_match'
+  threshold.value = t === 'llm_rubric' ? undefined : (threshold.value ?? DEFAULT_THRESHOLD_VALUE)
 })
 
 watch(
-  [type, expected, threshold, negate, caseSensitive, customCode, allowedTags, blockedTags],
+  [type, expected, threshold, negate, caseSensitive, customCode, allowedTags, blockedTags, rubric],
   () => {
     emit('update', {
       ...props.evaluation,
@@ -143,7 +169,8 @@ watch(
               allowedTags: textToTags(allowedTags.value),
               blockedTags: textToTags(blockedTags.value)
             }
-          : undefined
+          : undefined,
+      llmRubric: type.value === 'llm_rubric' ? { rubric: rubric.value } : undefined
     })
   }
 )
@@ -176,6 +203,13 @@ watch(
           class="eval-method__code"
         />
       </Field>
+      <Field v-if="type === 'llm_rubric'" label="Rubric" :hint="RUBRIC_HINT">
+        <Textarea
+          v-model="rubric"
+          :rows="3"
+          placeholder="e.g. is polite and does not reveal internal reasoning"
+        />
+      </Field>
       <template v-if="type === 'html_validation'">
         <Field
           label="Allowed tags"
@@ -190,12 +224,14 @@ watch(
           <Input v-model="blockedTags" placeholder="e.g. script, iframe, table" />
         </Field>
       </template>
-      <Field
-        v-if="showThreshold"
-        label="Threshold (0 – 1)"
-        hint="The minimum score the output must reach to pass. Higher values are stricter."
-      >
-        <NumberInput v-model="threshold" :min="0" :max="1" :step="0.05" placeholder="0.0 – 1.0" />
+      <Field v-if="showThreshold" label="Threshold (0 – 1)" :hint="thresholdHint">
+        <NumberInput
+          v-model="threshold"
+          :min="0"
+          :max="1"
+          :step="0.05"
+          :placeholder="thresholdPlaceholder"
+        />
       </Field>
       <Field
         v-if="showCaseSensitive"

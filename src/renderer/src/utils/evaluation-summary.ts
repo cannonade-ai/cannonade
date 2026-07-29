@@ -14,6 +14,10 @@ const EVALUATION_SUMMARIES: Partial<Record<EvaluationConfig['type'], EvaluationS
     }
     return lines.length ? lines.join('\n') : null
   },
+  llm_rubric: (evaluation) => {
+    const rubric = evaluation.llmRubric?.rubric?.trim()
+    return rubric ? rubric : null
+  },
   custom: (evaluation) => {
     const code = evaluation.customValidator?.code
     return code ? code : null

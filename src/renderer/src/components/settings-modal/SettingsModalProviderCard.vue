@@ -64,7 +64,6 @@ onMounted(async () => {
     <div class="provider-card__actions">
       <Button
         v-if="showSetDefault && !provider.isDefault"
-        v-tooltip="'Set as default'"
         type="icon"
         :icon="IconStar"
         :icon-size="15"

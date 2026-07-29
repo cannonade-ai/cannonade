@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { evaluate } from './evaluator'
+import { evaluate, evaluateAll } from './evaluator'
+import type { TestCase } from '@shared/app/test-suite'
 import type { EvaluationConfig } from '@shared/app/test-suite'
 
 vi.mock('./metrics', () => ({
@@ -26,6 +27,10 @@ vi.mock('./html-validation', () => ({
   evaluateHtmlValidation: vi.fn().mockReturnValue({ passed: true, score: 1 })
 }))
 
+vi.mock('./llm-rubric', () => ({
+  evaluateLlmRubric: vi.fn().mockResolvedValue({ passed: true, score: 1 })
+}))
+
 import {
   evaluateExactMatch,
   evaluateContains,
@@ -39,6 +44,7 @@ import {
 import { runCustomValidator } from './customValidator'
 import { runCosineSimilarity } from './cosineSimilarity'
 import { evaluateHtmlValidation } from './html-validation'
+import { evaluateLlmRubric } from './llm-rubric'
 
 const OUTPUT = 'test output'
 
@@ -69,11 +75,73 @@ describe('evaluate routing', () => {
     })
   }
 
+  it('routes "llm_rubric" to the judge, forwarding the evaluation context', async () => {
+    const context = { input: 'question', abortSignal: new AbortController().signal }
+    await evaluate(OUTPUT, { type: 'llm_rubric' }, context)
+    expect(evaluateLlmRubric).toHaveBeenCalledWith(OUTPUT, { type: 'llm_rubric' }, context)
+  })
+
   it('returns an error for an unknown type', async () => {
     const config = { type: 'unknown_type' } as unknown as EvaluationConfig
     const result = await evaluate(OUTPUT, config)
     expect(result.passed).toBe(false)
     expect(result.error).toBeTruthy()
+  })
+})
+
+describe('evaluateAll context', () => {
+  function makeTestCase(input: TestCase['input']): TestCase {
+    return {
+      id: 'tc-1',
+      name: 'Test Case 1',
+      input,
+      evaluations: [{ type: 'llm_rubric' }],
+      passingLogic: 'all'
+    }
+  }
+
+  it('derives the input from chat messages, skipping the system prompt', async () => {
+    const testCase = makeTestCase({
+      type: 'chat',
+      messages: [
+        { role: 'system', content: 'You are terse.' },
+        { role: 'user', content: 'What is 6 times 7?' }
+      ]
+    })
+
+    await evaluateAll(OUTPUT, testCase)
+
+    expect(evaluateLlmRubric).toHaveBeenCalledWith(
+      OUTPUT,
+      testCase.evaluations[0],
+      expect.objectContaining({ input: 'What is 6 times 7?' })
+    )
+  })
+
+  it('falls back to the completion prompt', async () => {
+    const testCase = makeTestCase({ type: 'completion', prompt: 'Say hello' })
+
+    await evaluateAll(OUTPUT, testCase)
+
+    expect(evaluateLlmRubric).toHaveBeenCalledWith(
+      OUTPUT,
+      testCase.evaluations[0],
+      expect.objectContaining({ input: 'Say hello' })
+    )
+  })
+
+  it('keeps the abort signal from the caller', async () => {
+    const abortSignal = new AbortController().signal
+
+    await evaluateAll(OUTPUT, makeTestCase({ type: 'completion', prompt: 'Say hello' }), {
+      abortSignal
+    })
+
+    expect(evaluateLlmRubric).toHaveBeenCalledWith(
+      OUTPUT,
+      expect.anything(),
+      expect.objectContaining({ abortSignal })
+    )
   })
 })
 

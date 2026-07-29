@@ -1,11 +1,12 @@
 import { RUN } from '@shared/app/ipc-channels'
 import { evaluateAll } from '../../eval/evaluator'
+import { JudgeError } from '../../eval/judge/judge-client'
 import type { TestRun, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite, TestCase, TestCaseResult } from '@shared/app/test-suite'
 import type { LLMProvider } from '../../../core/providers/base'
 import { runChat } from './chat-handler'
 import { buildRequest, extractTextOutput, extractReasoningOutput } from './mappers'
-import { buildCaseMetrics, computeAggregate } from './metric-builder'
+import { buildCaseMetrics, computeAggregate, sumJudgeUsage } from './metric-builder'
 import {
   toHuggingFaceUrl,
   extractHfModelId,
@@ -37,6 +38,7 @@ interface RunTestCaseParams {
 interface RunTestCaseOutcome {
   cancelled: boolean
   failed: boolean
+  fatalError?: string
   modelInstanceId?: string
 }
 
@@ -56,17 +58,22 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
 
   try {
     const response = await runChat(provider, request, abortSignal, timeoutMs)
+    const durationMs = performance.now() - startTime
     log.debug(`response for modelRun.id: ${modelRun.id}, case: ${testCase.name}:`, response)
 
     const output = extractTextOutput(response.output)
     const reasoning = extractReasoningOutput(response.output)
-    const evaluation = await evaluateAll(output, testCase)
-    const durationMs = performance.now() - startTime
+    const evaluation = await evaluateAll(output, testCase, { abortSignal })
     const result: TestCaseResult = {
       testCaseId: testCase.id,
       output,
       reasoning,
-      metrics: buildCaseMetrics(response.stats, evaluation.score, durationMs),
+      metrics: buildCaseMetrics(
+        response.stats,
+        evaluation.score,
+        durationMs,
+        sumJudgeUsage(evaluation.evalResults)
+      ),
       passed: evaluation.passed,
       evalResults: evaluation.evalResults,
       error: evaluation.error
@@ -132,7 +139,11 @@ async function runTestCase(params: RunTestCaseParams): Promise<RunTestCaseOutcom
     })
     log.error(`Test case failed: ${testCase.name}, error: ${error}`)
     log.debug('Test case result:', result)
-    return { cancelled: false, failed: true }
+    return {
+      cancelled: false,
+      failed: true,
+      fatalError: err instanceof JudgeError && err.fatal ? error : undefined
+    }
   }
 }
 
@@ -258,6 +269,11 @@ export async function processModelRun(params: RunModelRunParams): Promise<boolea
 
       if (!modelInstanceId && outcome.modelInstanceId) modelInstanceId = outcome.modelInstanceId
       if (outcome.failed) overallFailed = true
+      if (outcome.fatalError) {
+        fatalError = outcome.fatalError
+        log.error('Aborting model run, judge is unusable:', fatalError)
+        break
+      }
       if (outcome.cancelled) break
     }
   } catch (err) {

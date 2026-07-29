@@ -4,6 +4,7 @@ import Toggle from '@renderer/components/ui/Toggle.vue'
 import NumberInput from '@renderer/components/ui/NumberInput.vue'
 import SettingsModalRow from './SettingsModalRow.vue'
 import SettingsModalDivider from './SettingsModalDivider.vue'
+import SettingsModalJudge from './SettingsModalJudge.vue'
 
 const settings = useSettingsStore()
 </script>
@@ -50,6 +51,7 @@ const settings = useSettingsStore()
       />
     </SettingsModalRow>
   </div>
+  <SettingsModalJudge />
 </template>
 
 <style scoped lang="scss">

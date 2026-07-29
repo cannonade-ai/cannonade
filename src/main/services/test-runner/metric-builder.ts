@@ -3,14 +3,38 @@ import type {
   TestCaseResult,
   TestCaseMetrics,
   AggregateMetrics,
+  EvaluationMethodResult,
   RunCostBreakdown
 } from '@shared/app/test-suite'
+import type { JudgeUsage } from '@shared/app/judge'
 import type { ChatStats } from '@shared/provider/chat'
+
+export function sumJudgeUsage(evalResults: EvaluationMethodResult[]): JudgeUsage | undefined {
+  const usages = evalResults.flatMap((r) => (r.judgeUsage ? [r.judgeUsage] : []))
+  if (usages.length === 0) return undefined
+
+  const total = (pick: (usage: JudgeUsage) => number | undefined): number | undefined => {
+    const values = usages.flatMap((u) => {
+      const value = pick(u)
+      return value != null ? [value] : []
+    })
+    return values.length ? values.reduce((a, b) => a + b, 0) : undefined
+  }
+
+  return {
+    model: usages[0].model,
+    inputTokens: total((u) => u.inputTokens),
+    outputTokens: total((u) => u.outputTokens),
+    totalTokens: total((u) => u.totalTokens),
+    cost: total((u) => u.cost)
+  }
+}
 
 export function buildCaseMetrics(
   stats: ChatStats,
   score: number,
-  durationMs: number
+  durationMs: number,
+  judgeUsage?: JudgeUsage
 ): TestCaseMetrics {
   const metrics: TestCaseMetrics = {
     tokensPerSecond: stats.tokens_per_second,
@@ -33,6 +57,7 @@ export function buildCaseMetrics(
     breakdown.completionCost = stats.cost_details.upstream_inference_completions_cost
   }
   if (Object.keys(breakdown).length > 0) metrics.costBreakdown = breakdown
+  if (judgeUsage) metrics.judgeUsage = judgeUsage
 
   return metrics
 }
@@ -54,6 +79,12 @@ export function computeAggregate(
   const costValues = results.flatMap((r) => (r.metrics.cost != null ? [r.metrics.cost] : []))
   const tokenValues = results.flatMap((r) =>
     r.metrics.totalTokens != null ? [r.metrics.totalTokens] : []
+  )
+  const judgeCostValues = results.flatMap((r) =>
+    r.metrics.judgeUsage?.cost != null ? [r.metrics.judgeUsage.cost] : []
+  )
+  const judgeTokenValues = results.flatMap((r) =>
+    r.metrics.judgeUsage?.totalTokens != null ? [r.metrics.judgeUsage.totalTokens] : []
   )
   const avg = (arr: number[]): number | undefined =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : undefined
@@ -78,6 +109,8 @@ export function computeAggregate(
     totalDurationMs: sum(durationValues),
     totalCost: sum(costValues),
     totalTokens: sum(tokenValues),
+    totalJudgeCost: sum(judgeCostValues),
+    totalJudgeTokens: sum(judgeTokenValues),
     avgScore: passed / (testCases ? testCases.length : results.length)
   }
 }
