@@ -10,9 +10,12 @@ import { createLogger } from '../../logger'
 const log = createLogger('judge-client')
 
 export class JudgeError extends Error {
-  constructor(message: string) {
+  readonly fatal: boolean
+
+  constructor(message: string, fatal = false) {
     super(message)
     this.name = 'JudgeError'
+    this.fatal = fatal
   }
 }
 
@@ -24,7 +27,10 @@ export interface JudgeResponse {
 export function resolveJudgeSettings(): JudgeSettings {
   const { judge } = getAppSettings()
   if (!judge?.providerInstanceId || !judge?.modelId) {
-    throw new JudgeError('No judge model configured. Pick one in Settings > Test Runs > LLM judge.')
+    throw new JudgeError(
+      'No judge model configured. Pick one in Settings > Test Runs > LLM judge.',
+      true
+    )
   }
   return judge
 }
@@ -52,11 +58,15 @@ export async function callJudge(
     provider = getProvider(settings.providerInstanceId)
   } catch {
     throw new JudgeError(
-      `Judge provider "${settings.providerInstanceId}" is not configured anymore.`
+      `Judge provider "${settings.providerInstanceId}" is not configured anymore.`,
+      true
     )
   }
   if (!provider.chat) {
-    throw new JudgeError(`Judge provider "${settings.providerInstanceId}" does not support chat.`)
+    throw new JudgeError(
+      `Judge provider "${settings.providerInstanceId}" does not support chat.`,
+      true
+    )
   }
 
   const request: ChatRequest = {

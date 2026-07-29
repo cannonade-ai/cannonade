@@ -16,6 +16,7 @@ vi.mock('../../ipc/test-run-handlers', () => ({ saveTestRun: vi.fn() }))
 
 import { getProvider } from '../../../core/providers/registry'
 import { evaluateAll } from '../../eval/evaluator'
+import { JudgeError } from '../../eval/judge/judge-client'
 
 const mockGetProvider = vi.mocked(getProvider)
 const mockEvaluate = vi.mocked(evaluateAll)
@@ -592,6 +593,24 @@ describe('executeTestRun – error handling', () => {
     const badTestCase = { ...makeTestCase(), input: null as unknown as TestCase['input'] }
     const send = makeSend()
     await executeTestRun(makeRun([makeModelRun()], [badTestCase]), makeSuite([badTestCase]), send)
+    expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'failed' })
+  })
+
+  it('fails the model run and the whole run when the judge is unusable', async () => {
+    const testCases = [makeTestCase({ id: 'tc-1' }), makeTestCase({ id: 'tc-2' })]
+    mockEvaluate.mockRejectedValue(new JudgeError('No judge model configured.', true))
+    const send = makeSend()
+    await executeTestRun(makeRun([makeModelRun()], testCases), makeSuite(testCases), send)
+    const caseCompletedCalls = send.mock.calls.filter(([ch]) => ch === RUN.CASE_COMPLETED)
+    expect(caseCompletedCalls).toHaveLength(1)
+    expect(send).toHaveBeenCalledWith(
+      RUN.MODEL_COMPLETED,
+      expect.objectContaining({
+        modelRunId: 'mr-1',
+        status: 'failed',
+        error: 'No judge model configured.'
+      })
+    )
     expect(send).toHaveBeenCalledWith(RUN.COMPLETED, { runId: 'run-1', status: 'failed' })
   })
 

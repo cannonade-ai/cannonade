@@ -55,7 +55,7 @@ const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
   cosine_similarity:
     'Compares the meaning of the output and expected text. Uses a small built-in LLM to create embeddings.',
   html_validation:
-    'Passes if the whole output is HTML markup with at least one recognized element.',
+    'Requires the whole output to be HTML markup, then scores the share of elements that are accepted. Without allowed or blocked tags any recognized HTML tag is accepted.',
   llm_rubric:
     'A judge model decides whether the output satisfies a free-text criterion. The judge model is picked once in Settings > Test Runs.'
 }
