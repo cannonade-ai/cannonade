@@ -17,7 +17,7 @@ function judged(cost: number, totalTokens: number): EvaluationMethodResult {
     type: 'llm_rubric',
     score: 1,
     passed: true,
-    judge: { model: 'judge-model', totalTokens, cost }
+    judgeUsage: { model: 'judge-model', totalTokens, cost }
   }
 }
 
@@ -57,11 +57,11 @@ describe('buildCaseMetrics', () => {
 
     expect(metrics.totalTokens).toBe(30)
     expect(metrics.cost).toBe(0.5)
-    expect(metrics.judge).toEqual({ model: 'judge-model', totalTokens: 15, cost: 0.02 })
+    expect(metrics.judgeUsage).toEqual({ model: 'judge-model', totalTokens: 15, cost: 0.02 })
   })
 
   it('omits judge usage when nothing was graded by a judge', () => {
-    expect(buildCaseMetrics(STATS, 1, 250).judge).toBeUndefined()
+    expect(buildCaseMetrics(STATS, 1, 250).judgeUsage).toBeUndefined()
   })
 })
 
@@ -71,9 +71,13 @@ describe('computeAggregate', () => {
       caseResult({
         totalTokens: 30,
         cost: 0.5,
-        judge: { model: 'j', totalTokens: 15, cost: 0.02 }
+        judgeUsage: { model: 'j', totalTokens: 15, cost: 0.02 }
       }),
-      caseResult({ totalTokens: 40, cost: 0.7, judge: { model: 'j', totalTokens: 25, cost: 0.03 } })
+      caseResult({
+        totalTokens: 40,
+        cost: 0.7,
+        judgeUsage: { model: 'j', totalTokens: 25, cost: 0.03 }
+      })
     ])
 
     expect(aggregate.totalTokens).toBe(70)

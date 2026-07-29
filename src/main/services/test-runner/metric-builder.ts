@@ -10,7 +10,7 @@ import type { JudgeUsage } from '@shared/app/judge'
 import type { ChatStats } from '@shared/provider/chat'
 
 export function sumJudgeUsage(evalResults: EvaluationMethodResult[]): JudgeUsage | undefined {
-  const usages = evalResults.flatMap((r) => (r.judge ? [r.judge] : []))
+  const usages = evalResults.flatMap((r) => (r.judgeUsage ? [r.judgeUsage] : []))
   if (usages.length === 0) return undefined
 
   const total = (pick: (usage: JudgeUsage) => number | undefined): number | undefined => {
@@ -34,7 +34,7 @@ export function buildCaseMetrics(
   stats: ChatStats,
   score: number,
   durationMs: number,
-  judge?: JudgeUsage
+  judgeUsage?: JudgeUsage
 ): TestCaseMetrics {
   const metrics: TestCaseMetrics = {
     tokensPerSecond: stats.tokens_per_second,
@@ -57,7 +57,7 @@ export function buildCaseMetrics(
     breakdown.completionCost = stats.cost_details.upstream_inference_completions_cost
   }
   if (Object.keys(breakdown).length > 0) metrics.costBreakdown = breakdown
-  if (judge) metrics.judge = judge
+  if (judgeUsage) metrics.judgeUsage = judgeUsage
 
   return metrics
 }
@@ -81,10 +81,10 @@ export function computeAggregate(
     r.metrics.totalTokens != null ? [r.metrics.totalTokens] : []
   )
   const judgeCostValues = results.flatMap((r) =>
-    r.metrics.judge?.cost != null ? [r.metrics.judge.cost] : []
+    r.metrics.judgeUsage?.cost != null ? [r.metrics.judgeUsage.cost] : []
   )
   const judgeTokenValues = results.flatMap((r) =>
-    r.metrics.judge?.totalTokens != null ? [r.metrics.judge.totalTokens] : []
+    r.metrics.judgeUsage?.totalTokens != null ? [r.metrics.judgeUsage.totalTokens] : []
   )
   const avg = (arr: number[]): number | undefined =>
     arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : undefined

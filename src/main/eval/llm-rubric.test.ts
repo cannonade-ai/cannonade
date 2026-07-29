@@ -62,7 +62,7 @@ describe('evaluateLlmRubric', () => {
       score: 1,
       passed: true,
       details: 'it is polite',
-      judge: USAGE
+      judgeUsage: USAGE
     })
   })
 
@@ -94,7 +94,7 @@ describe('evaluateLlmRubric', () => {
 
     expect(result.error).toContain('unparseable')
     expect(result.passed).toBe(false)
-    expect(result.judge).toEqual(USAGE)
+    expect(result.judgeUsage).toEqual(USAGE)
   })
 
   it('reports an errored eval when the judge call fails', async () => {
@@ -104,7 +104,15 @@ describe('evaluateLlmRubric', () => {
 
     expect(result.error).toBe('Judge request failed: fetch failed')
     expect(result.passed).toBe(false)
-    expect(result.judge).toBeUndefined()
+    expect(result.judgeUsage).toBeUndefined()
+  })
+
+  it('rethrows fatal judge errors so the run can fail', async () => {
+    judge.mockRejectedValue(new JudgeError('No judge model configured.', true))
+
+    await expect(evaluateLlmRubric('out', rubricConfig('is polite'))).rejects.toThrow(
+      'No judge model configured.'
+    )
   })
 
   it('rethrows cancellations so the run can record them', async () => {

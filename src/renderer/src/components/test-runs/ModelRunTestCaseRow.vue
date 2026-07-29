@@ -98,10 +98,11 @@ function evalResultState(result: EvaluationMethodResult): string {
   return result.passed ? 'passed' : 'failed'
 }
 
-function judgeTooltip(judge: JudgeUsage): string {
-  const parts = [`Graded by ${judge.model}`]
-  if (judge.totalTokens != null) parts.push(`${formatTokens(judge.totalTokens)} judge tokens`)
-  if (judge.cost != null) parts.push(`${formatCost(judge.cost)} judge cost`)
+function judgeTooltip(judgeUsage: JudgeUsage): string {
+  const parts = [`Graded by ${judgeUsage.model}`]
+  if (judgeUsage.totalTokens != null)
+    parts.push(`${formatTokens(judgeUsage.totalTokens)} judge tokens`)
+  if (judgeUsage.cost != null) parts.push(`${formatCost(judgeUsage.cost)} judge cost`)
   return parts.join(' · ')
 }
 
@@ -303,11 +304,11 @@ const hasMetrics = computed<boolean>(() => {
                   {{ result.error }}
                 </span>
                 <span
-                  v-if="result.judge"
-                  v-tooltip="judgeTooltip(result.judge)"
+                  v-if="result.judgeUsage"
+                  v-tooltip="judgeTooltip(result.judgeUsage)"
                   class="eval-result__cell eval-result__judge"
                 >
-                  {{ result.judge.model }}
+                  {{ result.judgeUsage.model }}
                 </span>
                 <span
                   v-if="result.error"
@@ -379,13 +380,15 @@ const hasMetrics = computed<boolean>(() => {
                 {{ formatCost(metrics.costBreakdown.promptCost) }}
               </span>
             </div>
-            <div v-if="metrics?.judge?.totalTokens != null" class="case-metric">
+            <div v-if="metrics?.judgeUsage?.totalTokens != null" class="case-metric">
               <span class="case-metric-label">Judge Tokens</span>
-              <span class="case-metric-value">{{ formatTokens(metrics.judge.totalTokens) }}</span>
+              <span class="case-metric-value">{{
+                formatTokens(metrics.judgeUsage.totalTokens)
+              }}</span>
             </div>
-            <div v-if="metrics?.judge?.cost != null" class="case-metric">
+            <div v-if="metrics?.judgeUsage?.cost != null" class="case-metric">
               <span class="case-metric-label">Judge Cost</span>
-              <span class="case-metric-value">{{ formatCost(metrics.judge.cost) }}</span>
+              <span class="case-metric-value">{{ formatCost(metrics.judgeUsage.cost) }}</span>
             </div>
             <div v-if="metrics?.costBreakdown?.completionCost != null" class="case-metric">
               <span class="case-metric-label">Completion Cost</span>

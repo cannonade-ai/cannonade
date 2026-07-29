@@ -7,5 +7,5 @@ export interface EvaluationResult {
   error?: string
 
   // usage of the judge model, for eval types graded by an LLM
-  judge?: JudgeUsage
+  judgeUsage?: JudgeUsage
 }

@@ -157,7 +157,7 @@ export interface EvaluationMethodResult {
   passed: boolean
   details?: string
   error?: string
-  judge?: JudgeUsage
+  judgeUsage?: JudgeUsage
 }
 
 export interface RunCostBreakdown {
@@ -179,7 +179,7 @@ export interface TestCaseMetrics {
 
   cost?: number
   costBreakdown?: RunCostBreakdown
-  judge?: JudgeUsage
+  judgeUsage?: JudgeUsage
 }
 
 export interface TestCaseResult {

@@ -14,13 +14,13 @@ const JUDGE_SYSTEM_PROMPT = `You are grading output according to a user-specifie
 
 Examples:
 
-<Output>Hello world</Output>
-<Rubric>Content contains a greeting</Rubric>
-{"reason": "the content contains the word 'Hello'", "pass": true, "score": 1.0}
+<Output>Good morning!</Output>
+<Rubric>Contains a greeting</Rubric>
+{"reason": "'Good morning' is a greeting", "pass": true, "score": 1.0}
 
-<Output>Avast ye swabs, repel the invaders!</Output>
-<Rubric>Does not speak like a pirate</Rubric>
-{"reason": "'avast ye' is a common pirate term", "pass": false, "score": 0.0}
+<Output>As an AI language model, I cannot be certain.</Output>
+<Rubric>Does not include disclaimers</Rubric>
+{"reason": "opens with an AI disclaimer", "pass": false, "score": 0.0}
 
 <Input>Why does this loop never terminate?</Input>
 <Output>The counter is never incremented, so the condition stays true forever.</Output>
@@ -56,13 +56,14 @@ export async function evaluateLlmRubric(
   const messages = buildRubricMessages(output, rubric, context?.input)
 
   let content: string
-  let judge: EvaluationResult['judge']
+  let judgeUsage: EvaluationResult['judgeUsage']
   try {
     const response = await callJudge(messages, context?.abortSignal)
     content = response.content
-    judge = response.usage
+    judgeUsage = response.usage
   } catch (err) {
-    if (err instanceof JudgeError) {
+    log.error('judge error:', err)
+    if (err instanceof JudgeError && !err.fatal) {
       return { score: 0, passed: false, error: err.message }
     }
     throw err
@@ -75,7 +76,7 @@ export async function evaluateLlmRubric(
       score: 0,
       passed: false,
       error: `Judge returned unparseable output: ${truncate(content)}`,
-      judge
+      judgeUsage
     }
   }
 
@@ -84,7 +85,7 @@ export async function evaluateLlmRubric(
     score: verdict.score,
     passed: verdict.score >= threshold,
     details: verdict.reason,
-    judge
+    judgeUsage
   }
 }
 
