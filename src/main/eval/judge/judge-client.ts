@@ -39,8 +39,8 @@ function toJudgeUsage(model: string, stats: ChatStats | undefined): JudgeUsage {
   const usage: JudgeUsage = { model }
   if (!stats) return usage
   if (stats.input_tokens != null) usage.inputTokens = stats.input_tokens
-  if (stats.total_output_tokens != null) usage.outputTokens = stats.total_output_tokens
-  if (stats.input_tokens != null || stats.total_output_tokens != null) {
+  if (stats.total_output_tokens != null) {
+    usage.outputTokens = stats.total_output_tokens
     usage.totalTokens = (stats.input_tokens ?? 0) + (stats.total_output_tokens ?? 0)
   }
   if (stats.cost != null) usage.cost = stats.cost

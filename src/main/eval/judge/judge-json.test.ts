@@ -68,9 +68,10 @@ describe('parseJudgeVerdict', () => {
     expect(parseJudgeVerdict('{"pass": false}')?.score).toBe(0)
   })
 
-  it('derives pass from score when pass is missing', () => {
+  it('defaults pass to true when the judge omits it', () => {
     expect(parseJudgeVerdict('{"score": 0.9}')?.pass).toBe(true)
-    expect(parseJudgeVerdict('{"score": 0.2}')?.pass).toBe(false)
+    expect(parseJudgeVerdict('{"score": 0.2}')?.pass).toBe(true)
+    expect(parseJudgeVerdict('{"score": 0}')?.pass).toBe(true)
   })
 
   it('clamps out of range scores', () => {

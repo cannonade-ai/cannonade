@@ -80,9 +80,10 @@ function toVerdict(parsed: Record<string, unknown>): JudgeVerdict | null {
 
   if (pass === undefined && score === undefined) return null
 
+  const graded = pass ?? true
   return {
-    pass: pass ?? (score as number) >= 0.5,
-    score: score ?? (pass ? 1 : 0),
+    pass: graded,
+    score: score ?? (graded ? 1 : 0),
     reason
   }
 }

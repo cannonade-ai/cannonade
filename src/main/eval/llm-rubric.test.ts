@@ -87,6 +87,47 @@ describe('evaluateLlmRubric', () => {
     expect((await evaluateLlmRubric('out', rubricConfig('rubric', 0.8))).passed).toBe(false)
   })
 
+  it('passes on the verdict alone when no threshold is configured', async () => {
+    judge.mockResolvedValue({ content: '{"pass": true, "score": 0.2}', usage: USAGE })
+
+    const result = await evaluateLlmRubric('out', rubricConfig('is polite'))
+
+    expect(result.passed).toBe(true)
+    expect(result.score).toBe(0.2)
+  })
+
+  it('never lets a threshold rescue a failed verdict', async () => {
+    judge.mockResolvedValue({ content: '{"pass": false, "score": 0.95}', usage: USAGE })
+
+    expect((await evaluateLlmRubric('out', rubricConfig('rubric', 0.5))).passed).toBe(false)
+  })
+
+  it('treats a missing pass field as passing', async () => {
+    judge.mockResolvedValue({ content: '{"score": 0.3}', usage: USAGE })
+
+    expect((await evaluateLlmRubric('out', rubricConfig('is polite'))).passed).toBe(true)
+  })
+
+  it('explains a threshold failure when the judge gave no reason', async () => {
+    judge.mockResolvedValue({ content: '{"pass": true, "score": 0.4}', usage: USAGE })
+
+    const result = await evaluateLlmRubric('out', rubricConfig('rubric', 0.8))
+
+    expect(result.details).toBe('Score 0.4 below threshold 0.8.')
+  })
+
+  it('keeps the judge reason when the threshold fails it', async () => {
+    judge.mockResolvedValue({
+      content: '{"pass": true, "score": 0.4, "reason": "only partly on topic"}',
+      usage: USAGE
+    })
+
+    const result = await evaluateLlmRubric('out', rubricConfig('rubric', 0.8))
+
+    expect(result.passed).toBe(false)
+    expect(result.details).toBe('only partly on topic')
+  })
+
   it('reports an errored eval when the judge output cannot be parsed', async () => {
     judge.mockResolvedValue({ content: 'Looks good to me!', usage: USAGE })
 

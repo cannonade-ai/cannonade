@@ -5,7 +5,6 @@ import type { EvaluationContext } from './evaluation-context'
 import { callJudge, JudgeError } from './judge/judge-client'
 import { parseJudgeVerdict } from './judge/judge-json'
 import { renderTemplate } from './judge/template'
-import { PASS_THRESHOLD } from './metrics'
 import { createLogger } from '../logger'
 
 const log = createLogger('llm-rubric')
@@ -80,13 +79,21 @@ export async function evaluateLlmRubric(
     }
   }
 
-  const threshold = evaluation.threshold ?? PASS_THRESHOLD
+  const threshold = resolveThreshold(evaluation.threshold)
+  const belowThreshold = threshold !== undefined && verdict.score < threshold
   return {
     score: verdict.score,
-    passed: verdict.score >= threshold,
-    details: verdict.reason,
+    passed: verdict.pass && !belowThreshold,
+    details:
+      verdict.reason ??
+      (belowThreshold ? `Score ${verdict.score} below threshold ${threshold}.` : undefined),
     judgeUsage
   }
+}
+
+function resolveThreshold(value: unknown): number | undefined {
+  const parsed = typeof value === 'string' ? Number(value.trim()) : value
+  return typeof parsed === 'number' && Number.isFinite(parsed) ? parsed : undefined
 }
 
 const MAX_ERROR_LENGTH = 200

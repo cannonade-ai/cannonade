@@ -76,7 +76,7 @@ const NON_NEGATABLE_TYPES: EvaluationConfig['type'][] = ['custom', 'code_executi
 const NO_EXPECTED_TYPES: EvaluationConfig['type'][] = ['custom', 'html_validation', 'llm_rubric']
 
 const RUBRIC_HINT =
-  'What the judge model should check for. Placeholders {{output}} and {{input}} are replaced with the model output and the test case input.'
+  'What the judge model should check for, and optionally how to score it, such as giving partial credit when only part of the criterion is met. Placeholders {{output}} and {{input}} are replaced with the model output and the test case input.'
 
 const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
   // output: full model output string
@@ -99,9 +99,16 @@ function textToTags(text: string): string[] | undefined {
   return tags.length > 0 ? tags : undefined
 }
 
+const DEFAULT_THRESHOLD_VALUE = 0.9
+
+function defaultThreshold(evaluation: EvaluationConfig): number | undefined {
+  if (evaluation.threshold != null) return evaluation.threshold
+  return evaluation.type === 'llm_rubric' ? undefined : DEFAULT_THRESHOLD_VALUE
+}
+
 const type = ref<EvaluationConfig['type']>(props.evaluation.type)
 const expected = ref(typeof props.evaluation.expected === 'string' ? props.evaluation.expected : '')
-const threshold = ref(props.evaluation.threshold ?? 0.9)
+const threshold = ref<number | undefined>(defaultThreshold(props.evaluation))
 const negate = ref(props.evaluation.negate ?? false)
 const caseSensitive = ref(props.evaluation.caseSensitive ?? props.evaluation.type === 'exact_match')
 const customCode = ref(props.evaluation.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER)
@@ -114,7 +121,7 @@ watch(
   (e) => {
     type.value = e.type
     expected.value = typeof e.expected === 'string' ? e.expected : ''
-    threshold.value = e.threshold ?? 0.9
+    threshold.value = defaultThreshold(e)
     negate.value = e.negate ?? false
     caseSensitive.value = e.caseSensitive ?? e.type === 'exact_match'
     customCode.value = e.customValidator?.code ?? CUSTOM_VALIDATOR_PLACEHOLDER
@@ -126,6 +133,14 @@ watch(
 
 const typeHint = computed(() => TYPE_HINTS[type.value])
 const showThreshold = computed(() => THRESHOLD_TYPES.includes(type.value))
+const thresholdHint = computed(() =>
+  type.value === 'llm_rubric'
+    ? "Optional. When set, the judge's verdict must be a pass and its score at least this high."
+    : 'The minimum score the output must reach to pass. Higher values are stricter.'
+)
+const thresholdPlaceholder = computed(() =>
+  type.value === 'llm_rubric' ? 'No threshold' : '0.0 – 1.0'
+)
 const showExpected = computed(() => !NO_EXPECTED_TYPES.includes(type.value))
 const showNegate = computed(() => !NON_NEGATABLE_TYPES.includes(type.value))
 const showCaseSensitive = computed(() => CASE_SENSITIVE_METRICS.includes(type.value))
@@ -133,6 +148,7 @@ const expectedLabel = computed(() => (type.value === 'regex' ? 'Pattern' : 'Expe
 
 watch(type, (t) => {
   caseSensitive.value = t === 'exact_match'
+  threshold.value = t === 'llm_rubric' ? undefined : (threshold.value ?? DEFAULT_THRESHOLD_VALUE)
 })
 
 watch(
@@ -208,12 +224,14 @@ watch(
           <Input v-model="blockedTags" placeholder="e.g. script, iframe, table" />
         </Field>
       </template>
-      <Field
-        v-if="showThreshold"
-        label="Threshold (0 – 1)"
-        hint="The minimum score the output must reach to pass. Higher values are stricter."
-      >
-        <NumberInput v-model="threshold" :min="0" :max="1" :step="0.05" placeholder="0.0 – 1.0" />
+      <Field v-if="showThreshold" label="Threshold (0 – 1)" :hint="thresholdHint">
+        <NumberInput
+          v-model="threshold"
+          :min="0"
+          :max="1"
+          :step="0.05"
+          :placeholder="thresholdPlaceholder"
+        />
       </Field>
       <Field
         v-if="showCaseSensitive"
