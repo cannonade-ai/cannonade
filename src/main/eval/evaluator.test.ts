@@ -31,6 +31,10 @@ vi.mock('./llm-rubric', () => ({
   evaluateLlmRubric: vi.fn().mockResolvedValue({ passed: true, score: 1 })
 }))
 
+vi.mock('./g-eval', () => ({
+  evaluateGEval: vi.fn().mockResolvedValue({ passed: true, score: 1 })
+}))
+
 import {
   evaluateExactMatch,
   evaluateContains,
@@ -45,6 +49,7 @@ import { runCustomValidator } from './customValidator'
 import { runCosineSimilarity } from './cosineSimilarity'
 import { evaluateHtmlValidation } from './html-validation'
 import { evaluateLlmRubric } from './llm-rubric'
+import { evaluateGEval } from './g-eval'
 
 const OUTPUT = 'test output'
 
@@ -79,6 +84,12 @@ describe('evaluate routing', () => {
     const context = { input: 'question', abortSignal: new AbortController().signal }
     await evaluate(OUTPUT, { type: 'llm_rubric' }, context)
     expect(evaluateLlmRubric).toHaveBeenCalledWith(OUTPUT, { type: 'llm_rubric' }, context)
+  })
+
+  it('routes "g_eval" to the judge, forwarding the evaluation context', async () => {
+    const context = { input: 'question', abortSignal: new AbortController().signal }
+    await evaluate(OUTPUT, { type: 'g_eval' }, context)
+    expect(evaluateGEval).toHaveBeenCalledWith(OUTPUT, { type: 'g_eval' }, context)
   })
 
   it('returns an error for an unknown type', async () => {

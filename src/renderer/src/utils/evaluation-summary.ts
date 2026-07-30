@@ -18,6 +18,10 @@ const EVALUATION_SUMMARIES: Partial<Record<EvaluationConfig['type'], EvaluationS
     const rubric = evaluation.llmRubric?.rubric?.trim()
     return rubric ? rubric : null
   },
+  g_eval: (evaluation) => {
+    const criteria = evaluation.gEval?.criteria?.map((c) => c.trim()).filter(Boolean)
+    return criteria?.length ? criteria.join('\n') : null
+  },
   custom: (evaluation) => {
     const code = evaluation.customValidator?.code
     return code ? code : null

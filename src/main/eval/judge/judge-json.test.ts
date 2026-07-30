@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest'
-import { extractJsonObjects, parseJudgeVerdict, stripReasoningAndFences } from './judge-json'
+import {
+  extractJsonObjects,
+  parseJudgeSteps,
+  parseJudgeVerdict,
+  stripReasoningAndFences
+} from './judge-json'
 
 describe('stripReasoningAndFences', () => {
   it('removes code fences', () => {
@@ -105,5 +110,43 @@ describe('parseJudgeVerdict', () => {
 
   it('returns null when no verdict field is present', () => {
     expect(parseJudgeVerdict('{"reason": "no verdict here"}')).toBeNull()
+  })
+})
+
+describe('parseJudgeSteps', () => {
+  it('reads a minified steps object', () => {
+    expect(parseJudgeSteps('{"steps":["First","Second"]}')).toEqual(['First', 'Second'])
+  })
+
+  it('reads steps out of code fences and trims them', () => {
+    expect(parseJudgeSteps('```json\n{"steps":["  First  "]}\n```')).toEqual(['First'])
+  })
+
+  it('drops non-string and blank entries', () => {
+    expect(parseJudgeSteps('{"steps":["First",7,null,"  ","Second"]}')).toEqual(['First', 'Second'])
+  })
+
+  it('returns null when every entry is dropped', () => {
+    expect(parseJudgeSteps('{"steps":[1,2,""]}')).toBeNull()
+  })
+
+  it('returns null for an empty steps list', () => {
+    expect(parseJudgeSteps('{"steps":[]}')).toBeNull()
+  })
+
+  it('returns null when steps is not an array', () => {
+    expect(parseJudgeSteps('{"steps":"First then second"}')).toBeNull()
+  })
+
+  it('returns null when the JSON is malformed', () => {
+    expect(parseJudgeSteps('{"steps": ["unterminated')).toBeNull()
+  })
+
+  it('returns null when there is no JSON at all', () => {
+    expect(parseJudgeSteps('Here are the steps: check the tone.')).toBeNull()
+  })
+
+  it('skips objects that carry no steps', () => {
+    expect(parseJudgeSteps('{"note":"thinking"} {"steps":["First"]}')).toEqual(['First'])
   })
 })

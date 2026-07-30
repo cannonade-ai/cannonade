@@ -80,6 +80,7 @@ export interface EvaluationConfig {
     | 'cosine_similarity'
     | 'html_validation'
     | 'llm_rubric'
+    | 'g_eval'
 
   negate?: boolean // inverts the result: the eval passes when it would otherwise fail
   caseSensitive?: boolean // for text-comparison metrics: whether matching distinguishes letter case
@@ -89,12 +90,20 @@ export interface EvaluationConfig {
   codeExecution?: CodeExecutionConfig // for type: code_execution
   htmlValidation?: HtmlValidationConfig // for type: html_validation
   llmRubric?: LlmRubricConfig // for type: llm_rubric
+  gEval?: GEvalConfig // for type: g_eval
 }
 
 export interface LlmRubricConfig {
   // free-text criterion the judge model grades the output against
   // supports {{output}} and {{input}} placeholders
   rubric: string
+}
+
+export interface GEvalConfig {
+  // free-text criteria the judge model first turns into evaluation steps,
+  // then grades the output against
+  // supports {{output}} and {{input}} placeholders
+  criteria: string[]
 }
 
 export interface HtmlValidationConfig {
