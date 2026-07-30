@@ -8,26 +8,10 @@ import type {
 } from '@shared/app/test-suite'
 import type { JudgeUsage } from '@shared/app/judge'
 import type { ChatStats } from '@shared/provider/chat'
+import { mergeJudgeUsage } from '../../eval/judge/judge-usage'
 
 export function sumJudgeUsage(evalResults: EvaluationMethodResult[]): JudgeUsage | undefined {
-  const usages = evalResults.flatMap((r) => (r.judgeUsage ? [r.judgeUsage] : []))
-  if (usages.length === 0) return undefined
-
-  const total = (pick: (usage: JudgeUsage) => number | undefined): number | undefined => {
-    const values = usages.flatMap((u) => {
-      const value = pick(u)
-      return value != null ? [value] : []
-    })
-    return values.length ? values.reduce((a, b) => a + b, 0) : undefined
-  }
-
-  return {
-    model: usages[0].model,
-    inputTokens: total((u) => u.inputTokens),
-    outputTokens: total((u) => u.outputTokens),
-    totalTokens: total((u) => u.totalTokens),
-    cost: total((u) => u.cost)
-  }
+  return mergeJudgeUsage(evalResults.flatMap((r) => (r.judgeUsage ? [r.judgeUsage] : [])))
 }
 
 export function buildCaseMetrics(

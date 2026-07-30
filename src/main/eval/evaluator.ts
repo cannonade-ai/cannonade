@@ -15,6 +15,7 @@ import { evaluateHtmlValidation } from './html-validation'
 import { runCustomValidator } from './customValidator'
 import { runCosineSimilarity } from './cosineSimilarity'
 import { evaluateLlmRubric } from './llm-rubric'
+import { evaluateGEval } from './g-eval'
 import type { EvaluationContext } from './evaluation-context'
 
 export interface MultiEvaluationResult {
@@ -102,6 +103,8 @@ async function runMetric(
       return runCosineSimilarity(output, evaluation)
     case 'llm_rubric':
       return evaluateLlmRubric(output, evaluation, context)
+    case 'g_eval':
+      return evaluateGEval(output, evaluation, context)
     default:
       return {
         score: 0,

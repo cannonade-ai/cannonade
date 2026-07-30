@@ -37,7 +37,8 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'code_execution', label: 'Code Execution' },
   { value: 'cosine_similarity', label: 'Cosine Similarity' },
   { value: 'html_validation', label: 'HTML Validation' },
-  { value: 'llm_rubric', label: 'LLM Rubric' }
+  { value: 'llm_rubric', label: 'LLM Rubric' },
+  { value: 'g_eval', label: 'G-Eval' }
 ]
 
 const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
@@ -57,7 +58,9 @@ const TYPE_HINTS: Record<EvaluationConfig['type'], string> = {
   html_validation:
     'Requires the whole output to be HTML markup, then scores the share of elements that are accepted. Without allowed or blocked tags any recognized HTML tag is accepted.',
   llm_rubric:
-    'A judge model decides whether the output satisfies a free-text criterion. The judge model is picked once in Settings > Test Runs.'
+    'A judge model decides whether the output satisfies a free-text criterion. The judge model is picked once in Settings > Test Runs.',
+  g_eval:
+    'A judge model first turns your criteria into evaluation steps, then scores the output against those steps. Costs two judge calls per test case. The judge model is picked once in Settings > Test Runs.'
 }
 
 const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
@@ -68,15 +71,26 @@ const THRESHOLD_TYPES: EvaluationConfig['type'][] = [
   'custom',
   'cosine_similarity',
   'html_validation',
-  'llm_rubric'
+  'llm_rubric',
+  'g_eval'
 ]
+
+const JUDGE_TYPES: EvaluationConfig['type'][] = ['llm_rubric', 'g_eval']
 
 const NON_NEGATABLE_TYPES: EvaluationConfig['type'][] = ['custom', 'code_execution']
 
-const NO_EXPECTED_TYPES: EvaluationConfig['type'][] = ['custom', 'html_validation', 'llm_rubric']
+const NO_EXPECTED_TYPES: EvaluationConfig['type'][] = [
+  'custom',
+  'html_validation',
+  'llm_rubric',
+  'g_eval'
+]
 
 const RUBRIC_HINT =
   'What the judge model should check for, and optionally how to score it, such as giving partial credit when only part of the criterion is met. Placeholders {{output}} and {{input}} are replaced with the model output and the test case input.'
+
+const CRITERIA_HINT =
+  'One criterion per line. The judge model turns them into evaluation steps first, then scores the output against those steps. Placeholders {{output}} and {{input}} are replaced with the model output and the test case input.'
 
 const CUSTOM_VALIDATOR_PLACEHOLDER = `(output) => {
   // output: full model output string
@@ -103,7 +117,18 @@ const DEFAULT_THRESHOLD_VALUE = 0.9
 
 function defaultThreshold(evaluation: EvaluationConfig): number | undefined {
   if (evaluation.threshold != null) return evaluation.threshold
-  return evaluation.type === 'llm_rubric' ? undefined : DEFAULT_THRESHOLD_VALUE
+  return JUDGE_TYPES.includes(evaluation.type) ? undefined : DEFAULT_THRESHOLD_VALUE
+}
+
+function criteriaToText(criteria: string[] | undefined): string {
+  return criteria?.join('\n') ?? ''
+}
+
+function textToCriteria(text: string): string[] {
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
 }
 
 const type = ref<EvaluationConfig['type']>(props.evaluation.type)
@@ -115,6 +140,7 @@ const customCode = ref(props.evaluation.customValidator?.code ?? CUSTOM_VALIDATO
 const allowedTags = ref(tagsToText(props.evaluation.htmlValidation?.allowedTags))
 const blockedTags = ref(tagsToText(props.evaluation.htmlValidation?.blockedTags))
 const rubric = ref(props.evaluation.llmRubric?.rubric ?? '')
+const criteria = ref(criteriaToText(props.evaluation.gEval?.criteria))
 
 watch(
   () => props.evaluation,
@@ -128,18 +154,19 @@ watch(
     allowedTags.value = tagsToText(e.htmlValidation?.allowedTags)
     blockedTags.value = tagsToText(e.htmlValidation?.blockedTags)
     rubric.value = e.llmRubric?.rubric ?? ''
+    criteria.value = criteriaToText(e.gEval?.criteria)
   }
 )
 
 const typeHint = computed(() => TYPE_HINTS[type.value])
 const showThreshold = computed(() => THRESHOLD_TYPES.includes(type.value))
 const thresholdHint = computed(() =>
-  type.value === 'llm_rubric'
+  JUDGE_TYPES.includes(type.value)
     ? "Optional. When set, the judge's verdict must be a pass and its score at least this high."
     : 'The minimum score the output must reach to pass. Higher values are stricter.'
 )
 const thresholdPlaceholder = computed(() =>
-  type.value === 'llm_rubric' ? 'No threshold' : '0.0 – 1.0'
+  JUDGE_TYPES.includes(type.value) ? 'No threshold' : '0.0 – 1.0'
 )
 const showExpected = computed(() => !NO_EXPECTED_TYPES.includes(type.value))
 const showNegate = computed(() => !NON_NEGATABLE_TYPES.includes(type.value))
@@ -148,11 +175,24 @@ const expectedLabel = computed(() => (type.value === 'regex' ? 'Pattern' : 'Expe
 
 watch(type, (t) => {
   caseSensitive.value = t === 'exact_match'
-  threshold.value = t === 'llm_rubric' ? undefined : (threshold.value ?? DEFAULT_THRESHOLD_VALUE)
+  threshold.value = JUDGE_TYPES.includes(t)
+    ? undefined
+    : (threshold.value ?? DEFAULT_THRESHOLD_VALUE)
 })
 
 watch(
-  [type, expected, threshold, negate, caseSensitive, customCode, allowedTags, blockedTags, rubric],
+  [
+    type,
+    expected,
+    threshold,
+    negate,
+    caseSensitive,
+    customCode,
+    allowedTags,
+    blockedTags,
+    rubric,
+    criteria
+  ],
   () => {
     emit('update', {
       ...props.evaluation,
@@ -170,7 +210,8 @@ watch(
               blockedTags: textToTags(blockedTags.value)
             }
           : undefined,
-      llmRubric: type.value === 'llm_rubric' ? { rubric: rubric.value } : undefined
+      llmRubric: type.value === 'llm_rubric' ? { rubric: rubric.value } : undefined,
+      gEval: type.value === 'g_eval' ? { criteria: textToCriteria(criteria.value) } : undefined
     })
   }
 )
@@ -208,6 +249,13 @@ watch(
           v-model="rubric"
           :rows="3"
           placeholder="e.g. is polite and does not reveal internal reasoning"
+        />
+      </Field>
+      <Field v-if="type === 'g_eval'" label="Criteria" :hint="CRITERIA_HINT">
+        <Textarea
+          v-model="criteria"
+          :rows="4"
+          placeholder="e.g. is polite&#10;answers the question that was asked"
         />
       </Field>
       <template v-if="type === 'html_validation'">

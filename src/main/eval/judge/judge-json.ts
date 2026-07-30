@@ -88,6 +88,31 @@ function toVerdict(parsed: Record<string, unknown>): JudgeVerdict | null {
   }
 }
 
+export function parseJudgeSteps(text: string): string[] | null {
+  const cleaned = stripReasoningAndFences(text)
+
+  for (const candidate of extractJsonObjects(cleaned)) {
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(candidate)
+    } catch {
+      continue
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) continue
+
+    const value = (parsed as Record<string, unknown>).steps
+    if (!Array.isArray(value)) continue
+
+    const steps: string[] = []
+    for (const item of value) {
+      if (typeof item === 'string' && item.trim()) steps.push(item.trim())
+    }
+    if (steps.length) return steps
+  }
+
+  return null
+}
+
 export function parseJudgeVerdict(text: string): JudgeVerdict | null {
   const cleaned = stripReasoningAndFences(text)
 
