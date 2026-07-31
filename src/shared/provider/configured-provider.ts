@@ -21,7 +21,7 @@ export const KNOWN_PROVIDER_DEFAULTS = {
   },
   custom: {
     displayName: 'Custom',
-    description: 'Any OpenAI-compatible API endpoint',
+    description: 'Any OpenAI-compatible local API endpoint',
     defaultUrl: 'http://localhost:8080',
     singleton: false,
     supportsRemote: false,
@@ -38,6 +38,16 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     isExternal: true,
     requiresApiKey: true,
     defaultEnvVar: 'OPENROUTER_API_KEY'
+  },
+  vercel: {
+    displayName: 'Vercel',
+    description: 'Access hundreds of models via Vercel AI Gateway',
+    defaultUrl: 'https://ai-gateway.vercel.sh',
+    singleton: true,
+    supportsRemote: false,
+    isExternal: true,
+    requiresApiKey: true,
+    defaultEnvVar: 'VERCEL_API_KEY'
   }
 } as const
 

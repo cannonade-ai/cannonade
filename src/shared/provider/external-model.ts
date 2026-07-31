@@ -29,9 +29,11 @@ export interface ExternalModel {
   pricing?: ExternalModelPricing
   supportedParameters?: string[]
   createdAt?: number
+  releasedAt?: number
   knowledgeCutoff?: string
   expirationDate?: string
   isModerated?: boolean
+  raw?: Record<string, unknown>
 }
 
 export function isMultimodal(model: ExternalModel): boolean {
