@@ -102,8 +102,16 @@ describe('createModelComparator', () => {
   })
 
   it('sorts release date newest first when descending', () => {
+    const old = makeModel({ id: 'old', name: 'Old', releasedAt: 100 })
+    const recent = makeModel({ id: 'new', name: 'New', releasedAt: 200 })
+    expect([old, recent].sort(createModelComparator('created', 'desc')).map((m) => m.name)).toEqual(
+      ['New', 'Old']
+    )
+  })
+
+  it('falls back to createdAt when releasedAt is missing', () => {
     const old = makeModel({ id: 'old', name: 'Old', createdAt: 100 })
-    const recent = makeModel({ id: 'new', name: 'New', createdAt: 200 })
+    const recent = makeModel({ id: 'new', name: 'New', releasedAt: 200 })
     expect([old, recent].sort(createModelComparator('created', 'desc')).map((m) => m.name)).toEqual(
       ['New', 'Old']
     )

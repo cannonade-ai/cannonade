@@ -39,6 +39,10 @@ const createdLabel = computed(() =>
   props.model.createdAt ? formatDate(new Date(props.model.createdAt * 1000).toISOString()) : '—'
 )
 
+const releasedLabel = computed(() =>
+  props.model.releasedAt ? formatDate(new Date(props.model.releasedAt * 1000).toISOString()) : ''
+)
+
 const multimodal = computed(() => isMultimodal(props.model))
 
 const modalitiesLabel = computed<string>(() => {
@@ -94,6 +98,10 @@ const modalitiesLabel = computed<string>(() => {
           <div class="detail">
             <span class="detail-label">Created</span>
             <span class="detail-value">{{ createdLabel }}</span>
+          </div>
+          <div v-if="releasedLabel" class="detail">
+            <span class="detail-label">Released</span>
+            <span class="detail-value">{{ releasedLabel }}</span>
           </div>
           <div v-if="modalitiesLabel" class="detail">
             <span class="detail-label">Modalities</span>
