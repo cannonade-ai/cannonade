@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { Pagination } from '@renderer/components/ui'
 import type { ExternalModel } from '@shared/provider/external-model'
 import { useExternalModelsViewStore } from '@renderer/stores/external-models-view'
+import ExternalModelRawJsonModal from './ExternalModelRawJsonModal.vue'
 import ExternalModelTableFilters from './ExternalModelTableFilters.vue'
 import ExternalModelTableHeaderCell from './ExternalModelTableHeaderCell.vue'
 import ExternalModelTableRow from './ExternalModelTableRow.vue'
@@ -101,6 +102,8 @@ const paged = computed<ExternalModel[]>(() =>
 
       <Pagination v-model:page="page" :page-size="PAGE_SIZE" :total="sorted.length" />
     </template>
+
+    <ExternalModelRawJsonModal />
   </div>
 </template>
 

@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { ExternalModel } from '@shared/provider/external-model'
 import {
   ANY_MODALITY,
   defaultSortDirections
@@ -18,6 +19,7 @@ export const useExternalModelsViewStore = defineStore('external-models-view', ()
   const page = ref(1)
   const expandedModelIds = ref<string[]>([])
   const scrollTop = ref(0)
+  const rawJsonModel = ref<ExternalModel | null>(null)
 
   function setSort(key: SortKey): void {
     if (sort.value === key) {
@@ -53,6 +55,7 @@ export const useExternalModelsViewStore = defineStore('external-models-view', ()
     page,
     expandedModelIds,
     scrollTop,
+    rawJsonModel,
     setSort,
     toggleSortDirection,
     isExpanded,
