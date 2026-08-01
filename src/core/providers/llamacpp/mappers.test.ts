@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
+  isEventForModel,
   isLoadedStatus,
   parseSseEvents,
   toHfRepoId,
@@ -222,6 +223,27 @@ describe('llamacpp provider toLoadFailureError', () => {
     expect(toLoadFailureError('gemma', { value: 'unloaded', failed: true }).message).toBe(
       'Model "gemma" failed to load'
     )
+  })
+})
+
+describe('llamacpp provider isEventForModel', () => {
+  it('matches the exact model name regardless of case', () => {
+    expect(isEventForModel('ggml-org/gemma-3-1b-GGUF', 'ggml-org/gemma-3-1b-GGUF')).toBe(true)
+    expect(isEventForModel('GGML-ORG/gemma-3-1b-gguf', 'ggml-org/gemma-3-1b-GGUF')).toBe(true)
+  })
+
+  it('matches when either side carries a quant suffix', () => {
+    expect(isEventForModel('ggml-org/gemma-3-1b-GGUF:Q4_0', 'ggml-org/gemma-3-1b-GGUF')).toBe(true)
+    expect(isEventForModel('ggml-org/gemma-3-1b-GGUF', 'ggml-org/gemma-3-1b-GGUF:Q4_0')).toBe(true)
+  })
+
+  it('rejects other models and missing names', () => {
+    expect(isEventForModel('ggml-org/other-GGUF', 'ggml-org/gemma-3-1b-GGUF')).toBe(false)
+    expect(isEventForModel('ggml-org/gemma-3-1b-GGUF-extra', 'ggml-org/gemma-3-1b-GGUF')).toBe(
+      false
+    )
+    expect(isEventForModel(undefined, 'ggml-org/gemma-3-1b-GGUF')).toBe(false)
+    expect(isEventForModel('*', 'ggml-org/gemma-3-1b-GGUF')).toBe(false)
   })
 })
 

@@ -103,6 +103,13 @@ export function toHfRepoId(downloadTarget: string): string {
   return segments.length < 2 ? trimmed : segments.slice(0, 2).join('/')
 }
 
+export function isEventForModel(eventModel: string | undefined, modelName: string): boolean {
+  if (!eventModel) return false
+  const event = eventModel.toLowerCase()
+  const model = modelName.toLowerCase()
+  return event === model || event.startsWith(`${model}:`) || model.startsWith(`${event}:`)
+}
+
 export function toChatRequest(request: ChatRequest): LlamaCppChatRequest {
   const base = toOpenAIChatRequest(request)
   return {
@@ -185,7 +192,7 @@ export function toDownloadProgress(
   }
 }
 
-function isProgressEntry(value: unknown): value is LlamaCppDownloadProgress {
+function isProgressEntry(value: unknown): boolean {
   return typeof value === 'object' && value !== null && 'total' in value
 }
 

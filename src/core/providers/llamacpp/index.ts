@@ -10,6 +10,7 @@ import type {
   LlamaCppRouterModelsResponse
 } from './types'
 import {
+  isEventForModel,
   isLoadedStatus,
   parseSseEvents,
   toChatRequest,
@@ -26,7 +27,9 @@ import { createLogger } from '../../../main/logger'
 const log = createLogger('llama-cpp')
 
 const STATUS_POLL_INTERVAL_MS = 500
-const STATUS_TIMEOUT_MS = 60 * 1000
+const STATUS_TIMEOUT_MS = 10 * 60 * 1000
+const ROUTER_MODE_MESSAGE =
+  'Model management needs llama-server in router mode. This instance is serving a single model, start it with just `llama serve` to manage models.'
 
 export function createLlamaCppProvider(
   instanceId: string,
@@ -43,6 +46,9 @@ export function createLlamaCppProvider(
       headers: { 'Content-Type': 'application/json', ...auth, ...init?.headers }
     })
     if (!res.ok) {
+      if (path.startsWith('/models') && (res.status === 404 || res.status === 501)) {
+        throw new ProviderError(ROUTER_MODE_MESSAGE, res.status, 'router_mode_required')
+      }
       const body = await res.json().catch(() => undefined)
       throw toProviderError(res.status, res.statusText, body)
     }
@@ -80,16 +86,20 @@ export function createLlamaCppProvider(
     return toChatResponse(response)
   }
 
-  async function watchDownload(
-    modelName: string,
-    jobId: string,
-    startedAt: string,
+  async function openEventStream(
     signal: AbortSignal
-  ): Promise<void> {
+  ): Promise<ReadableStreamDefaultReader<Uint8Array>> {
     const res = await send('/models/sse', { headers: { Accept: 'text/event-stream' }, signal })
     if (!res.body) throw new Error('[llamacpp] event stream has no body')
+    return res.body.getReader()
+  }
 
-    const reader = res.body.getReader()
+  async function watchDownload(
+    reader: ReadableStreamDefaultReader<Uint8Array>,
+    modelName: string,
+    jobId: string,
+    startedAt: string
+  ): Promise<void> {
     const decoder = new TextDecoder()
     let buffer = ''
 
@@ -102,16 +112,18 @@ export function createLlamaCppProvider(
         buffer = rest
 
         for (const event of events) {
-          if (event.model !== modelName) continue
+          if (!isEventForModel(event.model, modelName)) continue
           log.debug('Download event:', event)
           if (event.event === 'download_progress' || event.event === 'model_status') {
             const progress = toDownloadProgressFromEvent(jobId, event, startedAt)
             if (progress) downloadJobs.set(jobId, progress)
           } else if (event.event === 'download_finished') {
+            const previous = downloadJobs.get(jobId)
             downloadJobs.set(jobId, {
-              ...downloadJobs.get(jobId),
+              ...previous,
               job_id: jobId,
               status: 'completed',
+              downloaded_bytes: previous?.total_size_bytes ?? previous?.downloaded_bytes,
               started_at: startedAt,
               completed_at: new Date().toISOString()
             })
@@ -136,7 +148,15 @@ export function createLlamaCppProvider(
     downloadJobs.set(jobId, { job_id: jobId, status: 'downloading', started_at: startedAt })
 
     const controller = new AbortController()
-    const watcher = watchDownload(modelName, jobId, startedAt, controller.signal).catch((err) => {
+    let reader: ReadableStreamDefaultReader<Uint8Array>
+    try {
+      reader = await openEventStream(controller.signal)
+    } catch (err) {
+      downloadJobs.set(jobId, { job_id: jobId, status: 'failed', started_at: startedAt })
+      throw err
+    }
+
+    const watcher = watchDownload(reader, modelName, jobId, startedAt).catch((err) => {
       log.error(`Download event stream failed for model ${modelName}:`, err)
       downloadJobs.set(jobId, { job_id: jobId, status: 'failed', started_at: startedAt })
     })
@@ -168,12 +188,13 @@ export function createLlamaCppProvider(
 
   async function waitForModelStatus(
     modelId: string,
-    settled: (status: LlamaCppModelStatus | undefined) => boolean
+    settled: (status: LlamaCppModelStatus | undefined) => boolean,
+    failOnLoadFailure: boolean
   ): Promise<void> {
     const deadline = Date.now() + STATUS_TIMEOUT_MS
     while (Date.now() < deadline) {
       const status = await findModelStatus(modelId)
-      if (status?.failed) throw toLoadFailureError(modelId, status)
+      if (failOnLoadFailure && status?.failed) throw toLoadFailureError(modelId, status)
       if (settled(status)) return
       await new Promise<void>((resolve) => setTimeout(resolve, STATUS_POLL_INTERVAL_MS))
     }
@@ -182,7 +203,7 @@ export function createLlamaCppProvider(
 
   async function loadModel(modelId: string): Promise<void> {
     await send('/models/load', { method: 'POST', body: JSON.stringify({ model: modelId }) })
-    await waitForModelStatus(modelId, isLoadedStatus)
+    await waitForModelStatus(modelId, isLoadedStatus, true)
   }
 
   async function unloadModel(loadedInstanceId: string): Promise<void> {
@@ -190,7 +211,7 @@ export function createLlamaCppProvider(
       method: 'POST',
       body: JSON.stringify({ model: loadedInstanceId })
     })
-    await waitForModelStatus(loadedInstanceId, (status) => !isLoadedStatus(status))
+    await waitForModelStatus(loadedInstanceId, (status) => !isLoadedStatus(status), false)
   }
 
   return {
