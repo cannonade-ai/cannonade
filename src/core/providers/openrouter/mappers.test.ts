@@ -96,6 +96,12 @@ describe('openrouter toExternalModel', () => {
     expect(result.outputModalities).toEqual(['text'])
   })
 
+  it('keeps the raw endpoint response', () => {
+    const model = makeModel()
+    const result = toExternalModel(model, 'openrouter-1')
+    expect(result.raw).toEqual(model)
+  })
+
   it('falls back to top_provider context length when context_length is null', () => {
     const model = makeModel({ context_length: null })
     expect(toExternalModel(model, 'openrouter-1').contextLength).toBe(8192)

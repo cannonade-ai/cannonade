@@ -29,7 +29,7 @@ const numericValues: Record<
   Exclude<SortKey, 'name'>,
   (model: ExternalModel) => number | undefined
 > = {
-  created: (model) => model.createdAt,
+  created: (model) => model.releasedAt ?? model.createdAt,
   'input-price': (model) => model.pricing?.inputPerMTokens,
   'output-price': (model) => model.pricing?.outputPerMTokens,
   context: (model) => model.contextLength

@@ -78,6 +78,7 @@ export function toExternalModel(m: Model, instanceId: string): ExternalModel {
     createdAt: m.created,
     knowledgeCutoff: m.knowledge_cutoff ?? undefined,
     expirationDate: m.expiration_date ?? undefined,
-    isModerated: m.top_provider?.is_moderated
+    isModerated: m.top_provider?.is_moderated,
+    raw: { ...m } as Record<string, unknown>
   }
 }
