@@ -19,6 +19,16 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     requiresApiKey: false,
     defaultEnvVar: 'OLLAMA_API_KEY'
   },
+  llamacpp: {
+    displayName: 'llama.cpp',
+    description: 'Local or remote llama-server instance',
+    defaultUrl: 'http://localhost:8080',
+    singleton: false,
+    supportsRemote: true,
+    isExternal: false,
+    requiresApiKey: false,
+    defaultEnvVar: 'LLAMACPP_API_KEY'
+  },
   custom: {
     displayName: 'Custom',
     description: 'Any OpenAI-compatible local API endpoint',

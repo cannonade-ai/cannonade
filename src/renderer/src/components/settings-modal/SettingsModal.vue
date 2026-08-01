@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { IconX, IconAdjustments, IconServer, IconPalette, IconTestPipe } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { Button } from '@renderer/components/ui'
@@ -42,6 +42,12 @@ const sectionComponents: Record<SectionId, unknown> = {
   appearance: SettingsModalAppearance
 }
 
+const pressedOnBackdrop = ref(false)
+function onBackdropClick(): void {
+  if (pressedOnBackdrop.value) nav.closeSettings()
+  pressedOnBackdrop.value = false
+}
+
 useShortcut('Escape', () => {
   if (nav.settingsOpen) nav.closeSettings()
 })
@@ -50,7 +56,12 @@ useShortcut('Escape', () => {
 <template>
   <Teleport to="body">
     <Transition name="settings">
-      <div v-if="nav.settingsOpen" class="settings-overlay" @click.self="nav.closeSettings">
+      <div
+        v-if="nav.settingsOpen"
+        class="settings-overlay"
+        @mousedown="pressedOnBackdrop = $event.target === $event.currentTarget"
+        @click.self="onBackdropClick"
+      >
         <div class="settings-panel">
           <aside class="settings-sidebar">
             <div class="settings-sidebar-title">Settings</div>

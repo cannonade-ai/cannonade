@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import InfoTooltip from './InfoTooltip.vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
 
@@ -24,8 +25,10 @@ function close(): void {
   emit('update:modelValue', false)
 }
 
+const pressedOnBackdrop = ref(false)
 function onBackdropClick(): void {
-  if (props.closeOnBackdrop) close()
+  if (props.closeOnBackdrop && pressedOnBackdrop.value) close()
+  pressedOnBackdrop.value = false
 }
 
 useShortcut('Escape', () => {
@@ -36,7 +39,12 @@ useShortcut('Escape', () => {
 <template>
   <Teleport to="body">
     <Transition name="modal">
-      <div v-if="modelValue" class="modal-backdrop" @click.self="onBackdropClick">
+      <div
+        v-if="modelValue"
+        class="modal-backdrop"
+        @mousedown="pressedOnBackdrop = $event.target === $event.currentTarget"
+        @click.self="onBackdropClick"
+      >
         <div class="modal-panel" :class="`modal-panel--${size}`" role="dialog" aria-modal="true">
           <div v-if="title" class="modal-header">
             <h2 class="modal-title">
