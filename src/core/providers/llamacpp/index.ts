@@ -1,7 +1,11 @@
 import { ProviderError, type LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
-import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/provider/ipc-contracts'
+import type {
+  DownloadModelResponse,
+  DownloadStatusResponse,
+  ServerStatusResponse
+} from '@shared/provider/ipc-contracts'
 import { authHeader } from '@shared/provider/api-key'
 import type {
   LlamaCppChatResponse,
@@ -22,19 +26,30 @@ import {
   toLocalModelFromServedModel,
   toProviderError
 } from './mappers'
+import {
+  isManagedProcess,
+  startManagedProcess,
+  stopManagedProcess
+} from '../../../main/services/managed-process'
 import { createLogger } from '../../../main/logger'
 
 const log = createLogger('llama-cpp')
 
 const STATUS_POLL_INTERVAL_MS = 500
-const STATUS_TIMEOUT_MS = 10 * 60 * 1000
+const LOAD_TIMEOUT_MS = 10 * 60 * 1000
+const UNLOAD_TIMEOUT_MS = 15000
+const START_TIMEOUT_MS = 30000
+const STOP_TIMEOUT_MS = 10000
+const PROBE_INTERVAL_MS = 500
+const LLAMA_EXECUTABLE = 'llama'
 const ROUTER_MODE_MESSAGE =
   'Model management needs llama-server in router mode. This instance is serving a single model, start it with just `llama serve` to manage models.'
 
 export function createLlamaCppProvider(
   instanceId: string,
   url: string,
-  apiKey?: string
+  apiKey?: string,
+  remote = false
 ): LLMProvider {
   const normalizedBase = url.replace(/\/$/, '')
   const auth = authHeader(apiKey)
@@ -189,9 +204,10 @@ export function createLlamaCppProvider(
   async function waitForModelStatus(
     modelId: string,
     settled: (status: LlamaCppModelStatus | undefined) => boolean,
-    failOnLoadFailure: boolean
+    failOnLoadFailure: boolean,
+    timeoutMs: number
   ): Promise<void> {
-    const deadline = Date.now() + STATUS_TIMEOUT_MS
+    const deadline = Date.now() + timeoutMs
     while (Date.now() < deadline) {
       const status = await findModelStatus(modelId)
       if (failOnLoadFailure && status?.failed) throw toLoadFailureError(modelId, status)
@@ -203,7 +219,7 @@ export function createLlamaCppProvider(
 
   async function loadModel(modelId: string): Promise<void> {
     await send('/models/load', { method: 'POST', body: JSON.stringify({ model: modelId }) })
-    await waitForModelStatus(modelId, isLoadedStatus, true)
+    await waitForModelStatus(modelId, isLoadedStatus, true, LOAD_TIMEOUT_MS)
   }
 
   async function unloadModel(loadedInstanceId: string): Promise<void> {
@@ -211,7 +227,81 @@ export function createLlamaCppProvider(
       method: 'POST',
       body: JSON.stringify({ model: loadedInstanceId })
     })
-    await waitForModelStatus(loadedInstanceId, (status) => !isLoadedStatus(status), false)
+    await waitForModelStatus(
+      loadedInstanceId,
+      (status) => !isLoadedStatus(status),
+      false,
+      UNLOAD_TIMEOUT_MS
+    )
+  }
+
+  async function isServerReachable(): Promise<boolean> {
+    try {
+      await fetch(`${normalizedBase}/health`, { headers: auth })
+      return true
+    } catch (err) {
+      log.debug(`Server probe failed for ${url}:`, err)
+      return false
+    }
+  }
+
+  async function waitForReachable(expected: boolean, timeoutMs: number): Promise<boolean> {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      if ((await isServerReachable()) === expected) return true
+      await new Promise<void>((resolve) => setTimeout(resolve, PROBE_INTERVAL_MS))
+    }
+    return isServerReachable()
+  }
+
+  function toStatus(running: boolean): ServerStatusResponse {
+    return { running, port: null, managed: running && isManagedProcess(instanceId) }
+  }
+
+  function serveArgs(): string[] {
+    const { hostname, port, protocol } = new URL(url)
+    return ['serve', '--host', hostname, '--port', port || (protocol === 'https:' ? '443' : '80')]
+  }
+
+  async function getServerStatus(): Promise<ServerStatusResponse> {
+    return toStatus(await isServerReachable())
+  }
+
+  async function startServer(): Promise<ServerStatusResponse> {
+    if (await isServerReachable()) {
+      log.info(`llama.cpp server already reachable at ${url}, nothing to start`)
+      return toStatus(true)
+    }
+
+    try {
+      await startManagedProcess(instanceId, LLAMA_EXECUTABLE, serveArgs())
+    } catch (err) {
+      log.error('Failed to spawn llama serve:', err)
+      throw new ProviderError(
+        'Could not start llama.cpp. Make sure llama is installed and on your PATH.',
+        500
+      )
+    }
+
+    if (!(await waitForReachable(true, START_TIMEOUT_MS))) {
+      await stopManagedProcess(instanceId)
+      throw new ProviderError(`llama.cpp server did not become reachable at ${url}`, 504, 'timeout')
+    }
+
+    return toStatus(true)
+  }
+
+  async function stopServer(): Promise<ServerStatusResponse> {
+    if (!isManagedProcess(instanceId)) {
+      throw new ProviderError(
+        'This llama.cpp server was not started by Cannonade, so it cannot be stopped from here.',
+        409
+      )
+    }
+
+    await stopManagedProcess(instanceId)
+    await waitForReachable(false, STOP_TIMEOUT_MS)
+    return toStatus(await isServerReachable())
   }
 
   return {
@@ -225,7 +315,8 @@ export function createLlamaCppProvider(
       downloadStatus: true,
       deleteModel: true,
       loadModel: true,
-      serverControl: false,
+      serverControl: !remote,
+      processLevelServerControl: true,
       requiresApiKey: false,
       huggingFaceModelsUrl: 'https://huggingface.co/models?apps=llama.cpp'
     },
@@ -236,6 +327,9 @@ export function createLlamaCppProvider(
     getDownloadStatus,
     deleteModel,
     loadModel,
-    unloadModel
+    unloadModel,
+    getServerStatus,
+    startServer,
+    stopServer
   }
 }

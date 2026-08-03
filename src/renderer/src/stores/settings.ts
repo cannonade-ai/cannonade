@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { nextTick, reactive, toRefs, watch } from 'vue'
+import { nextTick, reactive, toRaw, toRefs, watch } from 'vue'
 import { api } from '../api'
 import {
   DEFAULT_APP_SETTINGS as DEFAULTS,
@@ -26,6 +26,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const settings = reactive<PersistedSettings>({
     ...DEFAULTS,
     judge: { ...DEFAULTS.judge },
+    experiments: { ...DEFAULTS.experiments },
     isDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   })
   applyTheme(settings.isDark)
@@ -41,8 +42,9 @@ export const useSettingsStore = defineStore('settings', () => {
   function saveSettings(): void {
     api
       .saveAppSettings({
-        ...settings,
+        ...toRaw(settings),
         judge: { ...settings.judge },
+        experiments: { ...settings.experiments },
         configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p }))
       })
       .catch((err) => log.error('Failed to save app settings:', err))
@@ -62,7 +64,8 @@ export const useSettingsStore = defineStore('settings', () => {
     const loadedSettings = await api.loadAppSettings()
     Object.assign(settings, loadedSettings, {
       onboardingComplete: loadedSettings.onboardingComplete ?? false,
-      judge: loadedSettings.judge ? { ...loadedSettings.judge } : { ...DEFAULTS.judge }
+      judge: loadedSettings.judge ? { ...loadedSettings.judge } : { ...DEFAULTS.judge },
+      experiments: { ...DEFAULTS.experiments, ...loadedSettings.experiments }
     })
     providersStore.init(loadedSettings.configuredProviders ?? [])
     await nextTick()
@@ -76,6 +79,7 @@ export const useSettingsStore = defineStore('settings', () => {
   function reset(): void {
     Object.assign(settings, DEFAULTS, {
       judge: { ...DEFAULTS.judge },
+      experiments: { ...DEFAULTS.experiments },
       isDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
       onboardingComplete: false
     })

@@ -13,15 +13,28 @@ function settingsPath(): string {
   return join(app.getPath('userData'), 'settings.json')
 }
 
-let cache: AppSettings = { ...DEFAULT_APP_SETTINGS }
+function toAppSettings(partial: Partial<AppSettings>): AppSettings {
+  const { judge, experiments, ...rest } = partial
+  const known = Object.fromEntries(
+    Object.entries(rest).filter(([key]) => key in DEFAULT_APP_SETTINGS)
+  )
+  return {
+    ...DEFAULT_APP_SETTINGS,
+    ...known,
+    judge: { ...DEFAULT_APP_SETTINGS.judge, ...judge },
+    experiments: { ...DEFAULT_APP_SETTINGS.experiments, ...experiments }
+  }
+}
+
+let cache: AppSettings = toAppSettings({})
 
 export async function initAppSettings(): Promise<void> {
   try {
     const raw = await fs.readFile(settingsPath(), 'utf-8')
-    cache = { ...DEFAULT_APP_SETTINGS, ...(JSON.parse(raw) as Partial<AppSettings>) }
+    cache = toAppSettings(JSON.parse(raw) as Partial<AppSettings>)
   } catch (err) {
     log.debug('No saved settings loaded, using defaults:', err)
-    cache = { ...DEFAULT_APP_SETTINGS }
+    cache = toAppSettings({})
   }
   applyLogLevel(cache.logLevel)
   buildRegistry(cache.configuredProviders)
@@ -36,9 +49,9 @@ export function registerSettingsHandlers(): void {
   ipcMain.handle(SETTINGS.LOAD, (): AppSettings => cache)
 
   ipcMain.handle(SETTINGS.SAVE, async (_event, settings: AppSettings): Promise<void> => {
-    cache = settings
-    applyLogLevel(settings.logLevel)
-    await writeFileAtomic(settingsPath(), JSON.stringify(settings, null, 2))
+    cache = toAppSettings(settings)
+    applyLogLevel(cache.logLevel)
+    await writeFileAtomic(settingsPath(), JSON.stringify(cache, null, 2))
     log.debug('App settings saved successfully')
   })
 }

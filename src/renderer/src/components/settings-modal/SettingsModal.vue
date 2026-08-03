@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { IconX, IconAdjustments, IconServer, IconPalette, IconTestPipe } from '@tabler/icons-vue'
+import {
+  IconX,
+  IconAdjustments,
+  IconServer,
+  IconPalette,
+  IconTestPipe,
+  IconFlask
+} from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { Button } from '@renderer/components/ui'
 import { useShortcut } from '@renderer/composables/useShortcut'
@@ -9,9 +16,10 @@ import SettingsModalGeneral from './SettingsModalGeneral.vue'
 import SettingsModalProviders from './SettingsModalProviders.vue'
 import SettingsModalAppearance from './SettingsModalAppearance.vue'
 import SettingsModalTestRuns from './SettingsModalTestRuns.vue'
+import SettingsModalExperiments from './SettingsModalExperiments.vue'
 import InfoTooltip from '@renderer/components/ui/InfoTooltip.vue'
 
-type SectionId = 'general' | 'providers' | 'appearance' | 'test-runs'
+type SectionId = 'general' | 'providers' | 'appearance' | 'test-runs' | 'experiments'
 
 const nav = useNavigationStore()
 const activeSection = computed({
@@ -30,7 +38,12 @@ const sections: { id: SectionId; label: string; icon: unknown; info?: string }[]
     info: 'Configure the AI providers and local servers used to run your models.'
   },
   { id: 'test-runs', label: 'Test Runs', icon: IconTestPipe },
-  { id: 'appearance', label: 'Appearance', icon: IconPalette }
+  { id: 'appearance', label: 'Appearance', icon: IconPalette },
+  {
+    id: 'experiments',
+    label: 'Experiments',
+    icon: IconFlask
+  }
 ]
 
 const activeSectionMeta = computed(() => sections.find((s) => s.id === activeSection.value))
@@ -39,7 +52,8 @@ const sectionComponents: Record<SectionId, unknown> = {
   general: SettingsModalGeneral,
   providers: SettingsModalProviders,
   'test-runs': SettingsModalTestRuns,
-  appearance: SettingsModalAppearance
+  appearance: SettingsModalAppearance,
+  experiments: SettingsModalExperiments
 }
 
 const pressedOnBackdrop = ref(false)

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { IconStar, IconStarFilled, IconTrash, IconPencil } from '@tabler/icons-vue'
 import Button from '@renderer/components/ui/Button.vue'
 import SettingsModalProviderCardServerStatus from './SettingsModalProviderCardServerStatus.vue'
 import { useProvidersStore } from '@renderer/stores/providers'
 import { useConfirmStore } from '@renderer/stores/confirm'
+import { useSettingsStore } from '@renderer/stores/settings'
 import { api } from '@renderer/api'
 import type { ConfiguredProvider } from '@shared/provider/configured-provider'
 
@@ -19,8 +20,16 @@ const emit = defineEmits<{
 
 const providers = useProvidersStore()
 const confirm = useConfirmStore()
+const settings = useSettingsStore()
 
 const serverControl = ref(false)
+const processLevelServerControl = ref(false)
+
+const showServerStatus = computed((): boolean => {
+  if (!serverControl.value || props.provider.isRemote) return false
+  if (!processLevelServerControl.value) return true
+  return settings.experiments.cannonadeManagedServers
+})
 
 async function remove(): Promise<void> {
   const ok = await confirm.confirm({
@@ -39,6 +48,7 @@ function setDefault(): void {
 onMounted(async () => {
   const capabilities = await api.getCapabilities(props.provider.instanceId)
   serverControl.value = capabilities.serverControl
+  processLevelServerControl.value = capabilities.processLevelServerControl ?? false
 })
 </script>
 
@@ -56,7 +66,7 @@ onMounted(async () => {
       <span class="provider-card__url">{{ provider.url }}</span>
 
       <SettingsModalProviderCardServerStatus
-        v-if="serverControl && !provider.isRemote"
+        v-if="showServerStatus"
         :instance-id="provider.instanceId"
       />
     </div>

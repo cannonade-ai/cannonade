@@ -1,23 +1,60 @@
 import { Ollama } from 'ollama'
 import type { ChatResponse as OllamaChatResponse } from 'ollama'
-import type { LLMProvider } from '../base'
+import { ProviderError, type LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
-import type { DownloadModelResponse, DownloadStatusResponse } from '@shared/provider/ipc-contracts'
+import type {
+  DownloadModelResponse,
+  DownloadStatusResponse,
+  ServerStatusResponse
+} from '@shared/provider/ipc-contracts'
 
 import { authHeader } from '@shared/provider/api-key'
 import { toLocalModel, toChatRequest, toChatResponse, toDownloadProgress } from './mappers'
+import {
+  isManagedProcess,
+  startManagedProcess,
+  stopManagedProcess
+} from '../../../main/services/managed-process'
 import { createLogger } from '../../../main/logger'
 
 const log = createLogger('ollama')
 
+const START_TIMEOUT_MS = 30000
+const STOP_TIMEOUT_MS = 10000
+const PROBE_INTERVAL_MS = 500
+
 export function createOllamaProvider(
   instanceId: string,
   url: string,
-  apiKey?: string
+  apiKey?: string,
+  remote = false
 ): LLMProvider {
   const client = new Ollama({ host: url, headers: authHeader(apiKey) })
   const downloadJobs = new Map<string, DownloadStatusResponse>()
+
+  async function isServerReachable(): Promise<boolean> {
+    try {
+      await client.list()
+      return true
+    } catch (err) {
+      log.debug(`Server probe failed for ${url}:`, err)
+      return false
+    }
+  }
+
+  async function waitForReachable(expected: boolean, timeoutMs: number): Promise<boolean> {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+      if ((await isServerReachable()) === expected) return true
+      await new Promise<void>((resolve) => setTimeout(resolve, PROBE_INTERVAL_MS))
+    }
+    return isServerReachable()
+  }
+
+  function toStatus(running: boolean): ServerStatusResponse {
+    return { running, port: null, managed: running && isManagedProcess(instanceId) }
+  }
 
   return {
     id: instanceId,
@@ -30,7 +67,8 @@ export function createOllamaProvider(
       downloadStatus: true,
       deleteModel: true,
       loadModel: true,
-      serverControl: false,
+      serverControl: !remote,
+      processLevelServerControl: true,
       requiresApiKey: false,
       modelRegistryUrl: 'https://ollama.com/library',
       huggingFaceModelsUrl: 'https://huggingface.co/models?apps=ollama'
@@ -100,6 +138,49 @@ export function createOllamaProvider(
     async unloadModel(loadedInstanceId: string): Promise<void> {
       await client.generate({ model: loadedInstanceId, prompt: '', keep_alive: 0 })
       await new Promise<void>((resolve) => setTimeout(resolve, 3000))
+    },
+
+    async getServerStatus(): Promise<ServerStatusResponse> {
+      return toStatus(await isServerReachable())
+    },
+
+    async startServer(): Promise<ServerStatusResponse> {
+      if (await isServerReachable()) {
+        log.info(`Ollama server already reachable at ${url}, nothing to start`)
+        return toStatus(true)
+      }
+
+      try {
+        await startManagedProcess(instanceId, 'ollama', ['serve'], {
+          OLLAMA_HOST: new URL(url).host
+        })
+      } catch (err) {
+        log.error('Failed to spawn ollama serve:', err)
+        throw new ProviderError(
+          'Could not start Ollama. Make sure Ollama is installed and on your PATH.',
+          500
+        )
+      }
+
+      if (!(await waitForReachable(true, START_TIMEOUT_MS))) {
+        await stopManagedProcess(instanceId)
+        throw new ProviderError(`Ollama server did not become reachable at ${url}`, 504, 'timeout')
+      }
+
+      return toStatus(true)
+    },
+
+    async stopServer(): Promise<ServerStatusResponse> {
+      if (!isManagedProcess(instanceId)) {
+        throw new ProviderError(
+          'This Ollama server was not started by Cannonade, so it cannot be stopped from here.',
+          409
+        )
+      }
+
+      await stopManagedProcess(instanceId)
+      await waitForReachable(false, STOP_TIMEOUT_MS)
+      return toStatus(await isServerReachable())
     }
   }
 }

@@ -19,4 +19,5 @@ export interface DownloadStatusResponse {
 export interface ServerStatusResponse {
   running: boolean
   port: number | null
+  managed?: boolean
 }
