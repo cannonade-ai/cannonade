@@ -4,7 +4,8 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerHandlers } from './ipc/handlers'
 import { initAppSettings } from './ipc/settings-handlers'
 import { initSecrets } from './secrets/secret-store'
-import { createWindowStateManager } from './window-state'
+import { initAppState, getAppState, manageWindow } from './app-state'
+import { adoptManagedProcesses, stopAllManagedProcesses } from './services/managed-process'
 import { initLogger, createLogger } from './logger'
 import icon from '../../resources/icon.png?asset'
 
@@ -14,13 +15,13 @@ const MIN_ZOOM = -3.0
 const MAX_ZOOM = 3.0
 
 function createWindow(): BrowserWindow {
-  const windowState = createWindowStateManager()
+  const { bounds } = getAppState().window
 
   const mainWindow = new BrowserWindow({
-    x: windowState.bounds.x,
-    y: windowState.bounds.y,
-    width: windowState.bounds.width,
-    height: windowState.bounds.height,
+    x: bounds.x,
+    y: bounds.y,
+    width: bounds.width,
+    height: bounds.height,
     minWidth: 1024,
     minHeight: 576,
     show: false,
@@ -34,7 +35,7 @@ function createWindow(): BrowserWindow {
     }
   })
 
-  windowState.manage(mainWindow)
+  manageWindow(mainWindow)
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -103,6 +104,8 @@ app.whenReady().then(async () => {
 
   await initSecrets()
   await initAppSettings()
+  initAppState()
+  await adoptManagedProcesses()
   log.info('App starting', { version: app.getVersion() })
   registerHandlers()
   log.info('init phases done, creating window')
@@ -114,6 +117,23 @@ app.whenReady().then(async () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 })
+
+let spawnedProcessesStopped = false
+app.on('before-quit', (event) => {
+  event.preventDefault()
+  if (spawnedProcessesStopped) return
+  spawnedProcessesStopped = true
+  void stopAllManagedProcesses()
+    .catch((err) => log.error('Failed to stop managed processes:', err))
+    .finally(() => app.exit(0))
+})
+
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {
+  process.on(signal, () => {
+    log.info(`Received ${signal}, quitting`)
+    app.quit()
+  })
+}
 
 // Quit when all windows are closed, except on macOS.
 app.on('window-all-closed', () => {

@@ -14,6 +14,7 @@ const props = defineProps<{
 
 const running = ref<boolean | null>(null)
 const port = ref<number | null>(null)
+const managed = ref<boolean | undefined>(undefined)
 const loading = ref(false)
 
 const statusLabel = computed((): string => {
@@ -23,10 +24,14 @@ const statusLabel = computed((): string => {
 
 async function withLoading(fn: () => Promise<ServerStatusResponse>): Promise<void> {
   loading.value = true
-  const status = await fn()
-  running.value = status.running
-  port.value = status.port
-  loading.value = false
+  try {
+    const status = await fn()
+    running.value = status.running
+    port.value = status.port
+    managed.value = status.managed
+  } finally {
+    loading.value = false
+  }
 }
 
 const refresh = (): Promise<void> => withLoading(() => api.serverStatus(props.instanceId))
@@ -62,7 +67,7 @@ onMounted(refresh)
       @click="start"
     />
     <Button
-      v-if="running === true"
+      v-if="running === true && managed !== false"
       v-tooltip="'Stop server'"
       type="icon"
       :icon="IconPlayerStop"

@@ -1,6 +1,7 @@
 import type { ConfiguredProvider } from '../provider/configured-provider'
 import type { LogLevel } from './logging'
 import { DEFAULT_JUDGE_SETTINGS, type JudgeSettings } from './judge'
+import { DEFAULT_EXPERIMENT_SETTINGS, type ExperimentSettings } from './experiments'
 
 export type FontSize = 'sm' | 'md' | 'lg'
 
@@ -18,6 +19,7 @@ export interface AppSettings {
   onboardingComplete: boolean
   logLevel: LogLevel
   judge: JudgeSettings
+  experiments: ExperimentSettings
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -33,5 +35,6 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   configuredProviders: [],
   onboardingComplete: false,
   logLevel: 'info',
-  judge: { ...DEFAULT_JUDGE_SETTINGS }
+  judge: { ...DEFAULT_JUDGE_SETTINGS },
+  experiments: { ...DEFAULT_EXPERIMENT_SETTINGS }
 }

@@ -7,6 +7,7 @@ export interface ProviderCapabilities {
   deleteModel: boolean
   loadModel: boolean
   serverControl: boolean
+  processLevelServerControl?: boolean
   requiresApiKey: boolean
   modelRegistryUrl?: string
   huggingFaceModelsUrl?: string

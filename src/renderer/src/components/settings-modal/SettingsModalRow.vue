@@ -1,14 +1,28 @@
 <script setup lang="ts">
+import type { TooltipPlacement } from '@renderer/utils/tooltip'
+import InfoTooltip from '@renderer/components/ui/InfoTooltip.vue'
+
 defineProps<{
   label: string
   hint?: string
+  info?: string
+  infoPlacement?: TooltipPlacement
 }>()
 </script>
 
 <template>
   <div class="row">
     <div class="row-label">
-      <span class="row-name">{{ label }}</span>
+      <span class="row-name">
+        {{ label }}
+        <InfoTooltip
+          v-if="info"
+          :content="info"
+          :size="13"
+          :placement="infoPlacement ?? 'right'"
+          interactive
+        />
+      </span>
       <span v-if="hint" class="row-hint">{{ hint }}</span>
     </div>
     <div class="row-control">
@@ -39,6 +53,9 @@ defineProps<{
 }
 
 .row-name {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-primary);
