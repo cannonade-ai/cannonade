@@ -1,0 +1,45 @@
+---
+import { site } from '../../config/site';
+import LandingHeroReadout from './LandingHeroReadout.astro';
+---
+
+<section class="hero">
+  <div class="hero__field" aria-hidden="true"></div>
+  <div class="hero__glow" aria-hidden="true"></div>
+  <svg
+    class="hero__arc"
+    viewBox="0 0 1440 700"
+    preserveAspectRatio="none"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      d="M-40 640 C 260 470, 430 180, 780 120 C 1030 78, 1250 130, 1500 60"
+      fill="none"
+      stroke="rgba(230,168,23,0.42)"
+      stroke-width="1.5"></path>
+  </svg>
+
+  <div class="wrap hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow">Local-first LLM evaluation</p>
+      <h1 class="display hero__title">Fire one suite at <em>every model</em> you own</h1>
+      <p class="lede">
+        Cannonade is a desktop app for building test suites and running them against many models
+        at once — local and cloud, side by side, on the same cases and the same scoring. No eval
+        harness to write. No account. Your prompts stay on your machine.
+      </p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="#download">Download</a>
+        <a class="btn btn--ghost" href={site.docs}>Read the docs</a>
+      </div>
+      <ul class="hero__meta">
+        <li>Windows, macOS, Linux</li>
+        <li>Free and open source</li>
+        <li>Runs offline</li>
+      </ul>
+    </div>
+
+    <LandingHeroReadout />
+  </div>
+</section>

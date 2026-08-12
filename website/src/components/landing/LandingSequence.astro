@@ -1,0 +1,48 @@
+---
+interface Step {
+  n: string;
+  title: string;
+  body: string;
+}
+
+const steps: Step[] = [
+  {
+    n: 'Step 01',
+    title: 'Define the suite',
+    body: 'Write cases as a system prompt, an input, and the evaluators that decide whether the answer is good. Exact match, ROUGE, JSON shape, a sandboxed script, or a judge model — stack as many as the case needs.'
+  },
+  {
+    n: 'Step 02',
+    title: 'Fire at every model',
+    body: 'Select any number of models across every provider you have configured and run the whole suite against all of them at once. A 4B model on your laptop and a frontier model behind an API key get the same cases and the same scoring.'
+  },
+  {
+    n: 'Step 03',
+    title: 'Compare the results',
+    body: 'One table: pass rate, mean score per evaluator, tokens, and timing for every model. Each run is saved locally, so the run before you changed the prompt is still there to compare against.'
+  }
+];
+---
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">How it works</p>
+      <h2 class="section-title">Three steps, then repeat</h2>
+      <p class="lede">
+        The loop is small on purpose: change one thing, run the same suite, compare the two runs.
+      </p>
+    </div>
+    <div class="seq">
+      {
+        steps.map((step) => (
+          <article class="seq__step">
+            <span class="seq__n mono">{step.n}</span>
+            <h3 class="seq__t">{step.title}</h3>
+            <p>{step.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

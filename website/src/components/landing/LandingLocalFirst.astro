@@ -1,0 +1,38 @@
+---
+interface Fact {
+  label: string;
+  value: string;
+}
+
+const facts: Fact[] = [
+  { label: 'Storage', value: 'Suites, prompts, and runs are plain JSON files in your app data directory.' },
+  { label: 'Network', value: 'Requests go to the providers you configure. Nothing else leaves the machine.' },
+  { label: 'Account', value: 'There is none. Nothing to sign up for, nothing to log into.' },
+  { label: 'Offline', value: 'With a local provider, the whole app works with the network off.' },
+  { label: 'Sandbox', value: 'Custom validators run in a QuickJS WebAssembly sandbox, not in the app process.' }
+];
+---
+
+<section class="band">
+  <div class="wrap band__inner">
+    <div class="section__head" style="margin-bottom:0">
+      <p class="eyebrow">Local first</p>
+      <h2 class="section-title">Your prompts are not a data set for someone else</h2>
+      <p class="lede">
+        Evaluation means feeding a system your sharpest prompts, your real inputs, and your
+        expected answers. That is exactly the material you should be most careful about handing
+        to a third party. Cannonade keeps it on disk, in files you can read, diff, and delete.
+      </p>
+    </div>
+    <dl class="band__facts">
+      {
+        facts.map((fact) => (
+          <div class="band__fact">
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

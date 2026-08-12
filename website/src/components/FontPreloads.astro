@@ -1,0 +1,15 @@
+---
+const fonts = [
+  '/fonts/saira-condensed-latin-700-normal.woff2',
+  '/fonts/ibm-plex-sans-latin-wght-normal.woff2',
+  '/fonts/ibm-plex-mono-latin-400-normal.woff2',
+  '/fonts/ibm-plex-mono-latin-500-normal.woff2',
+  '/fonts/saira-condensed-latin-600-normal.woff2'
+];
+---
+
+{
+  fonts.map((href) => (
+    <link rel="preload" href={href} as="font" type="font/woff2" crossorigin="anonymous" />
+  ))
+}

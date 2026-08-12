@@ -1,0 +1,85 @@
+---
+interface Feature {
+  title: string;
+  body: string;
+  points: string[];
+  shot: string;
+  alt: string;
+}
+
+const features: Feature[] = [
+  {
+    title: 'Test runs you can actually read',
+    body: 'Every run is a saved artefact, not a scroll of terminal output. Results come back per case and per model while the run is still going.',
+    points: [
+      'Pass rate and mean score per evaluator',
+      'Token counts, time to first token, tokens per second',
+      'Full output for every case, kept for every run',
+      'Compare a run against the one before it'
+    ],
+    shot: 'https://placehold.co/1200x760/151a20/e6a817.png?text=Test+run+comparison',
+    alt: 'Screenshot placeholder: the test run comparison table'
+  },
+  {
+    title: 'A playground with the numbers attached',
+    body: 'Chat with any configured model, tweak sampling parameters, and see the same statistics a full run records — before you commit to writing cases.',
+    points: [
+      'Every configured local and cloud model in one picker',
+      'Temperature, top-p, and the rest, per message',
+      'Token and timing stats on every response'
+    ],
+    shot: 'https://placehold.co/1200x760/151a20/58a6ff.png?text=Playground',
+    alt: 'Screenshot placeholder: the playground view'
+  },
+  {
+    title: 'Prompts in one place',
+    body: 'Keep system prompts in a library instead of pasting them between windows. The playground and your test suites read from the same source, so a prompt change is a single edit.',
+    points: [
+      'Reusable across suites and the playground',
+      'Stored as plain JSON alongside everything else'
+    ],
+    shot: 'https://placehold.co/1200x760/151a20/3fb950.png?text=Prompt+library',
+    alt: 'Screenshot placeholder: the prompt library'
+  },
+  {
+    title: 'Manage the models, not just call them',
+    body: 'For local providers, Cannonade drives the server as well as the requests: load, unload, delete, and download models without switching apps.',
+    points: [
+      'Pull from a provider registry or straight from Hugging Face',
+      'Load and unload to free VRAM between runs',
+      'Cloud model pricing and context length shown before you run'
+    ],
+    shot: 'https://placehold.co/1200x760/151a20/a2acbb.png?text=Models',
+    alt: 'Screenshot placeholder: the models view'
+  }
+];
+---
+
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">What you get</p>
+      <h2 class="section-title">An eval harness you did not have to write</h2>
+    </div>
+    <div class="features">
+      {
+        features.map((feature, i) => (
+          <article class={i % 2 === 1 ? 'feature feature--flip' : 'feature'}>
+            <div class="feature__body">
+              <h3 class="feature__t">{feature.title}</h3>
+              <p>{feature.body}</p>
+              <ul class="feature__list">
+                {feature.points.map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </div>
+            <div class="feature__shot">
+              <img src={feature.shot} alt={feature.alt} width="1200" height="760" loading="lazy" />
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

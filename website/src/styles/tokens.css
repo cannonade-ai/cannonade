@@ -1,0 +1,30 @@
+:root {
+  --cn-ink: #0f1216;
+  --cn-panel: #151a20;
+  --cn-panel-2: #1b2128;
+  --cn-panel-3: #13181e;
+  --cn-line: #242c36;
+  --cn-line-2: #303a46;
+  --cn-text: #e6e9ee;
+  --cn-text-2: #a2acbb;
+  --cn-text-3: #949fad;
+  --cn-text-4: #78838f;
+
+  --cn-amber: #e6a817;
+  --cn-amber-hot: #f0b42a;
+  --cn-amber-deep: #8a6410;
+  --cn-amber-wash: rgba(230, 168, 23, 0.12);
+  --cn-amber-edge: rgba(230, 168, 23, 0.32);
+
+  --cn-pass: #3fb950;
+  --cn-fail: #e5534b;
+  --cn-info: #58a6ff;
+
+  --cn-display: 'Saira Condensed', 'Arial Narrow', system-ui, sans-serif;
+  --cn-body:
+    'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cn-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+
+  --cn-measure: 1160px;
+  --cn-radius: 4px;
+}

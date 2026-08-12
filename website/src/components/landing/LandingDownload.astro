@@ -1,0 +1,32 @@
+---
+import { site, downloadTargets } from '../../config/site';
+---
+
+<section class="section" id="download">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="eyebrow">Download{site.version ? ` — version ${site.version}` : ''}</p>
+      <h2 class="section-title">Get Cannonade</h2>
+      <p class="lede">
+        Free and open source. Cannonade checks for updates on launch and installs them in the
+        background, so this is the last time you need this page.
+      </p>
+    </div>
+    <div class="dl">
+      {
+        downloadTargets.map((target) => (
+          <a class="dl__card" href={site.latest}>
+            <span class="dl__os">{target.os}</span>
+            <span class="dl__fmt">{target.format}</span>
+            <span>{target.note}</span>
+            <span class="btn btn--ghost btn--sm dl__go">Download</span>
+          </a>
+        ))
+      }
+    </div>
+    <p class="dl__note">
+      All builds are published on <a href={site.releases}>GitHub Releases</a>, alongside checksums
+      and the changelog.
+    </p>
+  </div>
+</section>

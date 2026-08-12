@@ -1,0 +1,91 @@
+:root {
+  --sl-font: var(--cn-body);
+  --sl-font-mono: var(--cn-mono);
+
+  --sl-color-accent-low: #3d2c07;
+  --sl-color-accent: #a37310;
+  --sl-color-accent-high: #f0c761;
+
+  --sl-color-white: #f2f4f7;
+  --sl-color-gray-1: #dfe3e9;
+  --sl-color-gray-2: #b9c1cc;
+  --sl-color-gray-3: #8792a0;
+  --sl-color-gray-4: #59636f;
+  --sl-color-gray-5: #333c47;
+  --sl-color-gray-6: #1e242b;
+  --sl-color-gray-7: #171c22;
+  --sl-color-black: #0f1216;
+
+  --sl-color-bg-nav: rgba(15, 18, 22, 0.86);
+  --sl-color-bg-sidebar: var(--cn-panel-3);
+  --sl-color-hairline: var(--cn-line);
+  --sl-color-hairline-light: var(--cn-line);
+  --sl-color-hairline-shade: var(--cn-line);
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #f7e6bd;
+  --sl-color-accent: #8a6410;
+  --sl-color-accent-high: #573f08;
+
+  --sl-color-white: #1f2328;
+  --sl-color-gray-1: #2b3138;
+  --sl-color-gray-2: #57606a;
+  --sl-color-gray-3: #77808b;
+  --sl-color-gray-4: #a4adb8;
+  --sl-color-gray-5: #d5dae0;
+  --sl-color-gray-6: #eaeef3;
+  --sl-color-gray-7: #f4f6f8;
+  --sl-color-black: #e8ecf0;
+
+  --sl-color-bg-nav: rgba(244, 246, 248, 0.88);
+  --sl-color-bg-sidebar: #eef1f5;
+  --sl-color-hairline: #d5dae0;
+  --sl-color-hairline-light: #d5dae0;
+  --sl-color-hairline-shade: #d5dae0;
+}
+
+.site-title {
+  font-family: var(--cn-display);
+  font-weight: 700;
+  font-size: 1.45rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.content-panel h1,
+.content-panel h2 {
+  font-family: var(--cn-display);
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  text-wrap: balance;
+}
+
+.content-panel h1 {
+  font-size: clamp(2.1rem, 1.6rem + 2vw, 3rem);
+  line-height: 1.05;
+}
+
+.sl-markdown-content {
+  --sl-content-width: 48rem;
+}
+
+.sl-markdown-content table {
+  font-variant-numeric: tabular-nums;
+}
+
+.sl-markdown-content code:not(:where(.expressive-code *)) {
+  color: var(--sl-color-accent-high);
+  background: var(--cn-amber-wash);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 3px;
+  padding: 0.1em 0.35em;
+}
+
+:root[data-theme='light'] .sl-markdown-content code:not(:where(.expressive-code *)) {
+  background: rgba(230, 168, 23, 0.16);
+}
+
+.sidebar-content a[aria-current='page'] {
+  border-left: 2px solid var(--sl-color-accent-high);
+}
