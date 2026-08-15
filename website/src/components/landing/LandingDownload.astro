@@ -1,16 +1,13 @@
 ---
-import { site, downloadTargets } from '../../config/site';
+import { site, downloadTargets } from '../../config/site'
 ---
 
 <section class="section" id="download">
   <div class="wrap">
     <div class="section__head">
-      <p class="eyebrow">Download{site.version ? ` — version ${site.version}` : ''}</p>
+      <p class="section-label">Download</p>
       <h2 class="section-title">Get Cannonade</h2>
-      <p class="lede">
-        Free and open source. Cannonade checks for updates on launch and installs them in the
-        background, so this is the last time you need this page.
-      </p>
+      <p class="section-intro">Free and open source.</p>
     </div>
     <div class="dl">
       {
@@ -25,8 +22,7 @@ import { site, downloadTargets } from '../../config/site';
       }
     </div>
     <p class="dl__note">
-      All builds are published on <a href={site.releases}>GitHub Releases</a>, alongside checksums
-      and the changelog.
+      All builds are published on <a href={site.releases}>GitHub Releases</a>.
     </p>
   </div>
 </section>

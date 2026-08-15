@@ -1,56 +1,23 @@
 ---
-interface Provider {
-  name: string;
-  kind: string;
-  body: string;
-}
-
-const providers: Provider[] = [
-  {
-    name: 'Ollama',
-    kind: 'Local',
-    body: 'Local or remote Ollama server, with model load, unload, delete, and download from inside the app.'
-  },
-  {
-    name: 'LM Studio',
-    kind: 'Local',
-    body: 'Local or remote LM Studio server, using its native API for complete token and timing statistics.'
-  },
-  {
-    name: 'OpenRouter',
-    kind: 'Cloud',
-    body: 'Hundreds of cloud models behind one API key, with pricing and context length listed per model.'
-  },
-  {
-    name: 'Custom',
-    kind: 'Either',
-    body: 'Any OpenAI-compatible endpoint: vLLM, a llama.cpp server, a gateway, or a provider not yet supported natively.'
-  }
-];
+const names: string[] = ['LM Studio', 'Ollama', 'OpenRouter'];
 ---
 
 <section class="section" id="providers">
   <div class="wrap">
     <div class="section__head">
-      <p class="eyebrow">Providers</p>
+      <p class="section-label">Providers</p>
       <h2 class="section-title">Bring the models you already run</h2>
-      <p class="lede">
-        Add as many providers as you like. A single run can mix them freely — that comparison is
-        usually the reason to run one. More native providers are in progress; see the <a
-          href="/docs/guides/connect-a-provider/">provider guide</a
-        >.
+      <p class="section-intro">
+        A provider is whatever serves the models: a local server on your machine or network, or a
+        cloud gateway behind an API key. Add one and its models appear in the app. A run targets a
+        single provider and any number of its models.
       </p>
     </div>
-    <div class="providers">
-      {
-        providers.map((provider) => (
-          <article class="provider">
-            <span class="provider__k">{provider.kind}</span>
-            <span class="provider__n">{provider.name}</span>
-            <p>{provider.body}</p>
-          </article>
-        ))
-      }
-    </div>
+    <ul class="providers">
+      {names.map((name) => <li class="provider">{name}</li>)}
+      <li class="provider provider--more">
+        <a href="/docs/guides/connect-a-provider/">and more</a>
+      </li>
+    </ul>
   </div>
 </section>

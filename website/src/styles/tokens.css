@@ -27,4 +27,11 @@
 
   --cn-measure: 1160px;
   --cn-radius: 4px;
+
+  --cn-nav-h: 63px;
+  --cn-shot-max: 1320px;
+  --cn-shot-ratio: 1.838;
+  --cn-shot-pad: clamp(18px, 2.5vh, 32px);
+  --cn-shot-w: min(var(--cn-shot-max), 100vw - 48px);
+  --cn-shot-peek: calc(var(--cn-shot-w) / var(--cn-shot-ratio) * 0.36);
 }

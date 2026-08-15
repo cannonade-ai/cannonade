@@ -1,36 +1,25 @@
 // @ts-check
-import { readFileSync } from 'node:fs';
-import { defineConfig } from 'astro/config';
-import starlight from '@astrojs/starlight';
-
-function readAppVersion() {
-  try {
-    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
-    return typeof pkg.version === 'string' ? pkg.version : '';
-  } catch {
-    return '';
-  }
-}
+import { defineConfig } from 'astro/config'
+import starlight from '@astrojs/starlight'
 
 export default defineConfig({
   site: 'https://cannonade.app',
-  vite: {
-    define: {
-      __APP_VERSION__: JSON.stringify(readAppVersion())
-    }
-  },
   integrations: [
     starlight({
       title: 'Cannonade',
       description:
         'A local-first desktop app for building test suites and running them against many LLMs at once.',
       logo: {
-        src: './src/assets/mark.svg',
+        src: './src/assets/logo.png',
         alt: 'Cannonade'
       },
-      favicon: '/favicon.svg',
+      favicon: '/favicon.ico',
       social: [
-        { icon: 'github', label: 'GitHub', href: 'https://github.com/BekirUzun/cannonade' }
+        {
+          icon: 'github',
+          label: 'GitHub',
+          href: 'https://github.com/BekirUzun/cannonade'
+        }
       ],
       editLink: {
         baseUrl: 'https://github.com/BekirUzun/cannonade/edit/main/website/'
@@ -48,4 +37,4 @@ export default defineConfig({
       ]
     })
   ]
-});
+})

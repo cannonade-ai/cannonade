@@ -1,37 +1,39 @@
 ---
 interface Step {
-  n: string;
-  title: string;
-  body: string;
+  n: string
+  title: string
+  body: string
 }
 
 const steps: Step[] = [
   {
     n: 'Step 01',
-    title: 'Define the suite',
-    body: 'Write cases as a system prompt, an input, and the evaluators that decide whether the answer is good. Exact match, ROUGE, JSON shape, a sandboxed script, or a judge model — stack as many as the case needs.'
+    title: 'Add a provider',
+    body: 'Point Cannonade at a local server or a cloud gateway.'
   },
   {
     n: 'Step 02',
-    title: 'Fire at every model',
-    body: 'Select any number of models across every provider you have configured and run the whole suite against all of them at once. A 4B model on your laptop and a frontier model behind an API key get the same cases and the same scoring.'
+    title: 'Write the cases',
+    body: 'A case is an input, an optional system prompt, and the evaluators that score the answer.'
   },
   {
     n: 'Step 03',
-    title: 'Compare the results',
-    body: 'One table: pass rate, mean score per evaluator, tokens, and timing for every model. Each run is saved locally, so the run before you changed the prompt is still there to compare against.'
+    title: 'Start a run',
+    body: 'Pick as many models as you want. Each one runs the whole suite.'
+  },
+  {
+    n: 'Step 04',
+    title: 'Read the run',
+    body: 'See what each model answered, what it scored, and how fast it was.'
   }
-];
+]
 ---
 
 <section class="section" id="how">
   <div class="wrap">
     <div class="section__head">
-      <p class="eyebrow">How it works</p>
-      <h2 class="section-title">Three steps, then repeat</h2>
-      <p class="lede">
-        The loop is small on purpose: change one thing, run the same suite, compare the two runs.
-      </p>
+      <p class="section-label">How it works</p>
+      <h2 class="section-title">What a run looks like</h2>
     </div>
     <div class="seq">
       {
