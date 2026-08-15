@@ -3,6 +3,7 @@ import { basename } from 'path'
 import { getAppState, saveManagedServers, type ManagedServerRecord } from '../app-state'
 import { getAppSettings } from '../ipc/settings-handlers'
 import { createLogger } from '../logger'
+import { resolveExecutable } from './executable-path'
 
 const log = createLogger('managed-process')
 
@@ -103,18 +104,19 @@ export function isManagedProcess(key: string): boolean {
   return tracked.has(key)
 }
 
-export function startManagedProcess(
+export async function startManagedProcess(
   key: string,
-  executable: string,
+  command: string,
   args: string[],
   env?: Record<string, string>
 ): Promise<number> {
-  return new Promise((resolve, reject) => {
-    if (!getAppSettings().experiments.cannonadeManagedServers) {
-      reject(new Error('Cannonade-managed servers is disabled in Experiments settings'))
-      return
-    }
+  if (!getAppSettings().experiments.cannonadeManagedServers) {
+    throw new Error('Cannonade-managed servers is disabled in Experiments settings')
+  }
 
+  const executable = await resolveExecutable(command)
+
+  return new Promise((resolve, reject) => {
     log.info(`Starting managed process "${key}": ${executable} ${args.join(' ')}`)
     const child = spawn(executable, args, {
       windowsHide: true,

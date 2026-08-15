@@ -3,7 +3,7 @@ import { existsSync } from 'fs'
 import { LMStudioClient } from '@lmstudio/sdk'
 import { join } from 'path'
 import { homedir } from 'os'
-import { exec } from 'child_process'
+import { execFile } from 'child_process'
 import { ProviderError, type LLMProvider } from '../base'
 import type { LocalModel } from '@shared/provider/local-model'
 import type {
@@ -28,8 +28,11 @@ import {
   toChatResponse as toOpenAIChatResponse
 } from '../openai-compat/mappers'
 import { createLogger } from '../../../main/logger'
+import { resolveExecutable } from '../../../main/services/executable-path'
 
 const log = createLogger('lmstudio')
+
+const LMS_EXECUTABLE = 'lms'
 
 function parseError(raw: string, status: number): ProviderError {
   try {
@@ -58,10 +61,11 @@ async function fetchOrThrow(input: RequestInfo, init?: RequestInit): Promise<Res
   return res
 }
 
-function execCommand(command: string): Promise<string> {
+async function execLms(args: string[]): Promise<string> {
+  const executable = await resolveExecutable(LMS_EXECUTABLE)
   return new Promise((resolve) => {
-    exec(command, (_err, stdout, stderr) => {
-      resolve((stdout || stderr).trim())
+    execFile(executable, args, { windowsHide: true }, (err, stdout, stderr) => {
+      resolve((stdout || stderr || err?.message || '').trim())
     })
   })
 }
@@ -196,21 +200,21 @@ export function createLmStudioProvider(
     },
 
     async getServerStatus(): Promise<ServerStatusResponse> {
-      const output = await execCommand('lms server status')
+      const output = await execLms(['server', 'status'])
       log.debug('lms server status output:', output)
       return parseStatusOutput(output)
     },
 
     async startServer(): Promise<ServerStatusResponse> {
       log.info('Starting LM Studio server')
-      const output = await execCommand('lms server start')
+      const output = await execLms(['server', 'start'])
       log.debug('lms server start output:', output)
       return parseStartOutput(output)
     },
 
     async stopServer(): Promise<ServerStatusResponse> {
       log.info('Stopping LM Studio server')
-      const output = await execCommand('lms server stop')
+      const output = await execLms(['server', 'stop'])
       log.debug('lms server stop output:', output)
       return parseStopOutput(output)
     }
