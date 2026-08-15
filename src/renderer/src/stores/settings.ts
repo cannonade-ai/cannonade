@@ -64,6 +64,8 @@ export const useSettingsStore = defineStore('settings', () => {
     const loadedSettings = await api.loadAppSettings()
     Object.assign(settings, loadedSettings, {
       onboardingComplete: loadedSettings.onboardingComplete ?? false,
+      htmlPreviewTemplate: loadedSettings.htmlPreviewTemplate ?? DEFAULTS.htmlPreviewTemplate,
+      htmlPreviewByDefault: loadedSettings.htmlPreviewByDefault ?? DEFAULTS.htmlPreviewByDefault,
       judge: loadedSettings.judge ? { ...loadedSettings.judge } : { ...DEFAULTS.judge },
       experiments: { ...DEFAULTS.experiments, ...loadedSettings.experiments }
     })

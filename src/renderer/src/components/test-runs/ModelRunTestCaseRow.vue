@@ -4,6 +4,7 @@ import {
   Chevron,
   CollapseTransition,
   CopyButton,
+  HtmlPreview,
   Textarea,
   Tooltip
 } from '@renderer/components/ui'
@@ -16,7 +17,17 @@ import type {
 } from '@shared/app/test-suite'
 import type { JudgeUsage } from '@shared/app/judge'
 import type { ChatMessage } from '@shared/provider/chat'
-import { IconAlertTriangle, IconCheck, IconClock, IconLoader2, IconX } from '@tabler/icons-vue'
+import {
+  IconAlertTriangle,
+  IconCheck,
+  IconClock,
+  IconCode,
+  IconEye,
+  IconLoader2,
+  IconX
+} from '@tabler/icons-vue'
+import { shouldOfferHtmlPreview } from '@renderer/utils/html-output'
+import { useSettingsStore } from '@renderer/stores/settings'
 import { DEFAULT_THRESHOLD, scoreColorStyle, scoreThreshold } from '@renderer/utils/score-color'
 import { summarizeEvaluation } from '@renderer/utils/evaluation-summary'
 import { computed, ref } from 'vue'
@@ -26,7 +37,14 @@ const props = defineProps<{
   caseRun?: TestCaseRun
 }>()
 
+const settings = useSettingsStore()
+
 const expanded = ref(false)
+const htmlPreview = ref(settings.htmlPreviewByDefault)
+
+const canPreviewHtml = computed<boolean>(() =>
+  shouldOfferHtmlPreview(props.caseRun?.result?.output, props.testCase.evaluations)
+)
 
 function toggle(): void {
   if (!props.caseRun?.result) return
@@ -257,8 +275,21 @@ const hasMetrics = computed<boolean>(() => {
         </div>
 
         <div v-if="caseRun.result.output" class="detail-block">
-          <span class="detail-label">Actual Output</span>
+          <div class="detail-label-row">
+            <span class="detail-label">Actual Output</span>
+            <button
+              v-if="canPreviewHtml"
+              v-tooltip="htmlPreview ? 'Show raw output' : 'Render as HTML'"
+              class="preview-toggle"
+              @click="htmlPreview = !htmlPreview"
+            >
+              <IconCode v-if="htmlPreview" :size="13" :stroke-width="2" />
+              <IconEye v-else :size="13" :stroke-width="2" />
+            </button>
+          </div>
+          <HtmlPreview v-if="canPreviewHtml && htmlPreview" :content="caseRun.result.output" />
           <Textarea
+            v-else
             :model-value="caseRun.result.output"
             variant="display"
             readonly
@@ -567,6 +598,33 @@ const hasMetrics = computed<boolean>(() => {
     font-size: var(--text-xs);
     font-weight: 700;
     color: var(--text-muted);
+  }
+
+  .detail-label-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .preview-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px 4px;
+    background: none;
+    border: 1px solid transparent;
+    color: var(--accent);
+    border-color: var(--accent-border);
+    cursor: pointer;
+    transition:
+      color 0.15s,
+      background 0.15s,
+      border-color 0.15s;
+
+    &:hover {
+      color: var(--text-primary);
+      background: var(--surface-hover);
+    }
   }
 
   .detail-value {

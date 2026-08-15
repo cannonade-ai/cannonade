@@ -12,7 +12,13 @@ export type View =
   | 'prompts'
   | 'playground'
   | 'logs'
-export type SettingsSection = 'general' | 'providers' | 'appearance' | 'test-runs' | 'experiments'
+export type SettingsSection =
+  | 'general'
+  | 'providers'
+  | 'appearance'
+  | 'test-runs'
+  | 'output'
+  | 'experiments'
 
 export interface NavigationPayload {
   promptId?: string

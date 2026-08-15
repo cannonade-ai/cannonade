@@ -18,6 +18,8 @@ export interface AppSettings {
   configuredProviders: ConfiguredProvider[]
   onboardingComplete: boolean
   logLevel: LogLevel
+  htmlPreviewTemplate: string
+  htmlPreviewByDefault: boolean
   judge: JudgeSettings
   experiments: ExperimentSettings
 }
@@ -35,6 +37,8 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   configuredProviders: [],
   onboardingComplete: false,
   logLevel: 'info',
+  htmlPreviewTemplate: '',
+  htmlPreviewByDefault: false,
   judge: { ...DEFAULT_JUDGE_SETTINGS },
   experiments: { ...DEFAULT_EXPERIMENT_SETTINGS }
 }
