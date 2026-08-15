@@ -6,6 +6,7 @@ import {
   IconServer,
   IconPalette,
   IconTestPipe,
+  IconEye,
   IconFlask
 } from '@tabler/icons-vue'
 import { useNavigationStore } from '@renderer/stores/navigation'
@@ -16,10 +17,11 @@ import SettingsModalGeneral from './SettingsModalGeneral.vue'
 import SettingsModalProviders from './SettingsModalProviders.vue'
 import SettingsModalAppearance from './SettingsModalAppearance.vue'
 import SettingsModalTestRuns from './SettingsModalTestRuns.vue'
+import SettingsModalOutput from './SettingsModalOutput.vue'
 import SettingsModalExperiments from './SettingsModalExperiments.vue'
 import InfoTooltip from '@renderer/components/ui/InfoTooltip.vue'
 
-type SectionId = 'general' | 'providers' | 'appearance' | 'test-runs' | 'experiments'
+type SectionId = 'general' | 'providers' | 'appearance' | 'test-runs' | 'output' | 'experiments'
 
 const nav = useNavigationStore()
 const activeSection = computed({
@@ -38,6 +40,11 @@ const sections: { id: SectionId; label: string; icon: unknown; info?: string }[]
     info: 'Configure the AI providers and local servers used to run your models.'
   },
   { id: 'test-runs', label: 'Test Runs', icon: IconTestPipe },
+  {
+    id: 'output',
+    label: 'Output',
+    icon: IconEye
+  },
   { id: 'appearance', label: 'Appearance', icon: IconPalette },
   {
     id: 'experiments',
@@ -52,6 +59,7 @@ const sectionComponents: Record<SectionId, unknown> = {
   general: SettingsModalGeneral,
   providers: SettingsModalProviders,
   'test-runs': SettingsModalTestRuns,
+  output: SettingsModalOutput,
   appearance: SettingsModalAppearance,
   experiments: SettingsModalExperiments
 }
