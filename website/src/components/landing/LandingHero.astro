@@ -1,22 +1,11 @@
 ---
 import { site } from '../../config/site'
+import LandingHeroBombardment from './LandingHeroBombardment.astro'
 ---
 
 <section class="hero">
   <div class="hero__field" aria-hidden="true"></div>
-  <svg
-    class="hero__arc"
-    viewBox="0 0 1440 700"
-    preserveAspectRatio="none"
-    aria-hidden="true"
-    focusable="false"
-  >
-    <path
-      d="M-40 640 C 260 470, 430 180, 780 120 C 1030 78, 1250 130, 1500 60"
-      fill="none"
-      stroke="rgba(230,168,23,0.42)"
-      stroke-width="1.5"></path>
-  </svg>
+  <LandingHeroBombardment />
 
   <div class="wrap hero__copy">
     <p class="section-label">Local-first LLM testing</p>
@@ -27,7 +16,7 @@ import { site } from '../../config/site'
     </p>
     <div class="hero__actions">
       <a class="btn btn--primary" href="#download">Download</a>
-      <a class="btn btn--ghost" href={site.docs}>Docs</a>
+      <a class="btn btn--ghost" href={site.docs}>Ddocs</a>
     </div>
     <ul class="hero__meta">
       <li>Windows, macOS, Linux</li>
