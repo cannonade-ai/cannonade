@@ -6,6 +6,9 @@
   const TRAIL_MAX = 25
   const MAX_SHELLS = 5
   const TARGET_RADIUS = 100
+  const MAX_FPS = 60
+  const FRAME_MIN_MS = (1000 / MAX_FPS) * 0.8
+  const BLOOM_TEXTURE_SIZE = 256
 
   const canvas = document.querySelector('.hero__bombard')
   const hero = canvas && canvas.closest('.hero')
@@ -170,15 +173,27 @@
       }
     }
 
-    function bloom(x, y, radius, alpha) {
-      const gradient = ctx.createRadialGradient(x, y, 0, x, y, radius)
-      gradient.addColorStop(0, `rgba(${amberHot}, ${alpha})`)
-      gradient.addColorStop(0.45, `rgba(${amber}, ${alpha * 0.35})`)
+    function createBloomTexture() {
+      const texture = document.createElement('canvas')
+      texture.width = BLOOM_TEXTURE_SIZE
+      texture.height = BLOOM_TEXTURE_SIZE
+      const textureCtx = texture.getContext('2d')
+      const half = BLOOM_TEXTURE_SIZE / 2
+      const gradient = textureCtx.createRadialGradient(half, half, 0, half, half, half)
+      gradient.addColorStop(0, `rgba(${amberHot}, 1)`)
+      gradient.addColorStop(0.45, `rgba(${amber}, 0.35)`)
       gradient.addColorStop(1, `rgba(${amber}, 0)`)
-      ctx.fillStyle = gradient
-      ctx.beginPath()
-      ctx.arc(x, y, radius, 0, TAU)
-      ctx.fill()
+      textureCtx.fillStyle = gradient
+      textureCtx.fillRect(0, 0, BLOOM_TEXTURE_SIZE, BLOOM_TEXTURE_SIZE)
+      return texture
+    }
+
+    const bloomTexture = createBloomTexture()
+
+    function bloom(x, y, radius, alpha) {
+      ctx.globalAlpha = alpha
+      ctx.drawImage(bloomTexture, x - radius, y - radius, radius * 2, radius * 2)
+      ctx.globalAlpha = 1
     }
 
     function drawSecret() {
@@ -279,11 +294,13 @@
     }
 
     function tick(now) {
-      const dt = Math.min(0.05, (now - last) / 1000 || 0)
+      frame = requestAnimationFrame(tick)
+      const elapsed = now - last
+      if (elapsed < FRAME_MIN_MS) return
+      const dt = Math.min(0.05, elapsed / 1000 || 0)
       last = now
       update(dt)
       draw()
-      frame = requestAnimationFrame(tick)
     }
 
     function start() {
