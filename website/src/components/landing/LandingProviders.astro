@@ -1,0 +1,23 @@
+---
+const names: string[] = ['LM Studio', 'Ollama', 'OpenRouter'];
+---
+
+<section class="section" id="providers">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="section-label">Providers</p>
+      <h2 class="section-title">Bring the models you already run</h2>
+      <p class="section-intro">
+        A provider is whatever serves the models: a local server on your machine or network, or a
+        cloud gateway behind an API key. Add one and its models appear in the app. A run targets a
+        single provider and any number of its models.
+      </p>
+    </div>
+    <ul class="providers">
+      {names.map((name) => <li class="provider">{name}</li>)}
+      <li class="provider provider--more">
+        <a href="/docs/guides/connect-a-provider/">and more</a>
+      </li>
+    </ul>
+  </div>
+</section>

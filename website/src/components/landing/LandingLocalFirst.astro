@@ -1,0 +1,39 @@
+---
+interface Fact {
+  label: string
+  value: string
+}
+
+const facts: Fact[] = [
+  {
+    label: 'Storage',
+    value: 'Suites, prompts, and runs are plain JSON files in your app data directory.'
+  },
+  { label: 'Network', value: 'Requests go to the providers you configure, and nowhere else.' },
+  { label: 'Account', value: 'There is none. Nothing to sign up for, nothing to log into.' },
+  { label: 'Offline', value: 'With a local provider, the app works with the network off.' }
+]
+---
+
+<section class="band">
+  <div class="wrap band__inner">
+    <div class="section__head" style="margin-bottom:0">
+      <p class="section-label">Local first</p>
+      <h2 class="section-title">Everything stays on your machine</h2>
+      <p class="section-intro">
+        Test cases tend to carry real prompts and real inputs, so Cannonade keeps them on disk in
+        files you can read, diff, and delete.
+      </p>
+    </div>
+    <dl class="band__facts">
+      {
+        facts.map((fact) => (
+          <div class="band__fact">
+            <dt>{fact.label}</dt>
+            <dd>{fact.value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </div>
+</section>

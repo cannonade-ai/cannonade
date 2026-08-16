@@ -1,0 +1,25 @@
+---
+import LandingLayout from '../layouts/LandingLayout.astro';
+import LandingNav from '../components/landing/LandingNav.astro';
+import LandingHero from '../components/landing/LandingHero.astro';
+import LandingShot from '../components/landing/LandingShot.astro';
+import LandingSequence from '../components/landing/LandingSequence.astro';
+import LandingFeatures from '../components/landing/LandingFeatures.astro';
+import LandingProviders from '../components/landing/LandingProviders.astro';
+import LandingDownload from '../components/landing/LandingDownload.astro';
+import LandingFooter from '../components/landing/LandingFooter.astro';
+import { site } from '../config/site';
+---
+
+<LandingLayout title={`${site.name}: ${site.tagline}`} description={site.description}>
+  <LandingNav />
+  <main>
+    <LandingHero />
+    <LandingShot />
+    <LandingSequence />
+    <LandingFeatures />
+    <LandingProviders />
+    <LandingDownload />
+  </main>
+  <LandingFooter />
+</LandingLayout>

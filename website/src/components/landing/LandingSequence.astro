@@ -1,0 +1,50 @@
+---
+interface Step {
+  n: string
+  title: string
+  body: string
+}
+
+const steps: Step[] = [
+  {
+    n: 'Step 01',
+    title: 'Add a provider',
+    body: 'Point Cannonade at a local server or a cloud gateway.'
+  },
+  {
+    n: 'Step 02',
+    title: 'Write the cases',
+    body: 'A case is an input, an optional system prompt, and the evaluators that score the answer.'
+  },
+  {
+    n: 'Step 03',
+    title: 'Start a run',
+    body: 'Pick as many models as you want. Each one runs the whole suite.'
+  },
+  {
+    n: 'Step 04',
+    title: 'Read the run',
+    body: 'See what each model answered, what it scored, and how fast it was.'
+  }
+]
+---
+
+<section class="section" id="how">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="section-label">How it works</p>
+      <h2 class="section-title">What a run looks like</h2>
+    </div>
+    <div class="seq">
+      {
+        steps.map((step) => (
+          <article class="seq__step">
+            <span class="seq__n mono">{step.n}</span>
+            <h3 class="seq__t">{step.title}</h3>
+            <p>{step.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

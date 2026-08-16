@@ -1,0 +1,73 @@
+---
+interface Feature {
+  title: string
+  body: string
+  points: string[]
+  shot: string
+  alt: string
+}
+
+const features: Feature[] = [
+  {
+    title: 'Run results',
+    body: 'Results arrive while the run is still going, and stay on disk once it finishes.',
+    points: [
+      'Pass rate and score per model',
+      'Tokens, speed, and cost',
+      'Past runs kept for comparison'
+    ],
+    shot: 'https://placehold.co/1200x760/151a20/e6a817.png?text=Test+run+comparison',
+    alt: 'Screenshot placeholder: the test run comparison table'
+  },
+  {
+    title: 'Playground',
+    body: 'A chat view for trying a model before writing cases for it.',
+    points: ['Any configured model', 'Sampling parameters per message', 'Stats on every response'],
+    shot: 'https://placehold.co/1200x760/151a20/58a6ff.png?text=Playground',
+    alt: 'Screenshot placeholder: the playground view'
+  },
+  {
+    title: 'Prompt library',
+    body: 'System prompts live in one place, so one edit reaches every case using them.',
+    points: ['Shared by suites and the playground', 'Versioned'],
+    shot: 'https://placehold.co/1200x760/151a20/3fb950.png?text=Prompt+library',
+    alt: 'Screenshot placeholder: the prompt library'
+  },
+  {
+    title: 'Model management',
+    body: 'Handle local models without switching to another app.',
+    points: ['Download from the registry or Hugging Face', 'Load, unload or delete them'],
+    shot: 'https://placehold.co/1200x760/151a20/a2acbb.png?text=Models',
+    alt: 'Screenshot placeholder: the models view'
+  }
+]
+---
+
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="section-label">Features</p>
+      <h2 class="section-title">What is in the app</h2>
+    </div>
+    <div class="features">
+      {
+        features.map((feature, i) => (
+          <article class={i % 2 === 1 ? 'feature feature--flip' : 'feature'}>
+            <div class="feature__body">
+              <h3 class="feature__t">{feature.title}</h3>
+              <p>{feature.body}</p>
+              <ul class="feature__list">
+                {feature.points.map((point) => (
+                  <li>{point}</li>
+                ))}
+              </ul>
+            </div>
+            <div class="feature__shot">
+              <img src={feature.shot} alt={feature.alt} width="1200" height="760" loading="lazy" />
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+</section>

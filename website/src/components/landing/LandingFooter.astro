@@ -1,0 +1,17 @@
+---
+import { site } from '../../config/site';
+
+const year = new Date().getFullYear();
+---
+
+<footer class="foot">
+  <div class="wrap foot__inner">
+    <span>© {year} Cannonade</span>
+    <nav class="foot__links" aria-label="Footer">
+      <a href={site.docs}>Docs</a>
+      <a href={site.repo}>GitHub</a>
+      <a href={site.issues}>Issues</a>
+      <a href={site.releases}>Releases</a>
+    </nav>
+  </div>
+</footer>

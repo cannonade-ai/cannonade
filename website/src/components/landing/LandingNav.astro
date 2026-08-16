@@ -1,0 +1,21 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../../assets/logo.png';
+import { site } from '../../config/site';
+---
+
+<header class="nav">
+  <div class="wrap nav__inner">
+    <a class="nav__brand" href="/">
+      <Image src={logo} alt="" width={52} height={52} densities={[1, 2]} />
+      <span>Cannonade</span>
+    </a>
+    <nav class="nav__links" aria-label="Main">
+      <a class="nav__hide-sm" href="#how">How it works</a>
+      <a class="nav__hide-sm" href="#providers">Providers</a>
+      <a href={site.docs}>Docs</a>
+      <a class="nav__hide-sm" href={site.repo}>GitHub</a>
+      <a class="btn btn--primary btn--sm" href="#download">Download</a>
+    </nav>
+  </div>
+</header>
