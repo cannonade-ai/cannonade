@@ -1,4 +1,4 @@
 provider: github
-owner: bekiruzun
+owner: cannonade-ai
 repo: cannonade
 updaterCacheDirName: cannonade-updater

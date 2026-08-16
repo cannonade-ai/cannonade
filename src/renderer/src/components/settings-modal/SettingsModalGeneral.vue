@@ -24,7 +24,7 @@ async function openSuitesFolder(): Promise<void> {
 }
 
 function openGithubIssues(): void {
-  window.open('https://github.com/BekirUzun/cannonade/issues')
+  window.open('https://github.com/cannonade-ai/cannonade/issues')
 }
 
 async function handleReset(): Promise<void> {

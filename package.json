@@ -7,10 +7,10 @@
   "homepage": "https://cannonade.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/BekirUzun/cannonade.git"
+    "url": "git+https://github.com/cannonade-ai/cannonade.git"
   },
   "bugs": {
-    "url": "https://github.com/BekirUzun/cannonade/issues"
+    "url": "https://github.com/cannonade-ai/cannonade/issues"
   },
   "keywords": [
     "llm",

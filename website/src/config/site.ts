@@ -1,4 +1,4 @@
-const REPO = 'https://github.com/BekirUzun/cannonade'
+const REPO = 'https://github.com/cannonade-ai/cannonade'
 
 export const site = {
   name: 'Cannonade',
@@ -9,7 +9,7 @@ export const site = {
   issues: `${REPO}/issues`,
   releases: `${REPO}/releases`,
   latest: `${REPO}/releases/latest`,
-  docs: '/docs/guides/quick-start/'
+  docs: '/docs'
 }
 
 export interface DownloadTarget {

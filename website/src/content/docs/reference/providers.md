@@ -101,6 +101,6 @@ Two options, in order of effort:
    and provider-specific features that the OpenAI-compatible shape cannot express. The
    provider layer is deliberately small: a factory, a set of mappers, and a registration
    entry. Start from the
-   [repository](https://github.com/BekirUzun/cannonade).
+   [repository](https://github.com/cannonade-ai/cannonade).
 
 More native providers are in progress.

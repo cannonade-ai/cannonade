@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://cannonade.app">
-    <img src="https://raw.githubusercontent.com/BekirUzun/cannonade/main/resources/icon.png" alt="cannonade" width="200"/>
+    <img src="https://raw.githubusercontent.com/cannonade-ai/cannonade/main/resources/icon.png" alt="cannonade" width="200"/>
   </a>
 </p>
 <p align="center"><a href="https://cannonade.app">cannonade.app</a></p>
@@ -62,4 +62,4 @@ npm run build:linux
 
 ## Contributing
 
-Bug reports and feature requests: [GitHub Issues](https://github.com/BekirUzun/cannonade/issues).
+Bug reports and feature requests: [GitHub Issues](https://github.com/cannonade-ai/cannonade/issues).
