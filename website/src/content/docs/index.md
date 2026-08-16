@@ -9,7 +9,7 @@ is sent to a third party unless you configure a cloud provider yourself.
 
 ## Guides
 
-Start here if you are new. These are meant to be read in order.
+Start here if you are new.
 
 - [Quick start](/docs/guides/quick-start/): install the app, add a provider, run the
   bundled suite.
@@ -29,5 +29,5 @@ Look things up here.
 ## Something missing?
 
 These docs live in the same repository as the app, and every page has an "Edit this page"
-link at the bottom. Corrections are welcome as pull requests, and gaps are welcome as
+link at the bottom. Corrections and gaps are welcome as pull requests or 
 [issues](https://github.com/cannonade-ai/cannonade/issues).
