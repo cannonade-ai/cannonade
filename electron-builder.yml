@@ -47,5 +47,5 @@ appImage:
 npmRebuild: false
 publish:
   provider: github
-  owner: bekiruzun
+  owner: cannonade-ai
   repo: cannonade

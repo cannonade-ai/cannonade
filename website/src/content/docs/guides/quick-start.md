@@ -9,7 +9,7 @@ Cannonade is a desktop app for building LLM test suites and running them across 
 
 ## 1. Install
 
-Download the build for your platform from the [GitHub Releases](https://github.com/BekirUzun/cannonade/releases), then:
+Download the build for your platform from the [GitHub Releases](https://github.com/cannonade-ai/cannonade/releases), then:
 
 - **Windows**: run the `.exe` installer.
 - **macOS**: see [below](#macos-needs-an-extra-step), the build is unsigned.

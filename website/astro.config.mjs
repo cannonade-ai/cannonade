@@ -18,11 +18,11 @@ export default defineConfig({
         {
           icon: 'github',
           label: 'GitHub',
-          href: 'https://github.com/BekirUzun/cannonade'
+          href: 'https://github.com/cannonade-ai/cannonade'
         }
       ],
       editLink: {
-        baseUrl: 'https://github.com/BekirUzun/cannonade/edit/main/website/'
+        baseUrl: 'https://github.com/cannonade-ai/cannonade/edit/main/website/'
       },
       lastUpdated: true,
       components: {

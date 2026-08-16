@@ -1,4 +1,4 @@
-const REPO = 'https://github.com/BekirUzun/cannonade'
+const REPO = 'https://github.com/cannonade-ai/cannonade'
 
 export const site = {
   name: 'Cannonade',

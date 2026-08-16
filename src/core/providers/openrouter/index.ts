@@ -9,7 +9,7 @@ import { createLogger } from '../../../main/logger'
 const log = createLogger('openrouter')
 
 const ATTRIBUTION_HEADERS = {
-  'HTTP-Referer': 'https://github.com/BekirUzun/cannonade',
+  'HTTP-Referer': 'https://github.com/cannonade-ai/cannonade',
   'X-Title': 'Cannonade'
 }
 

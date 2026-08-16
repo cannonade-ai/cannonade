@@ -30,4 +30,4 @@ Look things up here.
 
 These docs live in the same repository as the app, and every page has an "Edit this page"
 link at the bottom. Corrections are welcome as pull requests, and gaps are welcome as
-[issues](https://github.com/BekirUzun/cannonade/issues).
+[issues](https://github.com/cannonade-ai/cannonade/issues).
