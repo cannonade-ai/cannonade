@@ -2,9 +2,9 @@ const REPO = 'https://github.com/BekirUzun/cannonade'
 
 export const site = {
   name: 'Cannonade',
-  tagline: 'Test suites for local and cloud models',
+  tagline: 'Test suites for local and cloud AI models',
   description:
-    'Cannonade is a desktop app for building LLM test suites and running them across several models at once, then comparing the results. Suites, prompts, and runs are stored as files on your own machine.',
+    'Cannonade is a desktop app for building LLM test suites and running them across several AI models at once. Iterate on your prompts and validate every model output against the checks you define.',
   repo: REPO,
   issues: `${REPO}/issues`,
   releases: `${REPO}/releases`,

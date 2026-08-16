@@ -5,14 +5,15 @@
   const GRAVITY = 980
   const TRAIL_MAX = 25
   const MAX_SHELLS = 5
+  const TARGET_RADIUS = 100
 
   const canvas = document.querySelector('.hero__bombard')
   const hero = canvas && canvas.closest('.hero')
   const ctx = canvas && canvas.getContext('2d')
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)')
 
-  function toRgb(value, fallback) {
-    const raw = value.trim() || fallback
+  function toRgb(value) {
+    const raw = value.trim()
     if (raw.startsWith('#')) {
       const n = parseInt(raw.slice(1), 16)
       return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`
@@ -23,11 +24,16 @@
   if (canvas && hero && ctx && !reduced.matches) {
     const amber = toRgb('#e6a817')
     const amberHot = toRgb('#f0d48a')
+    const pass = toRgb('#3fb950')
+
+    const mono =
+      getComputedStyle(document.documentElement).getPropertyValue('--cn-mono').trim() || 'monospace'
 
     const shells = []
     const bursts = []
     const sparks = []
     const flashes = []
+    const marks = []
 
     let width = 0
     let height = 0
@@ -38,6 +44,15 @@
     let hovered = false
     let pointer = { x: 0, y: 0 }
     let glow = 0
+    let secret = { x: 0, y: 0 }
+    let hits = 0
+
+    function placeSecret() {
+      secret = {
+        x: width * (0.05 + Math.random() * 0.9),
+        y: height * (0.05 + Math.random() * 0.9)
+      }
+    }
 
     function resize() {
       const rect = hero.getBoundingClientRect()
@@ -47,9 +62,10 @@
       canvas.width = Math.round(width * dpr)
       canvas.height = Math.round(height * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+      placeSecret()
     }
 
-    function launch(target, power, pace) {
+    function launch(target, power, pace, aimed) {
       if (shells.length >= MAX_SHELLS) return
       const origin = { x: -10, y: height + 10 }
       const distance = Math.hypot(target.x - origin.x, target.y - origin.y)
@@ -62,12 +78,26 @@
         age: 0,
         flight,
         power,
+        aimed,
         trail: []
       })
       flashes.push({ x: origin.x, y: origin.y, age: 0, life: 0.5 })
     }
 
-    function detonate(x, y, power) {
+    function detonate(x, y, power, aimed) {
+      const direct = aimed && Math.hypot(x - secret.x, y - secret.y) <= TARGET_RADIUS
+      if (direct) {
+        hits += 1
+        marks.push({
+          x: secret.x,
+          y: secret.y,
+          age: 0,
+          life: 1.6,
+          label: `x${hits}`
+        })
+        placeSecret()
+        power *= 1.5
+      }
       bursts.push({ x, y, age: 0, life: 0.8 + power * 0.3, power })
       const count = Math.round(7 + power * 6)
       for (let i = 0; i < count; i++) {
@@ -95,7 +125,7 @@
     function update(dt) {
       nextLaunch -= dt
       if (nextLaunch <= 0) {
-        launch(ambientTarget(), 0.5 + Math.random() * 0.5, 600)
+        launch(ambientTarget(), 0.5 + Math.random() * 0.5, 600, false)
         nextLaunch = hovered ? 1 + Math.random() * 1.5 : 2 + Math.random() * 2
       }
 
@@ -110,7 +140,7 @@
         shell.trail.push({ x: shell.x, y: shell.y })
         if (shell.trail.length > TRAIL_MAX) shell.trail.shift()
         if (shell.age >= shell.flight) {
-          detonate(shell.x, shell.y, shell.power)
+          detonate(shell.x, shell.y, shell.power, shell.aimed)
           shells.splice(i, 1)
         }
       }
@@ -133,6 +163,11 @@
         flashes[i].age += dt
         if (flashes[i].age >= flashes[i].life) flashes.splice(i, 1)
       }
+
+      for (let i = marks.length - 1; i >= 0; i--) {
+        marks[i].age += dt
+        if (marks[i].age >= marks[i].life) marks.splice(i, 1)
+      }
     }
 
     function bloom(x, y, radius, alpha) {
@@ -146,12 +181,26 @@
       ctx.fill()
     }
 
+    function drawSecret() {
+      ctx.lineWidth = 0.8
+      ctx.lineCap = 'round'
+      ctx.setLineDash([1, 5])
+      ctx.strokeStyle = `rgba(${amber}, 0.15)`
+      ctx.beginPath()
+      ctx.arc(secret.x, secret.y, 9, 0, TAU)
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.lineCap = 'butt'
+    }
+
     function draw() {
       ctx.clearRect(0, 0, width, height)
 
       if (glow > 0.01) {
         bloom(pointer.x, pointer.y, 200, 0.05 * glow)
       }
+
+      drawSecret()
 
       for (const flash of flashes) {
         const fade = 1 - flash.age / flash.life
@@ -204,6 +253,29 @@
         ctx.stroke()
       }
       ctx.lineCap = 'butt'
+
+      for (const mark of marks) {
+        const t = mark.age / mark.life
+        const fade = Math.pow(1 - t, 1.6)
+        const ring = 14 + 46 * (1 - Math.pow(1 - t, 3))
+        ctx.lineWidth = 1.4
+        ctx.strokeStyle = `rgba(${pass}, ${0.85 * fade})`
+        ctx.beginPath()
+        ctx.arc(mark.x, mark.y, ring, 0, TAU)
+        ctx.stroke()
+        for (let i = 0; i < 4; i++) {
+          const angle = (i * TAU) / 4
+          ctx.beginPath()
+          ctx.moveTo(mark.x + Math.cos(angle) * (ring - 7), mark.y + Math.sin(angle) * (ring - 7))
+          ctx.lineTo(mark.x + Math.cos(angle) * (ring + 9), mark.y + Math.sin(angle) * (ring + 9))
+          ctx.stroke()
+        }
+        ctx.font = `600 13px ${mono}`
+        ctx.textAlign = 'center'
+        ctx.fillStyle = `rgba(${pass}, ${0.9 * fade})`
+        ctx.fillText(mark.label, mark.x, mark.y - ring - 16 - 14 * t)
+        ctx.textAlign = 'left'
+      }
     }
 
     function tick(now) {
@@ -264,7 +336,7 @@
     hero.addEventListener('pointerdown', (event) => {
       if (event.target && event.target.closest('a, button')) return
       const rect = hero.getBoundingClientRect()
-      launch({ x: event.clientX - rect.left, y: event.clientY - rect.top }, 1.7, 1100)
+      launch({ x: event.clientX - rect.left, y: event.clientY - rect.top }, 1.7, 1000, true)
     })
 
     reduced.addEventListener('change', () => {
