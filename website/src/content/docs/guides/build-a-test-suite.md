@@ -5,71 +5,94 @@ sidebar:
   order: 3
 ---
 
-A test suite is a named set of cases. A case is one prompt plus the evaluators that
-decide whether the answer is good. You write a suite once and fire it at as many models
-as you like, as often as you like.
+A test suite is a named set of cases. A case is one prompt plus the evaluators that decide
+whether the answer is good.
 
 ## Anatomy of a case
 
 Each case has:
 
-- **A system prompt** — either typed inline or pulled from the Prompt library.
-- **User input** — the message sent to the model.
-- **Evaluators** — one or more checks applied to the output. A case passes when its
-  evaluators pass.
+- **A name** and an optional description.
+- **A system prompt**, either typed inline or linked to an entry in the **Prompts**
+  library. A linked prompt can be pinned to a version or follow the latest one.
+- **User input**, the message sent to the model.
+- **Evaluators**, one or more checks applied to the output.
+- **Passing logic**, either `all` (every evaluator must pass) or `any` (one is enough).
 
-Evaluators stack. A case can require that the output contains a phrase *and* stays above
-a ROUGE threshold *and* parses as valid JSON. Each evaluator reports its own score, and
-you see them broken out per case in the results.
+Evaluators stack. A case can require that the output contains a phrase, stays above a ROUGE
+threshold, and parses as valid JSON. Each evaluator reports its own score, and you see them
+broken out per case in the results. The case score is the mean of its evaluator scores,
+while pass or fail comes from the passing logic.
 
 ## Creating a suite
 
-1. Open **Test suites → New suite** and give it a name.
-2. Add a case. Start with something you already know the answer to — a classification, a
+1. Open **Test Suites**, create a suite, and give it a name.
+2. Add a case. Start with something you already know the answer to: a classification, a
    format constraint, a refusal you expect.
-3. Attach an evaluator. `contains` and `exact_match` are the fastest to reason about;
-   move to `rouge`, `f1`, or `llm_rubric` once you are grading open-ended text.
-4. Repeat until the suite covers the behaviour you actually care about.
+3. Attach an evaluator. `contains` and `exact_match` are the fastest to reason about; move
+   to `rouge`, `f1`, or `llm_rubric` once you are grading open-ended text.
+
+Sampling parameters such as temperature, top-p, and max tokens are set on the suite and
+apply to every case in it.
 
 :::tip
 Suites are more useful when the cases disagree with each other. A suite where every model
 scores 100% tells you nothing. Include the cases small models fail.
 :::
 
-## Running against multiple models
+## Running against several models
 
-Click **Run** and select models. This is the core loop: the same cases, the same
-evaluators, every selected model, one table.
+Open **Test Runs**, click **New Run**, then pick the suite, a provider, and the models to
+test. The same cases and the same evaluators run against every model you selected.
 
-While the run is in progress you can watch each case resolve. When it finishes you get,
-per model:
+For local providers you are not limited to models you already have. Give a registry id or a
+[Hugging Face](https://huggingface.co/models) id and Cannonade downloads the model for the run. A run option can delete
+those downloads afterwards so they do not pile up.
 
-- pass rate across cases
-- mean score per evaluator
-- token counts and timing
+Other run options worth knowing:
 
-Every run is saved to **Test runs** with its full output, so you can compare today's
-results against the run you did before you changed the system prompt.
+- **Unload other models before the run** and **unload after the run**, to keep memory free.
+- **Parallel runs**, which tests several models at once. This is available for external
+  providers only, since local models compete for the same hardware.
+- **Default test timeout**, a per-case limit set in **Settings > Test Runs**.
+
+While the run is in progress you can watch each case resolve. When it finishes, each model
+reports:
+
+- cases passed and failed
+- average score
+- tokens per second, time to first token, and duration
+- token usage and cost, where the provider reports them
+
+Judge model usage from `llm_rubric` and `g_eval` is tracked separately, so grading cost
+never hides inside the numbers for the model under test.
+
+Every run is saved to **Test Runs** with its full output, so you can compare today's results
+against the run you did before you changed the system prompt.
 
 ## Iterating on prompts
 
 The usual workflow is:
 
 1. Run the suite. Note which cases fail and on which models.
-2. Change one thing — the system prompt, a sampling parameter, the phrasing of a case.
+2. Change one thing: the system prompt, a sampling parameter, the phrasing of a case.
 3. Run it again against the same models.
 4. Compare the two runs.
 
-Because runs are stored locally as JSON, the history is yours: nothing expires, nothing
-is rate limited, and nothing leaves the machine.
+Versioned prompts help here. Save the system prompt in **Prompts**, edit it to create a new
+version, and the run history tells you which version produced which result.
+
+Because runs are stored locally as JSON, the history is yours: nothing expires, nothing is
+rate limited, and nothing leaves the machine (external providers excepted, obviously).
 
 ## Sharing a suite
 
-Suites can be exported and imported as JSON. That makes them reviewable in a pull
-request, which is the practical way to keep a shared suite honest across a team.
+Each suite is a JSON file in Cannonade's suites folder, which **Settings > General** can
+open for you. Copying that file to another machine, or committing it to a repository, is
+all it takes to share a suite or review a change to one in a pull request.
 
 :::caution
-Imported suites are validated against a schema before they are loaded, and custom
-validators run in a sandboxed JavaScript runtime rather than in the app process. Still,
-treat a suite from a stranger the way you would treat any other code you did not write.
+A suite can carry `custom` evaluators, which are JavaScript. Cannonade runs them in a
+sandboxed runtime with no filesystem and no network access, but still read a suite
+from a stranger the way you would read any other code you did not write.
 :::
