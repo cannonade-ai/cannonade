@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Chevron, CircleProgress } from '@renderer/components/ui'
+import { Chevron, CircleProgress, CollapseTransition } from '@renderer/components/ui'
 import { ModelRunTestCaseRow } from '@renderer/components/test-runs'
 
 import type { ModelRef, PerModelRun, TestCaseRun } from '@shared/app/test-run'
@@ -90,10 +90,10 @@ function passRate(mr: PerModelRun): string {
   return `${mr.aggregate.passed}/${mr.caseRuns.length}`
 }
 
-function score(mr: PerModelRun): string {
-  if (mr.aggregate?.avgScore == null) return '—'
-  return (mr.aggregate.avgScore * 100).toFixed(0) + '%'
-}
+const summaryMeta = computed<string>(() => {
+  const mr = props.modelRun
+  return mr.aggregate ? `${passRate(mr)} passed` : ''
+})
 
 function toggle(): void {
   expanded.value = !expanded.value
@@ -166,16 +166,10 @@ function remainingTime(estimatedCompletion: string): string {
             />
             <IconMinus v-else :size="14" :stroke-width="2" />
           </span>
-          <span class="model-name">{{ modelLabel(modelRun.modelRef) }}</span>
-
-          <span class="summary-stat">
-            <span class="stat-label">Pass</span>
-            <span class="stat-value">{{ passRate(modelRun) }}</span>
-          </span>
-          <span class="summary-stat">
-            <span class="stat-label">Score</span>
-            <span class="stat-value">{{ score(modelRun) }}</span>
-          </span>
+          <div class="summary-identity">
+            <span class="model-name">{{ modelLabel(modelRun.modelRef) }}</span>
+            <span v-if="summaryMeta" class="summary-meta">{{ summaryMeta }}</span>
+          </div>
         </div>
 
         <div class="summary-right">
@@ -201,151 +195,153 @@ function remainingTime(estimatedCompletion: string): string {
       <div class="row-progress-fill" :style="{ width: `${runProgress * 100}%` }" />
     </div>
 
-    <div v-if="expanded" class="row-details">
-      <div v-if="modelRun.aggregate && !modelRun.error" class="metrics-grid">
-        <template v-if="modelRun.aggregate.avgTokensPerSecond">
-          <div class="metric-group">
-            <span class="group-label">Tokens/s</span>
-            <div class="group-values">
-              <div class="metric">
-                <span class="metric-label">Avg</span>
-                <span class="metric-value">
-                  {{ modelRun.aggregate.avgTokensPerSecond.toFixed(1) }}
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.minTokensPerSecond" class="metric">
-                <span class="metric-label">Min</span>
-                <span class="metric-value">
-                  {{ modelRun.aggregate.minTokensPerSecond.toFixed(1) }}
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.maxTokensPerSecond" class="metric">
-                <span class="metric-label">Max</span>
-                <span class="metric-value">
-                  {{ modelRun.aggregate.maxTokensPerSecond.toFixed(1) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <template v-if="modelRun.aggregate.avgTimeToFirstTokenMs">
-          <div class="metric-group">
-            <span class="group-label">Time To First Token</span>
-            <div class="group-values">
-              <div class="metric">
-                <span class="metric-label">Avg</span>
-                <span class="metric-value">
-                  {{ modelRun.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.minTimeToFirstTokenMs" class="metric">
-                <span class="metric-label">Min</span>
-                <span class="metric-value">
-                  {{ modelRun.aggregate.minTimeToFirstTokenMs.toFixed(0) }}ms
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.maxTimeToFirstTokenMs" class="metric">
-                <span class="metric-label">Max</span>
-                <span class="metric-value">
-                  {{ modelRun.aggregate.maxTimeToFirstTokenMs.toFixed(0) }}ms
-                </span>
+    <CollapseTransition :open="expanded">
+      <div class="row-details">
+        <div v-if="modelRun.aggregate && !modelRun.error" class="metrics-grid">
+          <template v-if="modelRun.aggregate.avgTokensPerSecond">
+            <div class="metric-group">
+              <span class="group-label">Tokens/s</span>
+              <div class="group-values">
+                <div class="metric">
+                  <span class="metric-label">Avg</span>
+                  <span class="metric-value">
+                    {{ modelRun.aggregate.avgTokensPerSecond.toFixed(1) }}
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.minTokensPerSecond" class="metric">
+                  <span class="metric-label">Min</span>
+                  <span class="metric-value">
+                    {{ modelRun.aggregate.minTokensPerSecond.toFixed(1) }}
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.maxTokensPerSecond" class="metric">
+                  <span class="metric-label">Max</span>
+                  <span class="metric-value">
+                    {{ modelRun.aggregate.maxTokensPerSecond.toFixed(1) }}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </template>
+          </template>
 
-        <template v-if="modelRun.aggregate.avgDurationMs">
-          <div class="metric-group">
-            <span class="group-label">Duration</span>
-            <div class="group-values">
-              <div class="metric">
-                <span class="metric-label">Avg</span>
-                <span class="metric-value">
-                  {{ formatDurationMs(modelRun.aggregate.avgDurationMs) }}
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.minDurationMs" class="metric">
-                <span class="metric-label">Min</span>
-                <span class="metric-value">
-                  {{ formatDurationMs(modelRun.aggregate.minDurationMs) }}
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.maxDurationMs" class="metric">
-                <span class="metric-label">Max</span>
-                <span class="metric-value">
-                  {{ formatDurationMs(modelRun.aggregate.maxDurationMs) }}
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.totalDurationMs" class="metric">
-                <span class="metric-label">Total</span>
-                <span class="metric-value">
-                  {{ formatDurationMs(modelRun.aggregate.totalDurationMs) }}
-                </span>
+          <template v-if="modelRun.aggregate.avgTimeToFirstTokenMs">
+            <div class="metric-group">
+              <span class="group-label">Time To First Token</span>
+              <div class="group-values">
+                <div class="metric">
+                  <span class="metric-label">Avg</span>
+                  <span class="metric-value">
+                    {{ modelRun.aggregate.avgTimeToFirstTokenMs.toFixed(0) }}ms
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.minTimeToFirstTokenMs" class="metric">
+                  <span class="metric-label">Min</span>
+                  <span class="metric-value">
+                    {{ modelRun.aggregate.minTimeToFirstTokenMs.toFixed(0) }}ms
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.maxTimeToFirstTokenMs" class="metric">
+                  <span class="metric-label">Max</span>
+                  <span class="metric-value">
+                    {{ modelRun.aggregate.maxTimeToFirstTokenMs.toFixed(0) }}ms
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
-        </template>
+          </template>
 
-        <template v-if="modelRun.aggregate.totalTokens || modelRun.aggregate.totalJudgeTokens">
-          <div class="metric-group">
-            <span class="group-label">Tokens</span>
-            <div class="group-values">
-              <div v-if="modelRun.aggregate.totalTokens" class="metric">
-                <span class="metric-label">Total</span>
-                <span class="metric-value">
-                  {{ formatTokens(modelRun.aggregate.totalTokens) }}
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.totalJudgeTokens" class="metric">
-                <span v-tooltip="JUDGE_TOKENS_TOOLTIP" class="metric-label">Judge</span>
-                <span class="metric-value">
-                  {{ formatTokens(modelRun.aggregate.totalJudgeTokens) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <template
-          v-if="modelRun.aggregate.totalCost != null || modelRun.aggregate.totalJudgeCost != null"
-        >
-          <div class="metric-group">
-            <span class="group-label">Cost</span>
-            <div class="group-values">
-              <div v-if="modelRun.aggregate.totalCost != null" class="metric">
-                <span class="metric-label">Total</span>
-                <span class="metric-value">
-                  {{ formatCost(modelRun.aggregate.totalCost) }}
-                </span>
-              </div>
-              <div v-if="modelRun.aggregate.totalJudgeCost != null" class="metric">
-                <span v-tooltip="JUDGE_COST_TOOLTIP" class="metric-label">Judge</span>
-                <span class="metric-value">
-                  {{ formatCost(modelRun.aggregate.totalJudgeCost) }}
-                </span>
+          <template v-if="modelRun.aggregate.avgDurationMs">
+            <div class="metric-group">
+              <span class="group-label">Duration</span>
+              <div class="group-values">
+                <div class="metric">
+                  <span class="metric-label">Avg</span>
+                  <span class="metric-value">
+                    {{ formatDurationMs(modelRun.aggregate.avgDurationMs) }}
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.minDurationMs" class="metric">
+                  <span class="metric-label">Min</span>
+                  <span class="metric-value">
+                    {{ formatDurationMs(modelRun.aggregate.minDurationMs) }}
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.maxDurationMs" class="metric">
+                  <span class="metric-label">Max</span>
+                  <span class="metric-value">
+                    {{ formatDurationMs(modelRun.aggregate.maxDurationMs) }}
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.totalDurationMs" class="metric">
+                  <span class="metric-label">Total</span>
+                  <span class="metric-value">
+                    {{ formatDurationMs(modelRun.aggregate.totalDurationMs) }}
+                  </span>
+                </div>
               </div>
             </div>
+          </template>
+
+          <template v-if="modelRun.aggregate.totalTokens || modelRun.aggregate.totalJudgeTokens">
+            <div class="metric-group">
+              <span class="group-label">Tokens</span>
+              <div class="group-values">
+                <div v-if="modelRun.aggregate.totalTokens" class="metric">
+                  <span class="metric-label">Total</span>
+                  <span class="metric-value">
+                    {{ formatTokens(modelRun.aggregate.totalTokens) }}
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.totalJudgeTokens" class="metric">
+                  <span v-tooltip="JUDGE_TOKENS_TOOLTIP" class="metric-label">Judge</span>
+                  <span class="metric-value">
+                    {{ formatTokens(modelRun.aggregate.totalJudgeTokens) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <template
+            v-if="modelRun.aggregate.totalCost != null || modelRun.aggregate.totalJudgeCost != null"
+          >
+            <div class="metric-group">
+              <span class="group-label">Cost</span>
+              <div class="group-values">
+                <div v-if="modelRun.aggregate.totalCost != null" class="metric">
+                  <span class="metric-label">Total</span>
+                  <span class="metric-value">
+                    {{ formatCost(modelRun.aggregate.totalCost) }}
+                  </span>
+                </div>
+                <div v-if="modelRun.aggregate.totalJudgeCost != null" class="metric">
+                  <span v-tooltip="JUDGE_COST_TOOLTIP" class="metric-label">Judge</span>
+                  <span class="metric-value">
+                    {{ formatCost(modelRun.aggregate.totalJudgeCost) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div v-if="modelRun.error" class="error-row">
+          <IconAlertCircle :size="13" :stroke-width="2" />
+          {{ modelRun.error }}
+        </div>
+
+        <div v-if="showTestCases" class="test-cases">
+          <div class="test-case-list">
+            <ModelRunTestCaseRow
+              v-for="tc in filteredTestCases"
+              :key="tc.id"
+              :test-case="tc"
+              :case-run="caseRunFor(tc.id)"
+            />
           </div>
-        </template>
-      </div>
-
-      <div v-if="modelRun.error" class="error-row">
-        <IconAlertCircle :size="13" :stroke-width="2" />
-        {{ modelRun.error }}
-      </div>
-
-      <div v-if="showTestCases" class="test-cases">
-        <div class="test-case-list">
-          <ModelRunTestCaseRow
-            v-for="tc in filteredTestCases"
-            :key="tc.id"
-            :test-case="tc"
-            :case-run="caseRunFor(tc.id)"
-          />
         </div>
       </div>
-    </div>
+    </CollapseTransition>
   </div>
 </template>
 
@@ -360,12 +356,12 @@ function remainingTime(estimatedCompletion: string): string {
     flex-direction: column;
     width: 100%;
     padding: 12px;
-    background: none;
+    background: color-mix(in oklab, var(--surface-elevated) 80%, black);
     border: none;
     cursor: pointer;
     transition: background 0.15s;
     &:hover {
-      background: var(--surface-hover, rgba(255, 255, 255, 0.04));
+      background: color-mix(in oklab, var(--surface-hover) 80%, black);
     }
   }
 
@@ -423,9 +419,24 @@ function remainingTime(estimatedCompletion: string): string {
   .summary-left {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     min-width: 0;
     flex: 1;
+  }
+
+  .summary-identity {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .summary-meta {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
 
   .status-icon {
@@ -454,13 +465,12 @@ function remainingTime(estimatedCompletion: string): string {
   }
 
   .model-name {
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--text-primary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-right: 1rem;
   }
 
   .summary-right {
@@ -484,27 +494,6 @@ function remainingTime(estimatedCompletion: string): string {
     justify-content: center;
   }
 
-  .summary-stat {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .stat-label {
-    font-size: var(--text-xs);
-    font-weight: 600;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .stat-value {
-    font-size: var(--text-sm);
-    font-weight: 700;
-    font-family: var(--font-headline);
-    color: var(--text-primary);
-    line-height: 1;
-  }
-
   .stat-duration {
     font-size: var(--text-xs);
     color: var(--text-secondary);
@@ -520,8 +509,8 @@ function remainingTime(estimatedCompletion: string): string {
 
   .metrics-grid {
     display: flex;
-    align-items: flex-start;
-    gap: 16px;
+    align-items: stretch;
+    gap: 8px;
     flex-wrap: wrap;
     padding: 0.5rem 0.75rem;
     background: var(--surface);
@@ -533,11 +522,9 @@ function remainingTime(estimatedCompletion: string): string {
     display: flex;
     flex-direction: column;
     gap: 6px;
-
-    &:not(:first-child) {
-      padding-left: 16px;
-      border-left: 1px solid var(--border);
-    }
+    padding: 8px 12px;
+    background: var(--surface-elevated);
+    border-radius: var(--radius);
 
     .group-label {
       font-size: 10px;

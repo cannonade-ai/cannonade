@@ -664,7 +664,8 @@ const hasMetrics = computed<boolean>(() => {
 
   .case-metrics {
     display: flex;
-    gap: 20px;
+    flex-wrap: wrap;
+    gap: 10px 20px;
   }
 
   .case-metric {
@@ -676,6 +677,7 @@ const hasMetrics = computed<boolean>(() => {
       font-size: var(--text-xs);
       font-weight: 600;
       color: var(--text-muted);
+      white-space: nowrap;
     }
 
     .case-metric-value {
