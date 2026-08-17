@@ -1,9 +1,16 @@
 ---
+import type { ImageMetadata } from 'astro'
+import { Image } from 'astro:assets'
+import playgroundImg from '../../assets/playground.png'
+import runResultsImg from '../../assets/run-results.png'
+import modelsImg from '../../assets/models.png'
+import promptsImg from '../../assets/prompts.png'
+
 interface Feature {
   title: string
   body: string
   points: string[]
-  shot: string
+  shot: ImageMetadata
   alt: string
 }
 
@@ -11,36 +18,37 @@ const features: Feature[] = [
   {
     title: 'Run results',
     body: 'Results arrive while the run is still going, and stay on disk once it finishes.',
-    points: [
-      'Pass rate and score per model',
-      'Tokens, speed, and cost',
-      'Past runs kept for comparison'
-    ],
-    shot: 'https://placehold.co/1200x760/151a20/e6a817.png?text=Test+run+comparison',
-    alt: 'Screenshot placeholder: the test run comparison table'
+    points: ['Pass rate and score per model', 'Tokens, speed, and cost'],
+    shot: runResultsImg,
+    alt: 'A finished test case in a run: system prompt, model output, evaluator score, and token stats'
   },
   {
     title: 'Playground',
     body: 'A chat view for trying a model before writing cases for it.',
     points: ['Any configured model', 'Sampling parameters per message', 'Stats on every response'],
-    shot: 'https://placehold.co/1200x760/151a20/58a6ff.png?text=Playground',
-    alt: 'Screenshot placeholder: the playground view'
+    shot: playgroundImg,
+    alt: 'The playground chat view with a local model selected and response stats above the reply'
   },
   {
     title: 'Prompt library',
     body: 'System prompts live in one place, so one edit reaches every case using them.',
     points: ['Shared by suites and the playground', 'Versioned'],
-    shot: 'https://placehold.co/1200x760/151a20/3fb950.png?text=Prompt+library',
-    alt: 'Screenshot placeholder: the prompt library'
+    shot: promptsImg,
+    alt: 'The prompt library listing shared system prompts'
   },
   {
     title: 'Model management',
     body: 'Handle local models without switching to another app.',
-    points: ['Download from the registry or Hugging Face', 'Load, unload or delete them'],
-    shot: 'https://placehold.co/1200x760/151a20/a2acbb.png?text=Models',
-    alt: 'Screenshot placeholder: the models view'
+    points: ['Load, unload or delete them'],
+    shot: modelsImg,
+    alt: 'The models view listing downloaded local models'
   }
 ]
+
+const shotSizes = '(min-width: 1256px) 510px, (min-width: 900px) 48vw, calc(100vw - 66px)'
+
+const shotWidths = (shot: ImageMetadata): number[] =>
+  [520, 1020].filter((width) => width < shot.width).concat(shot.width)
 ---
 
 <section class="section" id="features">
@@ -63,7 +71,14 @@ const features: Feature[] = [
               </ul>
             </div>
             <div class="feature__shot">
-              <img src={feature.shot} alt={feature.alt} width="1200" height="760" loading="lazy" />
+              <Image
+                src={feature.shot}
+                alt={feature.alt}
+                loading="lazy"
+                quality={90}
+                widths={shotWidths(feature.shot)}
+                sizes={shotSizes}
+              />
             </div>
           </article>
         ))

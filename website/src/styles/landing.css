@@ -222,10 +222,8 @@ a:hover {
   isolation: isolate;
   display: flex;
   align-items: center;
-  min-height: max(
-    340px,
-    calc(100svh - var(--cn-nav-h) - var(--cn-shot-pad) - var(--cn-shot-peek))
-  );
+  min-height: max(340px,
+      calc(100svh - var(--cn-nav-h) - var(--cn-shot-pad) - var(--cn-shot-peek)));
   padding-block: clamp(24px, 4svh, 52px);
   border-bottom: 1px solid var(--cn-line);
   overflow: hidden;
@@ -316,6 +314,8 @@ a:hover {
   padding-block: var(--cn-shot-pad) clamp(36px, 5vw, 72px);
   border-bottom: 1px solid var(--cn-line);
   overflow: hidden;
+  background: var(--cn-shot-bg);
+
 }
 
 .shot__glow {
@@ -336,7 +336,6 @@ a:hover {
   margin: 0;
   border: 1px solid var(--cn-line-2);
   border-radius: 8px;
-  background: var(--cn-panel-3);
   overflow: hidden;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.04) inset,
@@ -421,6 +420,10 @@ a:hover {
 
 /* ---------- features ---------- */
 
+#features {
+  background: var(--cn-shot-bg);
+}
+
 .features {
   display: flex;
   flex-direction: column;
@@ -485,7 +488,7 @@ a:hover {
   content: '';
   position: absolute;
   left: 0;
-  top: 0.62em;
+  top: 50%;
   width: 8px;
   height: 1px;
   background: var(--cn-amber);
@@ -544,6 +547,10 @@ a:hover {
 }
 
 /* ---------- download ---------- */
+
+#download {
+  background: var(--cn-shot-bg);
+}
 
 .dl {
   display: grid;

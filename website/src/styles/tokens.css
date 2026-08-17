@@ -29,6 +29,7 @@
   --cn-radius: 4px;
 
   --cn-nav-h: 63px;
+  --cn-shot-bg: #0b0d10;
   --cn-shot-max: 1320px;
   --cn-shot-ratio: 1.838;
   --cn-shot-pad: clamp(18px, 2.5vh, 32px);
