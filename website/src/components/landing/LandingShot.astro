@@ -1,13 +1,23 @@
 ---
-const src = 'https://placehold.co/1680x914/151a20/e6a817.png?text=Test+run+details'
-const alt = 'Screenshot placeholder: the test run details view'
+import { Image } from 'astro:assets'
+import shot from '../../assets/test-run.png'
+
+const alt = 'Cannonade test run details: three models scored against an LLM rubric suite'
 ---
 
 <section class="shot">
   <div class="shot__glow" aria-hidden="true"></div>
   <div class="wrap shot__wrap">
     <figure class="shot__frame">
-      <img class="shot__img" src={src} alt={alt} width="1680" height="914" loading="eager" />
+      <Image
+        class="shot__img"
+        src={shot}
+        alt={alt}
+        loading="eager"
+        quality={90}
+        widths={[720, 1080, 1272, 1600, 2049]}
+        sizes="(max-width: 1320px) calc(100vw - 48px), 1272px"
+      />
     </figure>
   </div>
 </section>

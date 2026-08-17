@@ -6,13 +6,32 @@ name: Node.js CI
 on:
   push:
     branches: [ "main" ]
-    paths-ignore: [ "website/**", "**.md" ]
   pull_request:
     branches: [ "main" ]
-    paths-ignore: [ "website/**", "**.md" ]
 
 jobs:
-  build:
+  app-detect-changes:
+
+    runs-on: ubuntu-latest
+
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+
+    steps:
+    - uses: actions/checkout@v7
+    - uses: dorny/paths-filter@v3
+      id: filter
+      with:
+        predicate-quantifier: 'every'
+        filters: |
+          app:
+            - '!website/**'
+            - '!**/*.md'
+
+  app-build:
+
+    needs: app-detect-changes
+    if: needs.app-detect-changes.outputs.app == 'true'
 
     runs-on: ubuntu-latest
 
