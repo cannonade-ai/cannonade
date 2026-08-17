@@ -10,7 +10,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  app-changes:
+  app-detect-changes:
 
     runs-on: ubuntu-latest
 
@@ -30,8 +30,8 @@ jobs:
 
   app-build:
 
-    needs: app-changes
-    if: needs.app-changes.outputs.app == 'true'
+    needs: app-detect-changes
+    if: needs.app-detect-changes.outputs.app == 'true'
 
     runs-on: ubuntu-latest
 
