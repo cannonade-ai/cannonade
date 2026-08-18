@@ -1,6 +1,6 @@
 {
   "name": "cannonade",
-  "version": "0.4.6",
+  "version": "0.4.5",
   "description": "Local-first desktop app for building LLM test suites and running them against many local or cloud models at once",
   "main": "./out/main/index.js",
   "author": "Cannonade",
