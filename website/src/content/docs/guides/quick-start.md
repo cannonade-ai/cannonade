@@ -13,8 +13,8 @@ Download the build for your platform from the [GitHub Releases](https://github.c
 
 - **Windows**: run the `.exe` installer.
 - **macOS**: see [below](#macos-needs-an-extra-step), the build is unsigned.
-- **Linux**: `.AppImage`, `.deb`, and snap builds are published. Mark the AppImage
-  executable and run it, or install the package that matches your distribution.
+- **Linux**: `.AppImage` and `.deb` builds are published. Mark the AppImage
+  executable and run it, or install the `.deb` with your package manager.
 
 ### macOS needs an extra step
 
