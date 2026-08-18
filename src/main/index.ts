@@ -6,6 +6,7 @@ import { initAppSettings } from './ipc/settings-handlers'
 import { initSecrets } from './secrets/secret-store'
 import { initAppState, getAppState, manageWindow } from './app-state'
 import { adoptManagedProcesses, stopAllManagedProcesses } from './services/managed-process'
+import { initUpdater, isUpdateReady, installUpdate } from './services/updater'
 import { initLogger, createLogger } from './logger'
 import icon from '../../resources/icon.png?asset'
 
@@ -110,6 +111,7 @@ app.whenReady().then(async () => {
   registerHandlers()
   log.info('init phases done, creating window')
   createWindow()
+  initUpdater()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -120,12 +122,19 @@ app.whenReady().then(async () => {
 
 let spawnedProcessesStopped = false
 app.on('before-quit', (event) => {
-  event.preventDefault()
   if (spawnedProcessesStopped) return
+  event.preventDefault()
   spawnedProcessesStopped = true
   void stopAllManagedProcesses()
     .catch((err) => log.error('Failed to stop managed processes:', err))
-    .finally(() => app.exit(0))
+    .finally(() => {
+      if (isUpdateReady()) {
+        log.info('Installing downloaded update')
+        installUpdate()
+        return
+      }
+      app.exit(0)
+    })
 })
 
 for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {

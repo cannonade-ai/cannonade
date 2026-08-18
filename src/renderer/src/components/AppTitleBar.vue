@@ -3,10 +3,10 @@ import { computed } from 'vue'
 import { api } from '../api'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useConfirmStore } from '@renderer/stores/confirm'
+import { useAppInfoStore } from '@renderer/stores/app-info'
+import AppTitleBarUpdate from './AppTitleBarUpdate.vue'
 
-declare const __APP_VERSION__: string
-const appVersion = __APP_VERSION__
-
+const appInfo = useAppInfoStore()
 const testRunsStore = useTestRunsStore()
 const confirmStore = useConfirmStore()
 
@@ -31,7 +31,8 @@ async function handleClose(): Promise<void> {
     <div class="left" />
     <div class="center">
       <span class="app-name">Cannonade</span>
-      <span class="app-version">v{{ appVersion }}</span>
+      <span class="app-version">v{{ appInfo.version }}</span>
+      <AppTitleBarUpdate />
     </div>
     <div class="right">
       <button class="control-btn minimize" @click="api.minimize()">

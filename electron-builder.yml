@@ -19,6 +19,7 @@ win:
     - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
+  disableWebInstaller: true
   shortcutName: ${productName}
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always

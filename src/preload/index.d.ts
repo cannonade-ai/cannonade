@@ -6,6 +6,7 @@ import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { AppInfo } from '@shared/app/app-info'
+import type { UpdateState } from '@shared/app/update-info'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun, RunStatus, AggregateMetrics } from '@shared/app/test-run'
@@ -81,6 +82,10 @@ export interface AppAPI {
   minimize(): void
   maximize(): void
   close(): void
+  getUpdateState(): Promise<UpdateState>
+  downloadUpdate(): void
+  installUpdate(): void
+  onUpdateState(cb: (state: UpdateState) => void): void
   listSuites(): Promise<TestSuite[]>
   saveSuite(suite: TestSuite): Promise<void>
   deleteSuite(id: string): Promise<void>
