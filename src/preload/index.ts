@@ -2,7 +2,16 @@ import { contextBridge, ipcRenderer } from 'electron'
 import 'electron-log/preload'
 import electronLog from 'electron-log/renderer'
 import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
-import { APP, SUITES, PROMPTS, SETTINGS, TEST_RUNS, RUN, LOGS } from '@shared/app/ipc-channels'
+import {
+  APP,
+  SUITES,
+  PROMPTS,
+  SETTINGS,
+  TEST_RUNS,
+  RUN,
+  LOGS,
+  UPDATER
+} from '@shared/app/ipc-channels'
 import type { LogEntry, LogFile } from '@shared/app/logging'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
@@ -14,6 +23,7 @@ import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { AppInfo } from '@shared/app/app-info'
+import type { UpdateState } from '@shared/app/update-info'
 import type { TestRun } from '@shared/app/test-run'
 import type { ChatRequest, ChatResponse } from '@shared/provider/chat'
 
@@ -59,6 +69,12 @@ const api = {
   minimize: (): void => ipcRenderer.send(APP.MINIMIZE),
   maximize: (): void => ipcRenderer.send(APP.MAXIMIZE),
   close: (): void => ipcRenderer.send(APP.CLOSE),
+  getUpdateState: (): Promise<UpdateState> => ipcRenderer.invoke(UPDATER.GET_STATE),
+  downloadUpdate: (): void => ipcRenderer.send(UPDATER.DOWNLOAD),
+  installUpdate: (): void => ipcRenderer.send(UPDATER.INSTALL),
+  onUpdateState: (cb: (state: UpdateState) => void): void => {
+    ipcRenderer.on(UPDATER.STATE, (_e, state) => cb(state))
+  },
   listSuites: (): Promise<TestSuite[]> => ipcRenderer.invoke(SUITES.LIST),
   saveSuite: (suite: TestSuite): Promise<void> => ipcRenderer.invoke(SUITES.SAVE, suite),
   deleteSuite: (id: string): Promise<void> => ipcRenderer.invoke(SUITES.DELETE, id),

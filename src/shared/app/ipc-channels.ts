@@ -6,6 +6,13 @@ export const APP = {
   CLOSE: 'app:close'
 } as const
 
+export const UPDATER = {
+  GET_STATE: 'updater:getState',
+  DOWNLOAD: 'updater:download',
+  INSTALL: 'updater:install',
+  STATE: 'updater:state'
+} as const
+
 export const SUITES = {
   LIST: 'suites:list',
   SAVE: 'suites:save',

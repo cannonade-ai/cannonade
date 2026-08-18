@@ -6,6 +6,7 @@ import type { Prompt } from '@shared/app/prompt'
 import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { AppInfo } from '@shared/app/app-info'
+import type { UpdateState } from '@shared/app/update-info'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
 import type { SecretInfo, ProbeAuth } from '@shared/provider/api-key'
 import type { TestRun } from '@shared/app/test-run'
@@ -59,6 +60,10 @@ export const api = {
   minimize: (): void => window.api.minimize(),
   maximize: (): void => window.api.maximize(),
   close: (): void => window.api.close(),
+  getUpdateState: (): Promise<UpdateState> => window.api.getUpdateState(),
+  downloadUpdate: (): void => window.api.downloadUpdate(),
+  installUpdate: (): void => window.api.installUpdate(),
+  onUpdateState: (cb: (state: UpdateState) => void): void => window.api.onUpdateState(cb),
   listSuites: (): Promise<TestSuite[]> => window.api.listSuites(),
   saveSuite: (suite: TestSuite): Promise<void> => window.api.saveSuite(suite),
   deleteSuite: (id: string): Promise<void> => window.api.deleteSuite(id),
