@@ -37,6 +37,7 @@ export function initUpdater(): void {
   autoUpdater.logger = createLogger('electron-updater')
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = false
+  autoUpdater.disableWebInstaller = true
 
   autoUpdater.on('checking-for-update', () => log.info('Checking for update'))
 
