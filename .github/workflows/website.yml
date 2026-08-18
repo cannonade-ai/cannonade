@@ -3,34 +3,17 @@ name: Website CI
 on:
   push:
     branches: [ "main" ]
+    paths: [ "website/**", ".github/workflows/website.yml" ]
   pull_request:
     branches: [ "main" ]
+    paths: [ "website/**", ".github/workflows/website.yml" ]
 
 defaults:
   run:
     working-directory: website
 
 jobs:
-  website-detect-changes:
-    runs-on: ubuntu-latest
-
-    outputs:
-      website: ${{ steps.filter.outputs.website }}
-
-    steps:
-    - uses: actions/checkout@v7
-    - uses: dorny/paths-filter@v3
-      id: filter
-      with:
-        filters: |
-          website:
-            - 'website/**'
-            - '.github/workflows/website.yml'
-
-  website-build:
-    needs: website-detect-changes
-    if: needs.website-detect-changes.outputs.website == 'true'
-
+  build:
     runs-on: ubuntu-latest
 
     steps:
