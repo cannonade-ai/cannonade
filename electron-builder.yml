@@ -26,6 +26,9 @@ mac:
   files:
     - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,linux}/**'
   category: public.app-category.developer-tools
+  identity: '-'
+  hardenedRuntime: false
+  entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.plist
   extendInfo:
     - NSDocumentsFolderUsageDescription: Cannonade needs access to your Documents folder to import and export test suites.

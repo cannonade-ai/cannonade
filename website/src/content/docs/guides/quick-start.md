@@ -26,6 +26,7 @@ and macOS refuses to launch the app until you do below steps.
 
 ```sh
 xattr -dr com.apple.quarantine /Applications/Cannonade.app
+codesign --force --deep --sign - /Applications/Cannonade.app # if needed
 ```
 
 3. Launch Cannonade normally.
