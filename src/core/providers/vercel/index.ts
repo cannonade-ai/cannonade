@@ -1,7 +1,8 @@
 import { createGateway, streamText } from 'ai'
-import type { LLMProvider } from '../base'
+import { ProviderError, type LLMProvider } from '../base'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ChatRequest, ChatResponse, ChatOptions } from '@shared/provider/chat'
+import { hasExtraRequestData } from '@shared/provider/chat'
 import { authHeader } from '@shared/provider/api-key'
 import { toExternalModel, toChatPrompt, toChatResponse, mapError, toProviderError } from './mappers'
 import type { GatewayModelListResponse } from './types'
@@ -42,6 +43,13 @@ export function createVercelProvider(
     },
 
     async chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
+      if (hasExtraRequestData(request)) {
+        throw new ProviderError(
+          'This provider does not support extra request data. The request was not sent.',
+          400
+        )
+      }
+
       const prompt = toChatPrompt(request)
       log.debug('Chat request prompt:', prompt)
 

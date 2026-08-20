@@ -167,6 +167,20 @@ describe('openrouter toChatRequest', () => {
       { role: 'user', content: 'Hello' }
     ])
   })
+
+  it('merges extra_request_data over the mapped body', () => {
+    const result = toChatRequest({
+      model: 'openai/gpt-4',
+      input: 'Hello',
+      reasoning: 'high',
+      extra_request_data: {
+        reasoning: { effort: 'low' },
+        response_format: { type: 'json_schema' }
+      }
+    })
+    expect(result.reasoning).toEqual({ effort: 'low' })
+    expect(result).toMatchObject({ response_format: { type: 'json_schema' } })
+  })
 })
 
 describe('openrouter toChatResponse', () => {

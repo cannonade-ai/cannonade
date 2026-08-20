@@ -39,6 +39,7 @@ export interface PlaygroundParams {
   seed?: number
   max_output_tokens?: number
   reasoning?: 'off' | 'low' | 'medium' | 'high' | 'on'
+  extra_request_data?: Record<string, unknown>
 }
 
 export interface PlaygroundModelOption {

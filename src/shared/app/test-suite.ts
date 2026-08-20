@@ -61,8 +61,7 @@ export interface RunConfig {
   frequencyPenalty?: number
   seed?: number
   maxTokens?: number
-
-  providerOptions?: Record<string, unknown>
+  extraRequestData?: Record<string, unknown>
 }
 
 export interface EvaluationConfig {

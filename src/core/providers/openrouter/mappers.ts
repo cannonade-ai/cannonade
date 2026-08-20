@@ -1,6 +1,7 @@
 import type { ChatCompletionRequest, ChatCompletionResponse, Model, ReasoningEffort } from './types'
 import type { ExternalModel, ExternalModelPricing } from '@shared/provider/external-model'
 import type { ChatRequest, ChatResponse, ChatStats, OutputItem } from '@shared/provider/chat'
+import { withExtraRequestData } from '@shared/provider/chat'
 import { toChatRequest as toOpenAIChatRequest } from '../openai-compat/mappers'
 import { perTokenToPerMillion } from '@shared/utils/number'
 
@@ -28,10 +29,13 @@ export function toReasoningEffort(
 
 export function toChatRequest(request: ChatRequest): ChatCompletionRequest {
   const effort = toReasoningEffort(request.reasoning)
-  return {
-    ...toOpenAIChatRequest(request),
-    ...(effort ? { reasoning: { effort } } : {})
-  }
+  return withExtraRequestData(
+    {
+      ...toOpenAIChatRequest(request),
+      ...(effort ? { reasoning: { effort } } : {})
+    },
+    request
+  )
 }
 
 export function toChatResponse(response: ChatCompletionResponse): ChatResponse {

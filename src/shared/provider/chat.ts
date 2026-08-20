@@ -51,6 +51,16 @@ export interface ChatRequest {
   context_length?: number
   store?: boolean
   previous_response_id?: string
+  extra_request_data?: Record<string, unknown>
+}
+
+export function hasExtraRequestData(request: ChatRequest): boolean {
+  return !!request.extra_request_data && Object.keys(request.extra_request_data).length > 0
+}
+
+export function withExtraRequestData<T extends object>(body: T, request: ChatRequest): T {
+  if (!hasExtraRequestData(request)) return body
+  return { ...body, ...request.extra_request_data } as T
 }
 
 export interface MessageOutput {

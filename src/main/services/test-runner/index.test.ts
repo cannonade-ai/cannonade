@@ -370,6 +370,19 @@ describe('executeTestRun – request building', () => {
       expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
     )
   })
+
+  it('passes runConfig extraRequestData to the request', async () => {
+    const testCase = makeTestCase({
+      runConfig: { extraRequestData: { response_format: { type: 'json_object' } } }
+    })
+    await executeTestRun(makeRun([makeModelRun()], [testCase]), makeSuite([testCase]), makeSend())
+    expect(mockChat).toHaveBeenCalledWith(
+      expect.objectContaining({
+        extra_request_data: { response_format: { type: 'json_object' } }
+      }),
+      expect.objectContaining({ abortSignal: expect.any(AbortSignal) })
+    )
+  })
 })
 
 describe('executeTestRun – output extraction', () => {

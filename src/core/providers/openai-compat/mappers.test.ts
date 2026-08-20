@@ -54,6 +54,32 @@ describe('openai-compat toChatRequest', () => {
     ])
   })
 
+  it('merges extra_request_data into the body', () => {
+    const result = toChatRequest(
+      makeRequest({
+        input: 'Hello',
+        extra_request_data: { response_format: { type: 'json_schema' }, logprobs: true }
+      })
+    )
+    expect(result).toMatchObject({
+      model: 'test-model',
+      response_format: { type: 'json_schema' },
+      logprobs: true
+    })
+  })
+
+  it('lets extra_request_data override mapped parameters', () => {
+    const result = toChatRequest(
+      makeRequest({ input: 'Hello', temperature: 0.2, extra_request_data: { temperature: 0.9 } })
+    )
+    expect(result.temperature).toBe(0.9)
+  })
+
+  it('leaves the body untouched when extra_request_data is empty', () => {
+    const withEmpty = toChatRequest(makeRequest({ input: 'Hello', extra_request_data: {} }))
+    expect(withEmpty).toEqual(toChatRequest(makeRequest({ input: 'Hello' })))
+  })
+
   it('ignores input when messages are present', () => {
     const result = toChatRequest(
       makeRequest({
