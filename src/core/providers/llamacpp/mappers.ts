@@ -1,5 +1,6 @@
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse, OutputItem } from '@shared/provider/chat'
+import { withExtraRequestData } from '@shared/provider/chat'
 import type { DownloadStatusResponse } from '@shared/provider/ipc-contracts'
 import { toChatRequest as toOpenAIChatRequest } from '../openai-compat/mappers'
 import { ProviderError } from '../base'
@@ -112,13 +113,16 @@ export function isEventForModel(eventModel: string | undefined, modelName: strin
 
 export function toChatRequest(request: ChatRequest): LlamaCppChatRequest {
   const base = toOpenAIChatRequest(request)
-  return {
-    ...base,
-    stream: false,
-    min_p: request.min_p,
-    timings_per_token: true,
-    reasoning_effort: request.reasoning === 'off' ? 'none' : undefined
-  }
+  return withExtraRequestData(
+    {
+      ...base,
+      stream: false,
+      min_p: request.min_p,
+      timings_per_token: true,
+      reasoning_effort: request.reasoning === 'off' ? 'none' : undefined
+    },
+    request
+  )
 }
 
 export function toChatResponse(response: LlamaCppChatResponse): ChatResponse {

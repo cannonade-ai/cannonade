@@ -2,7 +2,15 @@
 import { computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { IconLoader2 } from '@tabler/icons-vue'
-import { Collapse, Field, NumberInput, Panel, ScrollArea, Select } from '@renderer/components/ui'
+import {
+  Collapse,
+  Field,
+  JsonInput,
+  NumberInput,
+  Panel,
+  ScrollArea,
+  Select
+} from '@renderer/components/ui'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import PlaygroundSystemPrompt from './PlaygroundSystemPrompt.vue'
 import { usePlaygroundStore } from '@renderer/stores/playground'
@@ -164,6 +172,16 @@ const reasoning = computed<string>({
               <NumberInput v-model="params.seed" :step="1" />
             </Field>
           </div>
+          <Field
+            label="Extra Request Data"
+            hint="Raw JSON merged into the request body sent to the provider. Keys here override the settings above."
+            hint-placement="top"
+          >
+            <JsonInput
+              v-model="params.extra_request_data"
+              placeholder='{ "response_format": { "type": "json_schema", "json_schema": { ... } } }'
+            />
+          </Field>
         </Collapse>
       </div>
     </ScrollArea>

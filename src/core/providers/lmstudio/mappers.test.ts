@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { toSingleTurnRequest } from './mappers'
+import { toChatRequest, toSingleTurnRequest } from './mappers'
 import type { ChatRequest } from '@shared/provider/chat'
 
 function makeRequest(overrides: Partial<ChatRequest> = {}): ChatRequest {
@@ -76,5 +76,31 @@ describe('lmstudio toSingleTurnRequest', () => {
       })
     )
     expect(result).toBeNull()
+  })
+})
+
+describe('lmstudio toChatRequest', () => {
+  it('merges extra_request_data over the mapped body', () => {
+    const result = toChatRequest(
+      makeRequest({
+        input: 'Hello',
+        temperature: 0.2,
+        extra_request_data: { temperature: 0.9, structured_output: { type: 'json_schema' } }
+      })
+    )
+    expect(result.temperature).toBe(0.9)
+    expect(result).toMatchObject({ structured_output: { type: 'json_schema' } })
+  })
+})
+
+describe('lmstudio toSingleTurnRequest with extra_request_data', () => {
+  it('carries extra_request_data into the converted request', () => {
+    const result = toSingleTurnRequest(
+      makeRequest({
+        messages: [{ role: 'user', content: 'Hello' }],
+        extra_request_data: { structured_output: { type: 'json_schema' } }
+      })
+    )
+    expect(result?.extra_request_data).toEqual({ structured_output: { type: 'json_schema' } })
   })
 })

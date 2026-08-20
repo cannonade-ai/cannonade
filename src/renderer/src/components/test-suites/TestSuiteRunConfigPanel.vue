@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { RunConfig } from '@shared/app/test-suite'
-import { Field, InfoTooltip, NumberInput, Panel } from '@renderer/components/ui'
+import { Field, InfoTooltip, JsonInput, NumberInput, Panel } from '@renderer/components/ui'
 
 const config = defineModel<RunConfig | undefined>('config')
 </script>
@@ -82,6 +82,15 @@ const config = defineModel<RunConfig | undefined>('config')
         <NumberInput v-model="config!.seed" :step="1" />
       </Field>
     </div>
+    <Field
+      label="Extra Request Data"
+      hint="Raw JSON merged into the request body sent to the provider. Keys here override the settings above."
+    >
+      <JsonInput
+        v-model="config!.extraRequestData"
+        placeholder='{ "response_format": { "type": "json_schema", "json_schema": { ... } } }'
+      />
+    </Field>
   </Panel>
 </template>
 

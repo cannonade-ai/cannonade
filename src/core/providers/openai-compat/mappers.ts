@@ -1,5 +1,6 @@
 import type { OpenAIChatMessage, OpenAIChatRequest, OpenAIChatResponse } from './types'
 import type { ChatRequest, ChatResponse, TextInput } from '@shared/provider/chat'
+import { withExtraRequestData } from '@shared/provider/chat'
 
 function toChatMessages(request: ChatRequest): OpenAIChatMessage[] {
   if (request.messages?.length) {
@@ -30,19 +31,22 @@ function toChatMessages(request: ChatRequest): OpenAIChatMessage[] {
 }
 
 export function toChatRequest(request: ChatRequest): OpenAIChatRequest {
-  return {
-    model: request.model,
-    messages: toChatMessages(request),
-    stream: request.stream,
-    temperature: request.temperature,
-    top_p: request.top_p,
-    top_k: request.top_k,
-    max_tokens: request.max_output_tokens,
-    presence_penalty: request.presence_penalty,
-    frequency_penalty: request.frequency_penalty,
-    repeat_penalty: request.repeat_penalty,
-    seed: request.seed
-  }
+  return withExtraRequestData(
+    {
+      model: request.model,
+      messages: toChatMessages(request),
+      stream: request.stream,
+      temperature: request.temperature,
+      top_p: request.top_p,
+      top_k: request.top_k,
+      max_tokens: request.max_output_tokens,
+      presence_penalty: request.presence_penalty,
+      frequency_penalty: request.frequency_penalty,
+      repeat_penalty: request.repeat_penalty,
+      seed: request.seed
+    },
+    request
+  )
 }
 
 export function toChatResponse(response: OpenAIChatResponse): ChatResponse {

@@ -50,6 +50,14 @@ describe('llamacpp provider toChatRequest', () => {
     expect(toChatRequest(makeRequest({ reasoning: 'off' })).reasoning_effort).toBe('none')
     expect(toChatRequest(makeRequest({ reasoning: 'high' })).reasoning_effort).toBeUndefined()
   })
+
+  it('merges extra_request_data over the mapped body', () => {
+    const result = toChatRequest(
+      makeRequest({ extra_request_data: { stream: true, json_schema: { type: 'object' } } })
+    )
+    expect(result.stream).toBe(true)
+    expect(result).toMatchObject({ json_schema: { type: 'object' } })
+  })
 })
 
 describe('llamacpp provider toChatResponse', () => {

@@ -53,4 +53,19 @@ describe('ollama provider toChatRequest', () => {
       { role: 'user', content: 'Hello' }
     ])
   })
+
+  it('merges extra_request_data over the mapped body', () => {
+    const result = toChatRequest(
+      makeRequest({ input: 'Hello', extra_request_data: { format: 'json', think: false } })
+    )
+    expect(result).toMatchObject({ format: 'json', think: false })
+    expect(result.stream).toBe(true)
+  })
+
+  it('lets extra_request_data replace the options object', () => {
+    const result = toChatRequest(
+      makeRequest({ temperature: 0.2, extra_request_data: { options: { num_ctx: 8192 } } })
+    )
+    expect(result.options).toEqual({ num_ctx: 8192 })
+  })
 })

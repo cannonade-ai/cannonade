@@ -21,7 +21,8 @@ export function buildRequest(
     repeat_penalty: runConfig?.repeatPenalty,
     frequency_penalty: runConfig?.frequencyPenalty,
     presence_penalty: runConfig?.presencePenalty,
-    seed: runConfig?.seed
+    seed: runConfig?.seed,
+    extra_request_data: runConfig?.extraRequestData
   }
 
   if (input.type === 'chat' && input.messages?.length) {

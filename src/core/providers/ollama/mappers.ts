@@ -7,6 +7,7 @@ import type {
 } from 'ollama'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ChatRequest, ChatResponse, OutputItem } from '@shared/provider/chat'
+import { withExtraRequestData } from '@shared/provider/chat'
 import type { DownloadStatusResponse } from '@shared/provider/ipc-contracts'
 import type { ModelResponse } from './types'
 
@@ -73,21 +74,24 @@ function toChatMessages(request: ChatRequest): Message[] {
 }
 
 export function toChatRequest(request: ChatRequest): OllamaChatRequest & { stream: true } {
-  return {
-    model: request.model,
-    messages: toChatMessages(request),
-    stream: true,
-    options: {
-      temperature: request.temperature,
-      top_p: request.top_p,
-      top_k: request.top_k,
-      repeat_penalty: request.repeat_penalty,
-      presence_penalty: request.presence_penalty,
-      frequency_penalty: request.frequency_penalty,
-      seed: request.seed,
-      num_predict: request.max_output_tokens
-    }
-  }
+  return withExtraRequestData(
+    {
+      model: request.model,
+      messages: toChatMessages(request),
+      stream: true as const,
+      options: {
+        temperature: request.temperature,
+        top_p: request.top_p,
+        top_k: request.top_k,
+        repeat_penalty: request.repeat_penalty,
+        presence_penalty: request.presence_penalty,
+        frequency_penalty: request.frequency_penalty,
+        seed: request.seed,
+        num_predict: request.max_output_tokens
+      }
+    },
+    request
+  )
 }
 
 export function toChatResponse(
