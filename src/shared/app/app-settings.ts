@@ -2,6 +2,7 @@ import type { ConfiguredProvider } from '../provider/configured-provider'
 import type { LogLevel } from './logging'
 import { DEFAULT_JUDGE_SETTINGS, type JudgeSettings } from './judge'
 import { DEFAULT_EXPERIMENT_SETTINGS, type ExperimentSettings } from './experiments'
+import { DEFAULT_FIELD_VISIBILITY, type FieldVisibility } from './field-visibility'
 
 export type FontSize = 'sm' | 'md' | 'lg'
 
@@ -22,6 +23,7 @@ export interface AppSettings {
   htmlPreviewByDefault: boolean
   judge: JudgeSettings
   experiments: ExperimentSettings
+  fieldVisibility: FieldVisibility
 }
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -40,5 +42,6 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   htmlPreviewTemplate: '',
   htmlPreviewByDefault: false,
   judge: { ...DEFAULT_JUDGE_SETTINGS },
-  experiments: { ...DEFAULT_EXPERIMENT_SETTINGS }
+  experiments: { ...DEFAULT_EXPERIMENT_SETTINGS },
+  fieldVisibility: { ...DEFAULT_FIELD_VISIBILITY }
 }
