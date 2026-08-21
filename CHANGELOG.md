@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.7](https://github.com/cannonade-ai/cannonade/compare/v0.4.6...v0.4.7) (2026-08-21)
+
+
+### Features
+
+* **navigation:** opened models view of the default provider ([6b85e11](https://github.com/cannonade-ai/cannonade/commit/6b85e11a2589934e26cf99bc4004e044d2292ab9))
+* **onboarding:** used app icon and default provider view ([4b577a0](https://github.com/cannonade-ai/cannonade/commit/4b577a0170d0b8fd96c3ced5f6a969a2a6b6decb))
+* **provider:** added extra request data passthrough ([#54](https://github.com/cannonade-ai/cannonade/issues/54)) ([28e5b6b](https://github.com/cannonade-ai/cannonade/commit/28e5b6bc765dc16d4676fa466f56c7cc74d17dbe))
+* **test-runs:** toggle visibility of case detail fields ([#55](https://github.com/cannonade-ai/cannonade/issues/55)) ([da0a805](https://github.com/cannonade-ai/cannonade/commit/da0a805dd1e926a97f0d2c1d6f264ef9859e5cff))
+
+
+### Bug Fixes
+
+* **mac:** fixed macOS installer ([#53](https://github.com/cannonade-ai/cannonade/issues/53)) ([5a6e9ca](https://github.com/cannonade-ai/cannonade/commit/5a6e9ca6168817dde9f96bcfa0ad22a1bbdff9c9))
+
 ## [0.4.6](https://github.com/cannonade-ai/cannonade/compare/v0.4.5...v0.4.6) (2026-08-18)
 
 
