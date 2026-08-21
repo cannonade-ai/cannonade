@@ -1,18 +1,22 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { IconTank, IconPlus } from '@tabler/icons-vue'
+import { IconPlus } from '@tabler/icons-vue'
+import appIcon from '@renderer/assets/icon.png'
 import Button from '@renderer/components/ui/Button.vue'
 import AddProviderModal from '@renderer/components/add-provider-modal/AddProviderModal.vue'
 import { useSettingsStore } from '@renderer/stores/settings'
 import { useProvidersStore } from '@renderer/stores/providers'
+import { useNavigationStore } from '@renderer/stores/navigation'
 
 const settings = useSettingsStore()
 const providers = useProvidersStore()
+const nav = useNavigationStore()
 
 const showModal = ref(false)
 
 watch(showModal, (open) => {
   if (!open && providers.configuredProviders.length > 0) {
+    nav.initDefaultView()
     settings.completeOnboarding()
   }
 })
@@ -26,7 +30,7 @@ function skip(): void {
   <div class="onboarding">
     <div class="onboarding-card">
       <div class="logo">
-        <IconTank color="rgb(151, 106, 0)" :size="48" :stroke-width="1" />
+        <img :src="appIcon" class="logo-image" alt="Cannonade" />
       </div>
 
       <h1 class="title">Cannonade</h1>
@@ -71,6 +75,13 @@ function skip(): void {
 
 .logo {
   margin-bottom: 4px;
+}
+
+.logo-image {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-lg);
 }
 
 .title {
