@@ -11,6 +11,10 @@ Cannonade is a cross-platform local-first desktop app for building test suites, 
 multiple models at once, and comparing the results without writing an eval
 harness or shipping your prompts to a third-party service.
 
+<p align="center">
+  <img src="https://raw.githubusercontent.com/cannonade-ai/cannonade/main/test-run.png" alt="Cannonade test run" width="900"/>
+</p>
+
 ## Features
 
 - **Local models:** view, load, unload, and delete the local models of your configured LLM providers.
@@ -30,8 +34,10 @@ harness or shipping your prompts to a third-party service.
 | ---------- | ---------------------------------------- |
 | LM Studio  | Local or remote LM Studio server         |
 | Ollama     | Local or remote Ollama server            |
-| OpenRouter | Hundreds of cloud models via one API key |
-| Custom     | Any OpenAI-compatible endpoint           |
+| llama.cpp  | Local or remote llama-server instance    |
+| Custom     | Any OpenAI-compatible local API endpoint |
+| OpenRouter | Access hundreds of models via OpenRouter |
+| Vercel     | Access hundreds of models via AI Gateway |
 | More       | More supported providers are coming soon |
 
 ## Development
