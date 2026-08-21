@@ -1,12 +1,14 @@
 import { ipcMain } from 'electron'
 import { SECRETS } from '@shared/provider/ipc-channels'
 import { getSecretInfo, setSecret, deleteSecret, type SecretInfo } from '../secrets/secret-store'
+import { ensureShellEnvironment } from '../services/executable-path'
 import { rebuildRegistry } from '../../core/providers/registry'
 
 export function registerSecretHandlers(): void {
   ipcMain.handle(
     SECRETS.GET_INFO,
-    (_event, envVarName: string, instanceId: string | null): SecretInfo => {
+    async (_event, envVarName: string, instanceId: string | null): Promise<SecretInfo> => {
+      await ensureShellEnvironment()
       return getSecretInfo(envVarName, instanceId)
     }
   )

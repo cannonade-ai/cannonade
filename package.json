@@ -57,6 +57,7 @@
     "parse5": "^8.0.1",
     "pinia": "^3.0.4",
     "quickjs-emscripten": "^0.32.0",
+    "shell-env": "^4.0.3",
     "slugify": "^1.6.9",
     "write-file-atomic": "^8.0.0"
   },

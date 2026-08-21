@@ -4,7 +4,8 @@ import { join } from 'path'
 import writeFileAtomic from 'write-file-atomic'
 import { SETTINGS } from '@shared/app/ipc-channels'
 import { DEFAULT_APP_SETTINGS, type AppSettings } from '@shared/app/app-settings'
-import { buildRegistry } from '../../core/providers/registry'
+import { buildRegistry, rebuildRegistry } from '../../core/providers/registry'
+import { ensureShellEnvironment } from '../services/executable-path'
 import { applyLogLevel, createLogger } from '@main/logger'
 
 const log = createLogger('app-settings')
@@ -38,6 +39,9 @@ export async function initAppSettings(): Promise<void> {
   }
   applyLogLevel(cache.logLevel)
   buildRegistry(cache.configuredProviders)
+  if (cache.configuredProviders.some((provider) => provider.authMethod === 'env')) {
+    void ensureShellEnvironment().then(rebuildRegistry)
+  }
   log.debug('App settings loaded successfully')
 }
 

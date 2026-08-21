@@ -1,36 +1,25 @@
-import { execFile } from 'child_process'
 import { accessSync, constants } from 'fs'
 import { delimiter, isAbsolute, join, sep } from 'path'
+import { shellEnv } from 'shell-env'
 import { createLogger } from '../logger'
 
 const log = createLogger('executable-path')
 
 const SHELL_TIMEOUT_MS = 5000
-const PATH_MARKER = '__CANNONADE_PATH__'
 
-let shellPathPromise: Promise<void> | null = null
+let shellEnvironmentPromise: Promise<void> | null = null
+let shellEnvironment: Record<string, string> = {}
 
 const resolved = new Map<string, string>()
 
-function readShellPath(): Promise<string> {
-  return new Promise((resolve) => {
-    const shell = process.env.SHELL || '/bin/zsh'
-    const script = `command printf '%s\\n%s\\n%s\\n' ${PATH_MARKER} "$PATH" ${PATH_MARKER}`
-    execFile(
-      shell,
-      ['-ilc', script],
-      {
-        timeout: SHELL_TIMEOUT_MS,
-        killSignal: 'SIGKILL',
-        env: { ...process.env, TERM: 'dumb' }
-      },
-      (err, stdout) => {
-        if (err) log.debug(`Could not read PATH from ${shell}:`, err)
-        const match = stdout.match(new RegExp(`${PATH_MARKER}\\n([\\s\\S]*?)\\n${PATH_MARKER}`))
-        resolve(match?.[1]?.trim() ?? '')
-      }
-    )
+function readShellEnvironment(): Promise<Record<string, string>> {
+  const expiry = new Promise<Record<string, string>>((resolve) => {
+    setTimeout(() => {
+      log.warn(`Login shell did not answer within ${SHELL_TIMEOUT_MS}ms, ignoring its environment`)
+      resolve({})
+    }, SHELL_TIMEOUT_MS).unref()
   })
+  return Promise.race([shellEnv(), expiry])
 }
 
 function mergePath(shellPath: string): string {
@@ -48,12 +37,19 @@ function mergePath(shellPath: string): string {
   return entries.join(delimiter)
 }
 
-export function ensureShellPath(): Promise<void> {
-  if (!shellPathPromise) {
-    shellPathPromise = (async () => {
+export function ensureShellEnvironment(): Promise<void> {
+  if (!shellEnvironmentPromise) {
+    shellEnvironmentPromise = (async () => {
       if (process.platform === 'win32') return
       try {
-        const shellPath = await readShellPath()
+        shellEnvironment = await readShellEnvironment()
+
+        const extra = Object.keys(shellEnvironment).filter((name) => !(name in process.env))
+        if (extra.length) {
+          log.debug(`Login shell provided ${extra.length} variables the app did not inherit`)
+        }
+
+        const shellPath = shellEnvironment.PATH?.trim() ?? ''
         if (!shellPath) {
           log.debug('Login shell returned no PATH, keeping the inherited one')
           return
@@ -65,11 +61,15 @@ export function ensureShellPath(): Promise<void> {
           process.env.PATH = merged
         }
       } catch (err) {
-        log.warn('Failed to import PATH from the login shell:', err)
+        log.warn('Failed to read the login shell environment:', err)
       }
     })()
   }
-  return shellPathPromise
+  return shellEnvironmentPromise
+}
+
+export function resolvedEnvironment(): NodeJS.ProcessEnv {
+  return { ...shellEnvironment, ...process.env }
 }
 
 function isExecutable(candidate: string): boolean {
@@ -101,7 +101,7 @@ export async function resolveExecutable(command: string): Promise<string> {
   if (cached) return cached
 
   try {
-    await ensureShellPath()
+    await ensureShellEnvironment()
 
     const fromPath = findOnPath(command)
     if (fromPath) {

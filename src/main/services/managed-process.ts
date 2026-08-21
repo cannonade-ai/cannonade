@@ -3,7 +3,7 @@ import { basename } from 'path'
 import { getAppState, saveManagedServers, type ManagedServerRecord } from '../app-state'
 import { getAppSettings } from '../ipc/settings-handlers'
 import { createLogger } from '../logger'
-import { resolveExecutable } from './executable-path'
+import { resolveExecutable, resolvedEnvironment } from './executable-path'
 
 const log = createLogger('managed-process')
 
@@ -122,7 +122,7 @@ export async function startManagedProcess(
       windowsHide: true,
       detached: process.platform !== 'win32',
       stdio: ['ignore', 'pipe', 'pipe'],
-      env: env ? { ...process.env, ...env } : process.env
+      env: env ? { ...resolvedEnvironment(), ...env } : resolvedEnvironment()
     })
 
     child.stdout?.on('data', (chunk: Buffer) => log.silly(`[${key}] ${chunk.toString().trim()}`))

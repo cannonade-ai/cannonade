@@ -13,6 +13,9 @@ export default defineConfig({
         '@main': resolve('src/main'),
         ...sharedAlias
       }
+    },
+    build: {
+      externalizeDeps: { exclude: ['shell-env'] }
     }
   },
   preload: {

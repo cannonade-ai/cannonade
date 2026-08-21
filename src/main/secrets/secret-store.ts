@@ -9,6 +9,7 @@ import {
   resolveProbeApiKey,
   type SecretSources
 } from './auth-resolution'
+import { resolvedEnvironment } from '../services/executable-path'
 import { createLogger } from '../logger'
 
 export type { SecretInfo }
@@ -27,7 +28,7 @@ function maskSecret(value: string): string {
 }
 
 function sources(): SecretSources {
-  return { env: process.env, store: cache }
+  return { env: resolvedEnvironment(), store: cache }
 }
 
 export async function initSecrets(): Promise<void> {
@@ -66,7 +67,7 @@ export function resolveProbeKey(type: ProviderType, auth?: ProbeAuth): string | 
 }
 
 export function getSecretInfo(envVarName: string, instanceId: string | null): SecretInfo {
-  const fromEnv = process.env[envVarName]
+  const fromEnv = resolvedEnvironment()[envVarName]
   const stored = instanceId ? cache[instanceId] : undefined
   return {
     envVarExists: !!fromEnv,
