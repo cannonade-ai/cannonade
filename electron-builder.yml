@@ -3,19 +3,19 @@ productName: Cannonade
 directories:
   buildResources: build
 files:
-  - '!dist/**'
-  - '!**/.vscode/*'
-  - '!src/*'
-  - '!electron.vite.config.{js,ts,mjs,cjs}'
-  - '!{.eslintcache,eslint.config.mjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
-  - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
-  - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
+  - 'out/**'
+  - 'resources/**'
+  - 'package.json'
   - '!node_modules/onnxruntime-web/**'
 asarUnpack:
   - resources/**
 win:
   executableName: Cannonade
   files:
+    - 'out/**'
+    - 'resources/**'
+    - 'package.json'
+    - '!node_modules/onnxruntime-web/**'
     - '!node_modules/onnxruntime-node/bin/napi-v6/{darwin,linux}/**'
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
@@ -24,6 +24,10 @@ nsis:
   createDesktopShortcut: always
 mac:
   files:
+    - 'out/**'
+    - 'resources/**'
+    - 'package.json'
+    - '!node_modules/onnxruntime-web/**'
     - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,linux}/**'
   category: public.app-category.developer-tools
   identity: '-'
@@ -38,6 +42,10 @@ dmg:
   artifactName: ${name}-${version}.${ext}
 linux:
   files:
+    - 'out/**'
+    - 'resources/**'
+    - 'package.json'
+    - '!node_modules/onnxruntime-web/**'
     - '!node_modules/onnxruntime-node/bin/napi-v6/{win32,darwin}/**'
   target:
     - AppImage
