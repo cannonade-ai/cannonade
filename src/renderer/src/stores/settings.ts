@@ -27,6 +27,7 @@ export const useSettingsStore = defineStore('settings', () => {
     ...DEFAULTS,
     judge: { ...DEFAULTS.judge },
     experiments: { ...DEFAULTS.experiments },
+    fieldVisibility: { ...DEFAULTS.fieldVisibility },
     isDark: window.matchMedia('(prefers-color-scheme: dark)').matches
   })
   applyTheme(settings.isDark)
@@ -45,6 +46,7 @@ export const useSettingsStore = defineStore('settings', () => {
         ...toRaw(settings),
         judge: { ...settings.judge },
         experiments: { ...settings.experiments },
+        fieldVisibility: { ...settings.fieldVisibility },
         configuredProviders: providersStore.configuredProviders.map((p) => ({ ...p }))
       })
       .catch((err) => log.error('Failed to save app settings:', err))
@@ -67,7 +69,8 @@ export const useSettingsStore = defineStore('settings', () => {
       htmlPreviewTemplate: loadedSettings.htmlPreviewTemplate ?? DEFAULTS.htmlPreviewTemplate,
       htmlPreviewByDefault: loadedSettings.htmlPreviewByDefault ?? DEFAULTS.htmlPreviewByDefault,
       judge: loadedSettings.judge ? { ...loadedSettings.judge } : { ...DEFAULTS.judge },
-      experiments: { ...DEFAULTS.experiments, ...loadedSettings.experiments }
+      experiments: { ...DEFAULTS.experiments, ...loadedSettings.experiments },
+      fieldVisibility: { ...DEFAULTS.fieldVisibility, ...loadedSettings.fieldVisibility }
     })
     providersStore.init(loadedSettings.configuredProviders ?? [])
     await nextTick()
@@ -82,6 +85,7 @@ export const useSettingsStore = defineStore('settings', () => {
     Object.assign(settings, DEFAULTS, {
       judge: { ...DEFAULTS.judge },
       experiments: { ...DEFAULTS.experiments },
+      fieldVisibility: { ...DEFAULTS.fieldVisibility },
       isDark: window.matchMedia('(prefers-color-scheme: dark)').matches,
       onboardingComplete: false
     })

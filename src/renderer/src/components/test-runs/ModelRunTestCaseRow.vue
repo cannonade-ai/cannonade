@@ -16,6 +16,7 @@ import type {
   TestCaseResult
 } from '@shared/app/test-suite'
 import type { JudgeUsage } from '@shared/app/judge'
+import type { FieldVisibility } from '@shared/app/field-visibility'
 import type { ChatMessage } from '@shared/provider/chat'
 import {
   IconAlertTriangle,
@@ -38,6 +39,8 @@ const props = defineProps<{
 }>()
 
 const settings = useSettingsStore()
+
+const show = computed<FieldVisibility>(() => settings.fieldVisibility)
 
 const expanded = ref(false)
 const htmlPreview = ref(settings.htmlPreviewByDefault)
@@ -221,7 +224,7 @@ const hasMetrics = computed<boolean>(() => {
           <span class="detail-value error-text">{{ caseRun.result.error }}</span>
         </div>
 
-        <div v-if="systemPrompt" class="detail-block">
+        <div v-if="systemPrompt && show.systemPrompt" class="detail-block">
           <span class="detail-label">System Prompt</span>
           <Textarea
             :model-value="systemPrompt ?? undefined"
@@ -232,7 +235,7 @@ const hasMetrics = computed<boolean>(() => {
           />
         </div>
 
-        <div v-if="inputMessages.length > 0" class="detail-block">
+        <div v-if="show.input && inputMessages.length > 0" class="detail-block">
           <div class="messages">
             <div
               v-for="(message, i) in inputMessages"
@@ -252,7 +255,7 @@ const hasMetrics = computed<boolean>(() => {
           </div>
         </div>
 
-        <div v-else-if="inputPrompt" class="detail-block">
+        <div v-else-if="show.input && inputPrompt" class="detail-block">
           <span class="detail-label">Input</span>
           <Textarea
             :model-value="inputPrompt ?? undefined"
@@ -263,7 +266,7 @@ const hasMetrics = computed<boolean>(() => {
           />
         </div>
 
-        <div v-if="caseRun.result.reasoning" class="detail-block">
+        <div v-if="show.thinking && caseRun.result.reasoning" class="detail-block">
           <span class="detail-label">Thinking</span>
           <Textarea
             :model-value="caseRun.result.reasoning"
@@ -274,7 +277,7 @@ const hasMetrics = computed<boolean>(() => {
           />
         </div>
 
-        <div v-if="caseRun.result.output" class="detail-block">
+        <div v-if="show.output && caseRun.result.output" class="detail-block">
           <div class="detail-label-row">
             <span class="detail-label">Actual Output</span>
             <button
@@ -298,7 +301,7 @@ const hasMetrics = computed<boolean>(() => {
           />
         </div>
 
-        <div v-if="caseRun.result.evalResults?.length" class="detail-block">
+        <div v-if="show.evaluations && caseRun.result.evalResults?.length" class="detail-block">
           <span class="detail-label">
             Evaluation {{ testCase.evaluations.length > 1 ? '- ' + testCase.passingLogic : '' }}
           </span>
@@ -361,7 +364,7 @@ const hasMetrics = computed<boolean>(() => {
           </div>
         </div>
 
-        <div v-if="hasMetrics" class="detail-block">
+        <div v-if="show.metrics && hasMetrics" class="detail-block">
           <div class="case-metrics">
             <div v-if="caseRun.result.metrics.tokensPerSecond" class="case-metric">
               <span class="case-metric-label">Tok/s</span>
@@ -547,6 +550,7 @@ const hasMetrics = computed<boolean>(() => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    text-align: left;
   }
 
   .summary-right {

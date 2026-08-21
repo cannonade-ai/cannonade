@@ -4,6 +4,7 @@ import { IconPlayerStop, IconTrash, IconEdit } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
 import { Button, Panel } from '@renderer/components/ui'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
+import TestRunDetailFieldsMenu from '@renderer/components/test-runs/TestRunDetailFieldsMenu.vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
 import { useTestRunsStore } from '@renderer/stores/test-runs'
 import { useConfirmStore } from '@renderer/stores/confirm'
@@ -72,6 +73,7 @@ useShortcut('Ctrl+Delete', () => showDeleteConfirm(), { preventDefault: true })
       >
         Delete
       </Button>
+      <TestRunDetailFieldsMenu />
     </template>
 
     <!--<div class="section-label">Model Results</div>-->
