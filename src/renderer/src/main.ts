@@ -4,6 +4,7 @@ import App from './App.vue'
 import { useSettingsStore } from './stores/settings'
 import { useAppInfoStore } from './stores/app-info'
 import { useUpdaterStore } from './stores/updater'
+import { useNavigationStore } from './stores/navigation'
 import { vTooltip } from './directives/tooltip'
 import { createLogger } from './utils/logger'
 
@@ -16,6 +17,7 @@ app.directive('tooltip', vTooltip)
 
 log.info('Renderer script running, initializing stores')
 await Promise.all([useSettingsStore().init(), useAppInfoStore().init(), useUpdaterStore().init()])
+useNavigationStore().initDefaultView()
 
 app.mount('#app')
 log.info('Main renderer mounted')
