@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { createLogger } from '@renderer/utils/logger'
+import { useProvidersStore } from './providers'
+import { KNOWN_PROVIDER_DEFAULTS } from '@shared/provider/configured-provider'
 
 const log = createLogger('navigation-store')
 
@@ -33,6 +35,18 @@ export const useNavigationStore = defineStore('navigation', () => {
   const settingsOpen = ref(false)
   const settingsSection = ref<SettingsSection>('general')
 
+  function initDefaultView(): void {
+    const providersStore = useProvidersStore()
+    const defaultProvider =
+      providersStore.configuredProviders.find((p) => p.isDefault) ??
+      providersStore.configuredProviders[0]
+    if (!defaultProvider) return
+
+    const isExternal = KNOWN_PROVIDER_DEFAULTS[defaultProvider.type]?.isExternal
+    current.value = isExternal ? 'external-models' : 'local-models'
+    log.debug(`initial view set to ${current.value} from provider ${defaultProvider.instanceId}`)
+  }
+
   function navigate(view: View, data?: NavigationPayload): void {
     log.debug(`navigating to ${view} with payload: ${data ?? null}`)
     payload.value = data ?? null
@@ -56,6 +70,7 @@ export const useNavigationStore = defineStore('navigation', () => {
 
   return {
     current,
+    initDefaultView,
     navigate,
     consumePayload,
     settingsOpen,
