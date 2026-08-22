@@ -1,8 +1,8 @@
-import { app, BrowserWindow, screen, type Rectangle } from 'electron'
+import { BrowserWindow, screen, type Rectangle } from 'electron'
 import { readFileSync } from 'fs'
-import { join } from 'path'
 import writeFileAtomic from 'write-file-atomic'
 import { createLogger } from './logger'
+import { getAppStatePath } from './data-paths'
 
 const log = createLogger('app-state')
 
@@ -37,10 +37,6 @@ export function getAppState(): AppState {
   return appState
 }
 
-function appStatePath(): string {
-  return join(app.getPath('userData'), 'app-state.json')
-}
-
 function isVisible(bounds: Rectangle): boolean {
   return screen.getAllDisplays().some((display) => {
     const area = display.workArea
@@ -55,7 +51,7 @@ function isVisible(bounds: Rectangle): boolean {
 
 function persist(): void {
   try {
-    writeFileAtomic.sync(appStatePath(), JSON.stringify(appState, null, 2))
+    writeFileAtomic.sync(getAppStatePath(), JSON.stringify(appState, null, 2))
   } catch (err) {
     log.error('Persist error:', err)
   }
@@ -63,7 +59,7 @@ function persist(): void {
 
 export function initAppState(): void {
   try {
-    const raw = readFileSync(appStatePath(), 'utf-8')
+    const raw = readFileSync(getAppStatePath(), 'utf-8')
     const saved = JSON.parse(raw) as Partial<AppState>
     appState.window = { ...appState.window, ...saved.window }
     appState.managedServers = saved.managedServers ?? appState.managedServers

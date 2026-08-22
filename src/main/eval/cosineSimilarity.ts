@@ -1,9 +1,8 @@
-﻿import { app } from 'electron'
-import { join } from 'node:path'
-import type { FeatureExtractionPipeline } from '@huggingface/transformers'
+﻿import type { FeatureExtractionPipeline } from '@huggingface/transformers'
 import type { EvaluationConfig } from '@shared/app/test-suite'
 import type { EvaluationResult } from '@shared/app/evaluation-result'
 import { createLogger } from '../logger'
+import { getModelsDir } from '../data-paths'
 
 const log = createLogger('cosine-similarity')
 
@@ -14,7 +13,7 @@ let extractor: FeatureExtractionPipeline | null = null
 async function getExtractor(): Promise<FeatureExtractionPipeline> {
   if (!extractor) {
     const { pipeline, env } = await import('@huggingface/transformers')
-    env.cacheDir = join(app.getPath('userData'), 'models')
+    env.cacheDir = getModelsDir()
     extractor = (await pipeline('feature-extraction', 'Xenova/all-MiniLM-L6-v2', {
       dtype: 'q8'
     })) as FeatureExtractionPipeline

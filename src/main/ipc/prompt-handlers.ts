@@ -1,34 +1,31 @@
-import { ipcMain, app } from 'electron'
+import { ipcMain } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import writeFileAtomic from 'write-file-atomic'
 import { PROMPTS } from '@shared/app/ipc-channels'
 import type { Prompt } from '@shared/app/prompt'
 import { createLogger } from '@main/logger'
+import { getPromptsDir } from '@main/data-paths'
 
 const log = createLogger('prompt-handlers')
 
-function promptsDir(): string {
-  return join(app.getPath('userData'), 'prompts')
-}
-
 function promptPath(id: string): string {
-  return join(promptsDir(), `${id}.json`)
+  return join(getPromptsDir(), `${id}.json`)
 }
 
 async function ensurePromptsDir(): Promise<void> {
-  await fs.mkdir(promptsDir(), { recursive: true })
+  await fs.mkdir(getPromptsDir(), { recursive: true })
 }
 
 export function registerPromptHandlers(): void {
   ipcMain.handle(PROMPTS.LIST, async (): Promise<Prompt[]> => {
     await ensurePromptsDir()
-    const files = await fs.readdir(promptsDir())
+    const files = await fs.readdir(getPromptsDir())
     const jsonFiles = files.filter((f) => f.endsWith('.json'))
 
     const prompts = await Promise.all(
       jsonFiles.map(async (f) => {
-        const raw = await fs.readFile(join(promptsDir(), f), 'utf-8')
+        const raw = await fs.readFile(join(getPromptsDir(), f), 'utf-8')
         return JSON.parse(raw) as Prompt
       })
     )

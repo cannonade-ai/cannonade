@@ -1,4 +1,4 @@
-import { ipcMain, app } from 'electron'
+import { ipcMain } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import slugify from 'slugify'
@@ -6,22 +6,19 @@ import writeFileAtomic from 'write-file-atomic'
 import { TEST_RUNS } from '@shared/app/ipc-channels'
 import type { TestRun } from '@shared/app/test-run'
 import { createLogger } from '@main/logger'
+import { getRunsDir } from '@main/data-paths'
 
 const log = createLogger('test-run-handlers')
 
-function runsDir(): string {
-  return join(app.getPath('userData'), 'runs')
-}
-
 function runPath(id: string, suiteName: string): string {
   return join(
-    runsDir(),
+    getRunsDir(),
     `${id}-${slugify(suiteName, { lower: true, strict: true }).slice(0, 25)}.json`
   )
 }
 
 async function ensureRunsDir(): Promise<void> {
-  await fs.mkdir(runsDir(), { recursive: true })
+  await fs.mkdir(getRunsDir(), { recursive: true })
 }
 
 export async function saveTestRun(run: TestRun): Promise<void> {
@@ -33,13 +30,13 @@ export async function saveTestRun(run: TestRun): Promise<void> {
 export function registerTestRunHandlers(): void {
   ipcMain.handle(TEST_RUNS.LIST, async (): Promise<TestRun[]> => {
     await ensureRunsDir()
-    const files = await fs.readdir(runsDir())
+    const files = await fs.readdir(getRunsDir())
     const jsonFiles = files.filter((f) => f.endsWith('.json'))
     if (jsonFiles.length === 0) return []
     const results = await Promise.all(
       jsonFiles.map(async (f): Promise<TestRun | null> => {
         try {
-          const raw = await fs.readFile(join(runsDir(), f), 'utf-8')
+          const raw = await fs.readFile(join(getRunsDir(), f), 'utf-8')
           const run = JSON.parse(raw) as TestRun
           if (typeof run.id !== 'string' || typeof run.createdAt !== 'string') {
             log.warn(`Skipping test run file with unexpected shape: ${f}`)
@@ -61,10 +58,10 @@ export function registerTestRunHandlers(): void {
   })
 
   ipcMain.handle(TEST_RUNS.DELETE, async (_event, id: string): Promise<void> => {
-    const files = await fs.readdir(runsDir())
+    const files = await fs.readdir(getRunsDir())
     const match = files.find((f) => f.startsWith(`${id}-`) && f.endsWith('.json'))
     if (match) {
-      await fs.rm(join(runsDir(), match), { force: true })
+      await fs.rm(join(getRunsDir(), match), { force: true })
       log.info(`Deleted test run: ${id}`)
     } else {
       log.warn(`Test run not found for deletion: ${id}`)

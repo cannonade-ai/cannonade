@@ -1,17 +1,13 @@
-import { ipcMain, app } from 'electron'
+import { ipcMain } from 'electron'
 import { promises as fs } from 'fs'
-import { join } from 'path'
 import writeFileAtomic from 'write-file-atomic'
 import { SETTINGS } from '@shared/app/ipc-channels'
 import { DEFAULT_APP_SETTINGS, type AppSettings } from '@shared/app/app-settings'
 import { buildRegistry } from '../../core/providers/registry'
 import { applyLogLevel, createLogger } from '@main/logger'
+import { getSettingsPath } from '@main/data-paths'
 
 const log = createLogger('app-settings')
-
-function settingsPath(): string {
-  return join(app.getPath('userData'), 'settings.json')
-}
 
 function toAppSettings(partial: Partial<AppSettings>): AppSettings {
   const { judge, experiments, ...rest } = partial
@@ -30,7 +26,7 @@ let cache: AppSettings = toAppSettings({})
 
 export async function initAppSettings(): Promise<void> {
   try {
-    const raw = await fs.readFile(settingsPath(), 'utf-8')
+    const raw = await fs.readFile(getSettingsPath(), 'utf-8')
     cache = toAppSettings(JSON.parse(raw) as Partial<AppSettings>)
   } catch (err) {
     log.debug('No saved settings loaded, using defaults:', err)
@@ -51,7 +47,7 @@ export function registerSettingsHandlers(): void {
   ipcMain.handle(SETTINGS.SAVE, async (_event, settings: AppSettings): Promise<void> => {
     cache = toAppSettings(settings)
     applyLogLevel(cache.logLevel)
-    await writeFileAtomic(settingsPath(), JSON.stringify(cache, null, 2))
+    await writeFileAtomic(getSettingsPath(), JSON.stringify(cache, null, 2))
     log.debug('App settings saved successfully')
   })
 }

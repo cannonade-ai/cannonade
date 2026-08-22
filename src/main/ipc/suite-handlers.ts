@@ -1,4 +1,4 @@
-import { ipcMain, app } from 'electron'
+import { ipcMain } from 'electron'
 import { promises as fs } from 'fs'
 import { join } from 'path'
 import writeFileAtomic from 'write-file-atomic'
@@ -6,23 +6,20 @@ import { SUITES } from '@shared/app/ipc-channels'
 import { DEFAULT_SUITE } from './default-suite'
 import type { TestSuite } from '@shared/app/test-suite'
 import { createLogger } from '@main/logger'
+import { getSuitesDir } from '@main/data-paths'
 
 const log = createLogger('suite-handlers')
 
-function suitesDir(): string {
-  return join(app.getPath('userData'), 'suites')
-}
-
 function suitePath(id: string): string {
-  return join(suitesDir(), `${id}.json`)
+  return join(getSuitesDir(), `${id}.json`)
 }
 
 function markerPath(): string {
-  return join(suitesDir(), '.initialized')
+  return join(getSuitesDir(), '.initialized')
 }
 
 async function ensureSuitesDir(): Promise<void> {
-  await fs.mkdir(suitesDir(), { recursive: true })
+  await fs.mkdir(getSuitesDir(), { recursive: true })
 }
 
 async function isInitialized(): Promise<boolean> {
@@ -41,7 +38,7 @@ async function markInitialized(): Promise<void> {
 export function registerSuiteHandlers(): void {
   ipcMain.handle(SUITES.LIST, async (): Promise<TestSuite[]> => {
     await ensureSuitesDir()
-    const files = await fs.readdir(suitesDir())
+    const files = await fs.readdir(getSuitesDir())
     const jsonFiles = files.filter((f) => f.endsWith('.json'))
     log.debug(`Found ${jsonFiles.length} suite files`)
 
@@ -56,7 +53,7 @@ export function registerSuiteHandlers(): void {
     const results = await Promise.all(
       jsonFiles.map(async (f): Promise<TestSuite | null> => {
         try {
-          const raw = await fs.readFile(join(suitesDir(), f), 'utf-8')
+          const raw = await fs.readFile(join(getSuitesDir(), f), 'utf-8')
           const suite = JSON.parse(raw) as TestSuite
           if (typeof suite.id !== 'string' || typeof suite.createdAt !== 'string') {
             log.warn(`Skipping suite file with unexpected shape: ${f}`)
