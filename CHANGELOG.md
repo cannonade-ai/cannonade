@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.8](https://github.com/cannonade-ai/cannonade/compare/v0.4.7...v0.4.8) (2026-08-22)
+
+
+### Features
+
+* **storage:** moved app data to .cannonade in home directory ([#59](https://github.com/cannonade-ai/cannonade/issues/59)) ([8c93815](https://github.com/cannonade-ai/cannonade/commit/8c938153eb8438b3e3a9978c1d0c8da41d424197))
+
 ## [0.4.7](https://github.com/cannonade-ai/cannonade/compare/v0.4.6...v0.4.7) (2026-08-21)
 
 
