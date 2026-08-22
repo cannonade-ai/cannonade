@@ -19,8 +19,8 @@ const settings = useSettingsStore()
 const appInfo = useAppInfoStore()
 const confirmStore = useConfirmStore()
 
-async function openSuitesFolder(): Promise<void> {
-  if (appInfo.suitesDir) await api.openPath(appInfo.suitesDir)
+async function openDataFolder(): Promise<void> {
+  if (appInfo.dataDir) await api.openPath(appInfo.dataDir)
 }
 
 function openGithubIssues(): void {
@@ -45,14 +45,17 @@ async function handleReset(): Promise<void> {
       <span class="mono-val">{{ appInfo.version || '—' }}</span>
     </SettingsModalRow>
     <SettingsModalDivider label="Files" />
-    <SettingsModalRow label="Suites folder" hint="Where test suite files are stored on disk">
+    <SettingsModalRow
+      label="App data directory"
+      hint="Where suites, prompts, runs, settings and logs are stored on disk"
+    >
       <div class="path-row">
-        <span class="path-value">{{ appInfo.suitesDir }}</span>
+        <span class="path-value">{{ appInfo.dataDir }}</span>
         <Button
-          v-tooltip="'Open suites folder'"
+          v-tooltip="'Open app data directory'"
           type="icon"
           :icon="IconFolderOpen"
-          @click="openSuitesFolder"
+          @click="openDataFolder"
         />
       </div>
     </SettingsModalRow>

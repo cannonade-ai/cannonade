@@ -8,6 +8,7 @@ import { initAppState, getAppState, manageWindow } from './app-state'
 import { adoptManagedProcesses, stopAllManagedProcesses } from './services/managed-process'
 import { initUpdater, isUpdateReady, installUpdate } from './services/updater'
 import { initLogger, createLogger } from './logger'
+import { initDataDir } from './data-paths'
 import icon from '../../resources/icon.png?asset'
 
 const log = createLogger('electron-main')
@@ -90,8 +91,11 @@ function createWindow(): BrowserWindow {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(async () => {
+  const dataDir = initDataDir()
   initLogger()
-  log.info('Electron ready')
+  log.info('Electron ready', { dataDir: dataDir.path })
+  if (dataDir.migrated.length > 0) log.info('Migrated data from userData', dataDir.migrated)
+  if (dataDir.failed.length > 0) log.error('Failed to migrate from userData', dataDir.failed)
 
   // Set app user model id for windows
   electronApp.setAppUserModelId('app.cannonade')

@@ -1,6 +1,5 @@
-import { app, safeStorage } from 'electron'
+import { safeStorage } from 'electron'
 import { promises as fs } from 'fs'
-import { join } from 'path'
 import writeFileAtomic from 'write-file-atomic'
 import type { ProbeAuth, SecretInfo } from '@shared/provider/api-key'
 import type { ConfiguredProvider, ProviderType } from '@shared/provider/configured-provider'
@@ -10,16 +9,13 @@ import {
   type SecretSources
 } from './auth-resolution'
 import { createLogger } from '../logger'
+import { getCredentialsPath } from '../data-paths'
 
 export type { SecretInfo }
 
 const log = createLogger('secret-store')
 
 let cache: Record<string, string> = {}
-
-function credentialsPath(): string {
-  return join(app.getPath('userData'), 'credentials.json')
-}
 
 function maskSecret(value: string): string {
   const visible = value.slice(-4)
@@ -34,7 +30,7 @@ export async function initSecrets(): Promise<void> {
   cache = {}
   if (!safeStorage.isEncryptionAvailable()) return
   try {
-    const raw = await fs.readFile(credentialsPath(), 'utf-8')
+    const raw = await fs.readFile(getCredentialsPath(), 'utf-8')
     const stored = JSON.parse(raw) as Record<string, string>
     for (const [key, encoded] of Object.entries(stored)) {
       try {
@@ -54,7 +50,7 @@ async function persist(): Promise<void> {
   for (const [key, value] of Object.entries(cache)) {
     encoded[key] = safeStorage.encryptString(value).toString('base64')
   }
-  await writeFileAtomic(credentialsPath(), JSON.stringify(encoded, null, 2))
+  await writeFileAtomic(getCredentialsPath(), JSON.stringify(encoded, null, 2))
 }
 
 export function resolveApiKey(provider: ConfiguredProvider): string | undefined {

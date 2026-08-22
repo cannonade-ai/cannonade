@@ -1,11 +1,12 @@
 import path from 'node:path'
 import fs from 'node:fs'
-import { app, BrowserWindow } from 'electron'
+import { BrowserWindow } from 'electron'
 import log from 'electron-log/main'
 import type { LogFunctions, LogMessage, Transport } from 'electron-log'
 import type { LogEntry, LogLevel } from '@shared/app/logging'
 import { DEFAULT_APP_SETTINGS } from '@shared/app/app-settings'
 import { LOGS } from '@shared/app/ipc-channels'
+import { getLogsDir } from './data-paths'
 
 const MAX_BUFFER_SIZE = 1000
 const MAX_LOG_FILE_SIZE = 10 * 1024 * 1024
@@ -14,7 +15,7 @@ const buffer: LogEntry[] = []
 let sequence = 0
 
 export function getLogsDirectory(): string {
-  return app.getPath('logs')
+  return getLogsDir()
 }
 
 function formatArchiveDate(date: Date): string {

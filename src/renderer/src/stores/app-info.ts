@@ -6,6 +6,7 @@ import type { AppInfo } from '@shared/app/app-info'
 export const useAppInfoStore = defineStore('app-info', () => {
   const info = reactive<AppInfo>({
     version: '',
+    dataDir: '',
     suitesDir: '',
     runsDir: '',
     promptsDir: ''
