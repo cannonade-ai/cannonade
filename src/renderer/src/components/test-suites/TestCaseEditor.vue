@@ -173,39 +173,42 @@ useShortcut(
     <SplitPane>
       <template #start>
         <div class="section">
-          <div class="section-header">
-            <span class="section-title">General</span>
-          </div>
           <div class="section-body">
-            <Field label="Name">
-              <Input
-                v-model="name"
-                :error="errors.name"
-                placeholder="Test case name"
-                @input="errors.name = false"
-              />
-            </Field>
-            <Field label="Description">
-              <Input v-model="description" placeholder="Optional description" />
-            </Field>
+            <div class="field-row">
+              <Field label="Name" grow>
+                <Input
+                  v-model="name"
+                  :error="errors.name"
+                  placeholder="Test case name"
+                  @input="errors.name = false"
+                />
+              </Field>
+              <Field label="Description" grow>
+                <Input v-model="description" placeholder="Optional description" />
+              </Field>
+            </div>
           </div>
         </div>
 
-        <div class="section">
+        <div class="section section-fill">
           <div class="section-header">
             <span class="section-title">Input</span>
           </div>
-          <div class="section-body">
+          <div class="section-body section-body-fit">
             <TestCaseEditorPromptField
               ref="promptFieldRef"
               v-model:content="systemPrompt"
               v-model:prompt-ref="promptRef"
             />
-            <Field label="User Input" hint="The user message sent to the model for this test case.">
+            <Field
+              label="User Input"
+              hint="The user message sent to the model for this test case."
+              fill
+            >
               <Textarea
                 v-model="userInput"
                 :error="errors.userInput"
-                :rows="4"
+                fill
                 placeholder="User message to send..."
                 @input="errors.userInput = false"
               />
@@ -340,7 +343,18 @@ useShortcut(
       flex: 1;
       overflow-y: auto;
     }
+
+    &-fit {
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
   }
+}
+
+.field-row {
+  display: flex;
+  gap: 8px;
 }
 
 .eval-count {

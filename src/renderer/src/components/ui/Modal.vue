@@ -123,7 +123,7 @@ useShortcut('Escape', () => {
 }
 
 .modal-body {
-  padding: 20px 24px;
+  padding: 14px 24px 10px 24px;
   color: var(--text-secondary);
   font-size: var(--text-sm);
   line-height: 1.6;
@@ -134,7 +134,7 @@ useShortcut('Escape', () => {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
-  padding: 0 24px 20px;
+  padding: 12px 20px;
 }
 
 .modal {
