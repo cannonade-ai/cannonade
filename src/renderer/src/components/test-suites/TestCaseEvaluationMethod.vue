@@ -34,7 +34,7 @@ const evaluationTypes: SelectOption<EvaluationConfig['type']>[] = [
   { value: 'json_match', label: 'JSON Match' },
   { value: 'bleu', label: 'BLEU' },
   { value: 'custom', label: 'Custom Validator' },
-  { value: 'code_execution', label: 'Code Execution' },
+  //{ value: 'code_execution', label: 'Code Execution' },
   { value: 'cosine_similarity', label: 'Cosine Similarity' },
   { value: 'html_validation', label: 'HTML Validation' },
   { value: 'llm_rubric', label: 'LLM Rubric' },
