@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import 'electron-log/preload'
 import electronLog from 'electron-log/renderer'
-import { PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
+import { HUGGINGFACE, PROVIDER, SECRETS } from '@shared/provider/ipc-channels'
 import {
   APP,
   SUITES,
@@ -20,7 +20,12 @@ import type { ProbeAuth, SecretInfo } from '@shared/provider/api-key'
 import type { LocalModel } from '@shared/provider/local-model'
 import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
-import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
+import type {
+  DownloadModelResponse,
+  DownloadStatusResponse,
+  ServerStatusResponse
+} from '@shared/provider/ipc-contracts'
+import type { HuggingFaceModelDetails } from '@shared/provider/huggingface-model'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { AppInfo } from '@shared/app/app-info'
 import type { UpdateState } from '@shared/app/update-info'
@@ -36,6 +41,16 @@ const api = {
     ipcRenderer.invoke(PROVIDER.FETCH_EXTERNAL_MODELS, instanceId),
   getCapabilities: (instanceId: string): Promise<ProviderCapabilities> =>
     ipcRenderer.invoke(PROVIDER.GET_CAPABILITIES, instanceId),
+  downloadModel: (
+    instanceId: string,
+    downloadTarget: string,
+    quantization?: string
+  ): Promise<DownloadModelResponse> =>
+    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL, instanceId, downloadTarget, quantization),
+  downloadModelStatus: (instanceId: string, jobId: string): Promise<DownloadStatusResponse> =>
+    ipcRenderer.invoke(PROVIDER.DOWNLOAD_MODEL_STATUS, instanceId, jobId),
+  fetchHuggingFaceModelDetails: (input: string): Promise<HuggingFaceModelDetails> =>
+    ipcRenderer.invoke(HUGGINGFACE.FETCH_MODEL_DETAILS, input),
   deleteModel: (instanceId: string, modelId: string): Promise<void> =>
     ipcRenderer.invoke(PROVIDER.DELETE_MODEL, instanceId, modelId),
   loadModel: (instanceId: string, modelId: string): Promise<void> =>

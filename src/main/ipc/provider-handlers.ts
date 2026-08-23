@@ -28,6 +28,25 @@ export function registerProviderHandlers(): void {
     return provider.fetchExternalModels()
   })
 
+  ipcMain.handle(
+    PROVIDER.DOWNLOAD_MODEL,
+    (_event, providerId: string, downloadTarget: string, quantization?: string) => {
+      const provider = getProvider(providerId)
+      if (!provider.downloadModel) throw new Error(`${providerId}: downloadModel not supported`)
+      log.info(
+        `downloading "${downloadTarget}"${quantization ? ` (${quantization})` : ''} in providerId:${providerId}`
+      )
+      return provider.downloadModel(downloadTarget, quantization)
+    }
+  )
+
+  ipcMain.handle(PROVIDER.DOWNLOAD_MODEL_STATUS, (_event, providerId: string, jobId: string) => {
+    const provider = getProvider(providerId)
+    if (!provider.getDownloadStatus)
+      throw new Error(`${providerId}: getDownloadStatus not supported`)
+    return provider.getDownloadStatus(jobId)
+  })
+
   ipcMain.handle(PROVIDER.DELETE_MODEL, (_event, providerId: string, modelId: string) => {
     const provider = getProvider(providerId)
     if (!provider.deleteModel) throw new Error(`${providerId}: deleteModel not supported`)

@@ -10,7 +10,13 @@ import type {
 } from '@shared/provider/ipc-contracts'
 
 import { authHeader } from '@shared/provider/api-key'
-import { toLocalModel, toChatRequest, toChatResponse, toDownloadProgress } from './mappers'
+import {
+  toLocalModel,
+  toChatRequest,
+  toChatResponse,
+  toDownloadProgress,
+  toPullTarget
+} from './mappers'
 import {
   isManagedProcess,
   startManagedProcess,
@@ -107,7 +113,12 @@ export function createOllamaProvider(
       await client.delete({ model: modelId })
     },
 
-    async downloadModel(modelName: string): Promise<DownloadModelResponse> {
+    async downloadModel(
+      downloadTarget: string,
+      quantization?: string
+    ): Promise<DownloadModelResponse> {
+      const modelName = toPullTarget(downloadTarget, quantization)
+      log.debug(`Download target "${downloadTarget}" resolved to "${modelName}"`)
       const jobId = crypto.randomUUID()
       downloadJobs.set(jobId, { job_id: jobId, status: 'downloading' })
 

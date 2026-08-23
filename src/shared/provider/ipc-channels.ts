@@ -18,6 +18,10 @@ export const PROVIDER = {
   SYNC: 'provider:sync'
 } as const
 
+export const HUGGINGFACE = {
+  FETCH_MODEL_DETAILS: 'huggingface:fetchModelDetails'
+} as const
+
 export const SECRETS = {
   GET_INFO: 'secrets:getInfo',
   SET: 'secrets:set',

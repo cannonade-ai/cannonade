@@ -11,6 +11,7 @@ const props = defineProps<{
   placeholder?: string
   disabled?: boolean
   searchable?: boolean
+  dropUp?: boolean
 }>()
 
 const model = defineModel<T>()
@@ -131,7 +132,7 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
       />
     </svg>
 
-    <div v-if="open" class="dropdown" role="listbox" @click.stop>
+    <div v-if="open" class="dropdown" :class="{ up: dropUp }" role="listbox" @click.stop>
       <input
         v-if="searchable"
         ref="searchRef"
@@ -227,6 +228,11 @@ onUnmounted(() => document.removeEventListener('click', onDocumentClick))
     border-radius: var(--radius);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     overflow: hidden;
+
+    &.up {
+      top: auto;
+      bottom: calc(100% + 4px);
+    }
 
     .search {
       width: 100%;

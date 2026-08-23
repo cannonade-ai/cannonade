@@ -155,8 +155,12 @@ export function createLlamaCppProvider(
     }
   }
 
-  async function downloadModel(downloadTarget: string): Promise<DownloadModelResponse> {
-    const modelName = toHfRepoId(downloadTarget)
+  async function downloadModel(
+    downloadTarget: string,
+    quantization?: string
+  ): Promise<DownloadModelResponse> {
+    const repoId = toHfRepoId(downloadTarget)
+    const modelName = quantization && !repoId.includes(':') ? `${repoId}:${quantization}` : repoId
     log.debug(`Download target "${downloadTarget}" resolved to repo "${modelName}"`)
     const jobId = crypto.randomUUID()
     const startedAt = new Date().toISOString()

@@ -118,6 +118,26 @@ export function toChatResponse(
   }
 }
 
+const HF_HOSTS = ['huggingface.co', 'www.huggingface.co', 'hf.co']
+
+export function toPullTarget(downloadTarget: string, quantization?: string): string {
+  const trimmed = downloadTarget.trim()
+  const withoutScheme = trimmed.replace(/^https?:\/\//i, '')
+  const [host, ...hostPath] = withoutScheme.split('/')
+  if (!HF_HOSTS.includes(host.toLowerCase())) return trimmed
+
+  const repo = hostPath
+    .join('/')
+    .split('?')[0]
+    .split('#')[0]
+    .split('/')
+    .filter(Boolean)
+    .slice(0, 2)
+    .join('/')
+  if (!repo.includes('/')) return trimmed
+  return quantization ? `hf.co/${repo}:${quantization}` : `hf.co/${repo}`
+}
+
 export function toDownloadProgress(jobId: string, chunk: ProgressResponse): DownloadStatusResponse {
   return {
     job_id: jobId,
