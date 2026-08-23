@@ -1,6 +1,7 @@
 export { default as TestSuiteDetail } from './TestSuiteDetail.vue'
 export { default as TestSuiteInfoPanel } from './TestSuiteInfoPanel.vue'
 export { default as TestSuiteRunConfigPanel } from './TestSuiteRunConfigPanel.vue'
+export { default as TestSuiteSettingsModal } from './TestSuiteSettingsModal.vue'
 export { default as TestCaseList } from './TestCaseList.vue'
 export { default as TestCaseEditor } from './TestCaseEditor.vue'
 export { default as TestSuiteList } from './TestSuiteList.vue'

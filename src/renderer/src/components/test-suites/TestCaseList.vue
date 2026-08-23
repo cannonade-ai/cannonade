@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { IconPlus, IconDotsVertical } from '@tabler/icons-vue'
-import { Button, Chevron, Panel, Badge } from '@renderer/components/ui'
+import { Button, Panel, Badge } from '@renderer/components/ui'
 import { useContextMenuStore } from '@renderer/stores/context-menu'
 import type { TestCase, TestSuite } from '@shared/app/test-suite'
 import { useTestCaseMenus } from './useTestCaseMenus'
@@ -44,11 +44,17 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
         @click="emit('select-case', tc.id)"
         @contextmenu.prevent="contextMenuStore.open(testCaseMenuItems(tc.id), $event)"
       >
-        <div class="case-info">
+        <div class="case-title">
           <span class="case-name">{{ tc.name }}</span>
-          <span v-if="tc.description" class="case-desc">{{ tc.description }}</span>
+          <Button
+            type="icon"
+            class="case-menu"
+            :icon="IconDotsVertical"
+            @click.stop="contextMenuStore.openAt(testCaseMenuItems(tc.id), $event.currentTarget)"
+          />
         </div>
         <div class="case-meta">
+          <span v-if="tc.description" class="case-desc">{{ tc.description }}</span>
           <span class="eval-badge">
             {{
               tc.evaluations.length > 1
@@ -56,12 +62,6 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
                 : tc.evaluations[0]?.type.replace('_', ' ')
             }}
           </span>
-          <Button
-            type="icon"
-            :icon="IconDotsVertical"
-            @click.stop="contextMenuStore.openAt(testCaseMenuItems(tc.id), $event.currentTarget)"
-          />
-          <Chevron :expanded="selectedId === tc.id" />
         </div>
       </li>
     </ul>
@@ -70,8 +70,6 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
 
 <style scoped lang="scss">
 .cases-panel {
-  max-height: 14rem;
-
   :deep(.panel__body) {
     padding: 0;
   }
@@ -92,14 +90,14 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
 
 .case-item {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--list-item-padding);
   border-left: var(--inactive-left-border);
   border-bottom: 1px solid var(--border);
   cursor: pointer;
   transition: background 0.12s;
+  height: var(--list-item-height);
 
   &.active {
     background: var(--surface-elevated);
@@ -113,17 +111,24 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
 
   &:hover {
     background: var(--surface-hover);
+
+    .case-menu {
+      opacity: 1;
+      pointer-events: auto;
+    }
   }
 }
 
-.case-info {
+.case-title {
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
   min-width: 0;
 }
 
 .case-name {
+  flex: 1;
+  min-width: 0;
   font-size: var(--text-sm);
   font-weight: 600;
   color: var(--text-primary);
@@ -132,7 +137,37 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
   text-overflow: ellipsis;
 }
 
+.case-item .case-menu {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  opacity: 0;
+  pointer-events: none;
+  padding: 2px 3px;
+  height: 1.5rem;
+  background: var(--surface-hover);
+  transition: opacity 0.12s;
+
+  &:hover {
+    background: var(--surface-elevated);
+  }
+
+  &:focus-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.case-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .case-desc {
+  min-width: 0;
   font-size: var(--text-xs);
   color: var(--text-secondary);
   white-space: nowrap;
@@ -140,14 +175,9 @@ const { testCaseMenuItems } = useTestCaseMenus(props.suite as TestSuite)
   text-overflow: ellipsis;
 }
 
-.case-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
 .eval-badge {
+  margin-left: auto;
+  flex-shrink: 0;
   font-size: var(--text-xs);
   font-weight: 600;
   padding: 2px 7px;
