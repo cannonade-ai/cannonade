@@ -1,13 +1,22 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
-import { IconRefresh, IconSettings, IconAlertCircle, IconLoader2 } from '@tabler/icons-vue'
-import { computed, watch } from 'vue'
+import {
+  IconRefresh,
+  IconSettings,
+  IconAlertCircle,
+  IconCloudDownload,
+  IconLoader2
+} from '@tabler/icons-vue'
+import { computed, ref, watch } from 'vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
 import { formatDate } from '@renderer/utils/format'
 import type { SelectOption } from '@renderer/components/ui/Select.vue'
 import LocalModelCard from '@renderer/components/LocalModelCard.vue'
+import LocalModelDownloadCard from '@renderer/components/LocalModelDownloadCard.vue'
+import LocalModelDownloadModal from '@renderer/components/LocalModelDownloadModal.vue'
 import SectionHeader from '@renderer/components/SectionHeader.vue'
 import type { LocalModel } from '@shared/provider/local-model'
+import { useModelDownloadsStore } from '@renderer/stores/model-downloads'
 import { useModelsStore } from '@renderer/stores/models'
 import { useNavigationStore } from '@renderer/stores/navigation'
 import { useProvidersStore } from '@renderer/stores/providers'
@@ -15,6 +24,15 @@ import { useProvidersStore } from '@renderer/stores/providers'
 const store = useModelsStore()
 const navStore = useNavigationStore()
 const providersStore = useProvidersStore()
+const downloadsStore = useModelDownloadsStore()
+
+const downloadModalOpen = ref(false)
+
+const canDownload = computed<boolean>(() => !!providersStore.activeCapabilities?.downloadModel)
+
+const activeDownloads = computed(() =>
+  downloadsStore.downloads.filter((d) => d.instanceId === providersStore.activeLocalProvider)
+)
 
 const providers = computed(() => providersStore.localProviders)
 
@@ -80,7 +98,30 @@ useShortcut('F5', () => store.loadLocalModels(), { preventDefault: true })
           <IconRefresh v-else :size="14" />
           Refresh
         </Button>
+        <Button
+          v-if="canDownload"
+          type="primary"
+          :icon="IconCloudDownload"
+          @click="downloadModalOpen = true"
+        >
+          Download
+        </Button>
       </SectionHeader>
+
+      <section v-if="activeDownloads.length > 0" class="model-section">
+        <h3 class="model-section-label">
+          Downloads
+          <span class="count-pill">{{ activeDownloads.length }}</span>
+        </h3>
+        <div class="models-grid">
+          <LocalModelDownloadCard
+            v-for="download in activeDownloads"
+            :key="download.jobId"
+            :download="download"
+            @dismiss="downloadsStore.dismiss(download.jobId)"
+          />
+        </div>
+      </section>
 
       <div v-if="store.loading && store.localModels.length === 0" class="state-message">
         <span class="spinner" />
@@ -129,11 +170,21 @@ useShortcut('F5', () => store.loadLocalModels(), { preventDefault: true })
 
       <div v-else class="state-message">
         No models found in {{ providerLabel }}.
+        <Button
+          v-if="canDownload"
+          type="primary"
+          :icon="IconCloudDownload"
+          @click="downloadModalOpen = true"
+        >
+          Download a Model
+        </Button>
         <Button :icon="IconSettings" @click="navStore.openSettings('providers')">
           Configure Provider
         </Button>
       </div>
     </template>
+
+    <LocalModelDownloadModal v-model="downloadModalOpen" />
   </div>
 </template>
 

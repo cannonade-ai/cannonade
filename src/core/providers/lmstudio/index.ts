@@ -135,11 +135,15 @@ export function createLmStudioProvider(
       return (await res.json()) as ChatResponse
     },
 
-    async downloadModel(downloadUrl: string): Promise<DownloadModelResponse> {
+    async downloadModel(
+      downloadUrl: string,
+      quantization?: string
+    ): Promise<DownloadModelResponse> {
+      log.debug(`Download model request: ${downloadUrl} quant: ${quantization})`)
       const res = await fetchOrThrow(`${base}/api/v1/models/download`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...auth },
-        body: JSON.stringify({ model: downloadUrl })
+        body: JSON.stringify({ model: downloadUrl, quantization })
       })
       return res.json() as Promise<DownloadModelResponse>
     },

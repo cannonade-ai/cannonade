@@ -26,7 +26,7 @@ export interface LLMProvider {
   fetchLocalModels?(): Promise<LocalModel[]>
   fetchExternalModels?(): Promise<ExternalModel[]>
   chat?(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse>
-  downloadModel?(url: string): Promise<DownloadModelResponse>
+  downloadModel?(url: string, quantization?: string): Promise<DownloadModelResponse>
   getDownloadStatus?(jobId: string): Promise<DownloadStatusResponse>
   deleteModel?(modelId: string): Promise<void>
   deleteModelByHfId?(hfModelId: string): Promise<void>

@@ -3,7 +3,12 @@ import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
-import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
+import type {
+  DownloadModelResponse,
+  DownloadStatusResponse,
+  ServerStatusResponse
+} from '@shared/provider/ipc-contracts'
+import type { HuggingFaceModelDetails } from '@shared/provider/huggingface-model'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { AppInfo } from '@shared/app/app-info'
 import type { UpdateState } from '@shared/app/update-info'
@@ -63,6 +68,13 @@ export interface AppAPI {
   fetchLocalModels(instanceId: string): Promise<LocalModel[]>
   fetchExternalModels(instanceId: string): Promise<ExternalModel[]>
   getCapabilities(instanceId: string): Promise<ProviderCapabilities>
+  downloadModel(
+    instanceId: string,
+    downloadTarget: string,
+    quantization?: string
+  ): Promise<DownloadModelResponse>
+  downloadModelStatus(instanceId: string, jobId: string): Promise<DownloadStatusResponse>
+  fetchHuggingFaceModelDetails(input: string): Promise<HuggingFaceModelDetails>
   deleteModel(instanceId: string, modelId: string): Promise<void>
   loadModel(instanceId: string, modelId: string): Promise<void>
   unloadModel(instanceId: string, loadedInstanceId: string): Promise<void>

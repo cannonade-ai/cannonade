@@ -3,7 +3,12 @@ import type { ExternalModel } from '@shared/provider/external-model'
 import type { ProviderCapabilities } from '@shared/provider/capabilities'
 import type { TestSuite } from '@shared/app/test-suite'
 import type { Prompt } from '@shared/app/prompt'
-import type { ServerStatusResponse } from '@shared/provider/ipc-contracts'
+import type {
+  DownloadModelResponse,
+  DownloadStatusResponse,
+  ServerStatusResponse
+} from '@shared/provider/ipc-contracts'
+import type { HuggingFaceModelDetails } from '@shared/provider/huggingface-model'
 import type { AppSettings } from '@shared/app/app-settings'
 import type { AppInfo } from '@shared/app/app-info'
 import type { UpdateState } from '@shared/app/update-info'
@@ -30,6 +35,16 @@ export const api = {
     window.api.fetchExternalModels(instanceId),
   getCapabilities: (instanceId: string): Promise<ProviderCapabilities> =>
     window.api.getCapabilities(instanceId),
+  downloadModel: (
+    instanceId: string,
+    downloadTarget: string,
+    quantization?: string
+  ): Promise<DownloadModelResponse> =>
+    window.api.downloadModel(instanceId, downloadTarget, quantization),
+  downloadModelStatus: (instanceId: string, jobId: string): Promise<DownloadStatusResponse> =>
+    window.api.downloadModelStatus(instanceId, jobId),
+  fetchHuggingFaceModelDetails: (input: string): Promise<HuggingFaceModelDetails> =>
+    window.api.fetchHuggingFaceModelDetails(input),
   deleteModel: (instanceId: string, modelId: string): Promise<void> =>
     window.api.deleteModel(instanceId, modelId),
   loadModel: (instanceId: string, modelId: string): Promise<void> =>

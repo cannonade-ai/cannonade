@@ -1,12 +1,11 @@
 <script setup lang="ts">
-import { Badge, InfoTooltip, Input } from '@renderer/components/ui'
+import { Badge, ExternalLink, InfoTooltip, Input } from '@renderer/components/ui'
 import type { ModelRef } from '@shared/app/test-run'
 import {
   IconLoader2,
   IconPlus,
   IconCloudDownload,
   IconCircleCheck,
-  IconExternalLink,
   IconPackageImport,
   IconCloudComputing,
   type Icon
@@ -15,9 +14,16 @@ import { useProvidersStore } from '@renderer/stores/providers'
 import { matchesHfModelId } from '@shared/provider/hf-model-match'
 import { computed, ref } from 'vue'
 
+export interface InstalledModelOption {
+  key: string
+  label: string
+  loaded: boolean
+  quantization?: string
+}
+
 const props = defineProps<{
   modelValue: ModelRef[]
-  installedModels: Array<{ key: string; label: string; loaded: boolean }>
+  installedModels: InstalledModelOption[]
   loadingModels: boolean
   loadFailed: boolean
   external?: boolean
@@ -178,6 +184,7 @@ function modelChipLabel(ref: ModelRef): string {
             </svg>
           </span>
           <span class="installed-label">{{ m.label }}</span>
+          <span v-if="m.quantization" class="installed-quant">{{ m.quantization }}</span>
           <Badge v-if="m.loaded" class="loaded-badge" type="success"> Loaded </Badge>
         </li>
       </ul>
@@ -189,10 +196,10 @@ function modelChipLabel(ref: ModelRef): string {
         <InfoTooltip interactive>
           <p class="hf-tooltip__text">
             Pull a model directly from the provider's own registry
-            <a v-if="registryUrl" :href="registryUrl" target="_blank" rel="noopener noreferrer">
-              {{ registryUrl.replace('https://', '') }}
-            </a>
-            . Paste the model name exactly as the provider lists it (e.g. publisher/model-name).
+            <ExternalLink v-if="registryUrl" :href="registryUrl" :icon="false">
+              {{ registryUrl.replace('https://', '').trim() }}.
+            </ExternalLink>
+            Paste the model name exactly as the provider lists it (e.g. publisher/model-name).
           </p>
         </InfoTooltip>
       </span>
@@ -219,19 +226,12 @@ function modelChipLabel(ref: ModelRef): string {
         <InfoTooltip interactive>
           <p class="hf-tooltip__text">
             Search
-            <a
-              :href="hfUrl ? hfUrl : 'https://huggingface.co/models'"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <ExternalLink :href="hfUrl ? hfUrl : 'https://huggingface.co/models'" :icon="false">
               huggingface.co
-            </a>
+            </ExternalLink>
             for a model, then paste either its ID (publisher/model-name) or its model card URL.
           </p>
-          <a class="hf-tooltip__docs" href="#" target="_blank" rel="noopener noreferrer">
-            Docs
-            <IconExternalLink :size="12" :stroke-width="2" />
-          </a>
+          <ExternalLink class="hf-tooltip__docs" href="#">Docs</ExternalLink>
         </InfoTooltip>
       </span>
       <div class="hf-input-row">
@@ -370,6 +370,13 @@ function modelChipLabel(ref: ModelRef): string {
   text-overflow: ellipsis;
 }
 
+.installed-quant {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .hf-input-row {
   display: flex;
   gap: 6px;
@@ -384,9 +391,6 @@ function modelChipLabel(ref: ModelRef): string {
 }
 
 .hf-tooltip__docs {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
   font-weight: 600;
 }
 

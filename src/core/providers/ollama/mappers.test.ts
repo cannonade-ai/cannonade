@@ -1,10 +1,35 @@
 import { describe, it, expect } from 'vitest'
-import { toChatRequest } from './mappers'
+import { toChatRequest, toPullTarget } from './mappers'
 import type { ChatRequest } from '@shared/provider/chat'
 
 function makeRequest(overrides: Partial<ChatRequest> = {}): ChatRequest {
   return { model: 'test-model', ...overrides }
 }
+
+describe('ollama provider toPullTarget', () => {
+  it('rewrites a huggingface model card URL to the hf.co pull form', () => {
+    expect(toPullTarget('https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF')).toBe(
+      'hf.co/bartowski/Llama-3.2-3B-Instruct-GGUF'
+    )
+  })
+
+  it('appends the quantization as a tag', () => {
+    expect(
+      toPullTarget('https://huggingface.co/bartowski/Llama-3.2-3B-Instruct-GGUF', 'Q4_K_M')
+    ).toBe('hf.co/bartowski/Llama-3.2-3B-Instruct-GGUF:Q4_K_M')
+  })
+
+  it('drops trailing path segments from a file URL', () => {
+    expect(toPullTarget('https://huggingface.co/publisher/model-GGUF/tree/main')).toBe(
+      'hf.co/publisher/model-GGUF'
+    )
+  })
+
+  it('leaves registry names untouched', () => {
+    expect(toPullTarget('qwen3:8b')).toBe('qwen3:8b')
+    expect(toPullTarget('qwen3:8b', 'Q4_K_M')).toBe('qwen3:8b')
+  })
+})
 
 describe('ollama provider toChatRequest', () => {
   it('builds messages from string input and system prompt', () => {

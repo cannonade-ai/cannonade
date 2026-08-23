@@ -151,7 +151,8 @@ const installedModels = computed(() => {
     return modelsStore.localModels.map((m) => ({
       key: m.id,
       label: m.name,
-      loaded: m.loadedInstances.length > 0
+      loaded: m.loadedInstances.length > 0,
+      quantization: m.meta.quantization ? String(m.meta.quantization) : undefined
     }))
   }
   return modelsStore.externalModels
