@@ -49,11 +49,9 @@ a:hover {
 }
 
 .section-label {
-  font-family: var(--cn-mono);
-  font-size: 0.72rem;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--cn-amber);
   margin: 0;
 }
@@ -72,7 +70,6 @@ a:hover {
 .section-title {
   font-family: var(--cn-display);
   font-weight: 600;
-  text-transform: uppercase;
   font-size: clamp(1.9rem, 1.4rem + 2.1vw, 2.9rem);
   line-height: 1;
   letter-spacing: 0.01em;
@@ -90,7 +87,6 @@ a:hover {
 }
 
 .mono {
-  font-family: var(--cn-mono);
   font-variant-numeric: tabular-nums;
 }
 
@@ -120,8 +116,7 @@ a:hover {
   font-family: var(--cn-display);
   font-weight: 700;
   font-size: 1.35rem;
-  letter-spacing: 0.045em;
-  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .nav__brand:hover {
@@ -141,10 +136,8 @@ a:hover {
   align-items: center;
   gap: 26px;
   margin-left: auto;
-  font-family: var(--cn-mono);
-  font-size: 0.82rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .nav__links a:not(.btn) {
@@ -171,11 +164,9 @@ a:hover {
   padding: 11px 20px;
   border-radius: var(--cn-radius);
   border: 1px solid transparent;
-  font-family: var(--cn-mono);
-  font-size: 0.84rem;
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   transition:
     background-color 0.15s ease,
     border-color 0.15s ease,
@@ -291,9 +282,7 @@ a:hover {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px 18px;
-  font-family: var(--cn-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
+  font-size: 0.92rem;
   color: var(--cn-text-3);
   margin: 0;
   padding: 0;
@@ -395,16 +384,16 @@ a:hover {
 }
 
 .seq__n {
-  font-family: var(--cn-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.16em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
   color: var(--cn-amber);
 }
 
 .seq__t {
   font-family: var(--cn-display);
   font-weight: 600;
-  text-transform: uppercase;
   letter-spacing: 0.02em;
   font-size: 1.5rem;
   line-height: 1.1;
@@ -456,7 +445,6 @@ a:hover {
 .feature__t {
   font-family: var(--cn-display);
   font-weight: 600;
-  text-transform: uppercase;
   font-size: clamp(1.5rem, 1.2rem + 1vw, 2.05rem);
   line-height: 1.05;
   letter-spacing: 0.015em;
@@ -524,8 +512,7 @@ a:hover {
   border: 1px solid var(--cn-line);
   border-radius: 999px;
   background: var(--cn-panel);
-  font-family: var(--cn-mono);
-  font-size: 0.85rem;
+  font-size: 0.92rem;
   color: var(--cn-text-2);
 }
 
@@ -581,16 +568,14 @@ a:hover {
 .dl__os {
   font-family: var(--cn-display);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.01em;
   font-size: 1.4rem;
   color: var(--cn-text);
 }
 
 .dl__fmt {
-  font-family: var(--cn-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
   color: var(--cn-text-3);
 }
 
@@ -600,9 +585,7 @@ a:hover {
 
 .dl__note {
   margin: 26px 0 0;
-  font-family: var(--cn-mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.04em;
+  font-size: 0.92rem;
   color: var(--cn-text-3);
 }
 
@@ -617,9 +600,7 @@ a:hover {
   flex-wrap: wrap;
   gap: 20px 40px;
   align-items: center;
-  font-family: var(--cn-mono);
-  font-size: 0.78rem;
-  letter-spacing: 0.05em;
+  font-size: 0.92rem;
   color: var(--cn-text-4);
 }
 
@@ -632,7 +613,6 @@ a:hover {
 
 .foot__links a {
   color: var(--cn-text-3);
-  text-transform: uppercase;
 }
 
 .foot__links a:hover {

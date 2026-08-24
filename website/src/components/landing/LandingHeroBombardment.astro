@@ -29,8 +29,9 @@
     const amberHot = toRgb('#f0d48a')
     const pass = toRgb('#3fb950')
 
-    const mono =
-      getComputedStyle(document.documentElement).getPropertyValue('--cn-mono').trim() || 'monospace'
+    const labelFont =
+      getComputedStyle(document.documentElement).getPropertyValue('--cn-body').trim() ||
+      'sans-serif'
 
     const shells = []
     const bursts = []
@@ -285,7 +286,7 @@
           ctx.lineTo(mark.x + Math.cos(angle) * (ring + 9), mark.y + Math.sin(angle) * (ring + 9))
           ctx.stroke()
         }
-        ctx.font = `600 13px ${mono}`
+        ctx.font = `600 13px ${labelFont}`
         ctx.textAlign = 'center'
         ctx.fillStyle = `rgba(${pass}, ${0.9 * fade})`
         ctx.fillText(mark.label, mark.x, mark.y - ring - 16 - 14 * t)

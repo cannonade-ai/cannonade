@@ -75,9 +75,13 @@ on that and must stay true:
   both the landing page `<head>` and the Starlight `Head` override. Adding a font means
   adding it in three places: the file, the `@font-face` rule, and the preload list.
 
-The files are the `latin` subsets from the Fontsource packages `@fontsource/saira-condensed`,
-`@fontsource-variable/ibm-plex-sans`, and `@fontsource/ibm-plex-mono`. To update, install
-the package temporarily and copy from its `files/` directory.
+The files are the `latin` subsets from the Fontsource packages `@fontsource/saira-condensed`
+and `@fontsource-variable/ibm-plex-sans`. To update, install the package temporarily and
+copy from its `files/` directory.
+
+Only two families are vendored: Saira Condensed for display and IBM Plex Sans for
+everything else. `--cn-mono` is a system stack with no downloaded file, and is used only
+for docs code blocks — never for landing page or UI text.
 
 Note that `npm run dev` injects styles through JavaScript and will always flicker a
 little. Judge rendering with `npm run build && npm run preview`.
