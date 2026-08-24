@@ -1,9 +1,21 @@
 ---
-import Default from '@astrojs/starlight/components/Head.astro';
-import FontPreloads from './FontPreloads.astro';
+import Default from '@astrojs/starlight/components/Head.astro'
+import FontPreloads from './FontPreloads.astro'
+import { site } from '../config/site'
+
+const origin = Astro.site ?? new URL('https://cannonade.app')
+const imageUrl = new URL(site.ogImage, origin)
+const imageAlt = `${site.name}: ${site.tagline}`
 ---
 
 <FontPreloads />
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+<meta property="og:image" content={imageUrl.href} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+<meta name="twitter:image" content={imageUrl.href} />
+<meta name="twitter:image:alt" content={imageAlt} />
 <Default><slot /></Default>

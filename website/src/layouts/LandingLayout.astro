@@ -1,16 +1,25 @@
 ---
-import FontPreloads from '../components/FontPreloads.astro';
-import '../styles/fonts.css';
-import '../styles/tokens.css';
-import '../styles/landing.css';
+import { SEO } from 'astro-seo'
+import { Schema } from 'astro-seo-schema'
+import FontPreloads from '../components/FontPreloads.astro'
+import { site, downloadTargets } from '../config/site'
+import '../styles/fonts.css'
+import '../styles/tokens.css'
+import '../styles/landing.css'
 
 interface Props {
-  title: string;
-  description: string;
+  title: string
+  description: string
+  image?: string
+  noindex?: boolean
 }
 
-const { title, description } = Astro.props;
-const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://cannonade.app');
+const { title, description, image = site.ogImage, noindex = false } = Astro.props
+const origin = Astro.site ?? new URL('https://cannonade.app')
+const canonical = new URL(Astro.url.pathname, origin)
+const imageUrl = new URL(image, origin)
+const operatingSystems = downloadTargets.map((target) => target.os).join(', ')
+const docsUrl = new URL(site.docs, origin)
 ---
 
 <!doctype html>
@@ -19,18 +28,64 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://cannonade.a
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <FontPreloads />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <link rel="canonical" href={canonical.href} />
-    <link rel="icon" href="/favicon.ico" sizes="32x32" />
-    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <meta name="color-scheme" content="dark" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical.href} />
-    <meta name="twitter:card" content="summary_large_image" />
+    <SEO
+      title={title}
+      description={description}
+      canonical={canonical.href}
+      noindex={noindex}
+      nofollow={noindex}
+      openGraph={{
+        basic: {
+          title,
+          type: 'website',
+          image: imageUrl.href,
+          url: canonical.href
+        },
+        optional: {
+          description,
+          siteName: site.name,
+          locale: 'en_US'
+        },
+        image: {
+          type: 'image/png',
+          width: 1200,
+          height: 630,
+          alt: `${site.name}: ${site.tagline}`
+        }
+      }}
+      twitter={{
+        card: 'summary_large_image',
+        title,
+        description,
+        image: imageUrl.href,
+        imageAlt: `${site.name}: ${site.tagline}`
+      }}
+      extend={{
+        link: [
+          { rel: 'icon', href: '/favicon.ico', sizes: '32x32' },
+          { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/favicon-96.png' },
+          { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' }
+        ],
+        meta: [{ name: 'color-scheme', content: 'dark' }]
+      }}
+    />
+    <Schema
+      item={{
+        '@context': 'https://schema.org',
+        '@type': 'SoftwareApplication',
+        name: site.name,
+        description: site.description,
+        applicationCategory: 'DeveloperApplication',
+        operatingSystem: operatingSystems,
+        url: origin.href,
+        downloadUrl: site.latest,
+        screenshot: imageUrl.href,
+        isAccessibleForFree: true,
+        license: 'https://spdx.org/licenses/MIT.html',
+        sameAs: site.repo,
+        inLanguage: 'en'
+      }}
+    />
   </head>
   <body>
     <slot />

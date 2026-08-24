@@ -23,7 +23,7 @@
   --cn-display: 'Saira Condensed', 'Arial Narrow', system-ui, sans-serif;
   --cn-body:
     'IBM Plex Sans Variable', 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --cn-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+  --cn-mono: ui-monospace, 'Cascadia Code', 'Consolas', 'SF Mono', monospace;
 
   --cn-measure: 1160px;
   --cn-radius: 4px;

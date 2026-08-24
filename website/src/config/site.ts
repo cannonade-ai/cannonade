@@ -9,7 +9,8 @@ export const site = {
   issues: `${REPO}/issues`,
   releases: `${REPO}/releases`,
   latest: `${REPO}/releases/latest`,
-  docs: '/docs'
+  docs: '/docs',
+  ogImage: '/test-run_snippet.png'
 }
 
 export interface DownloadTarget {
