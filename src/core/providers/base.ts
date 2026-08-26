@@ -25,6 +25,7 @@ export interface LLMProvider {
   readonly capabilities: ProviderCapabilities
   fetchLocalModels?(): Promise<LocalModel[]>
   fetchExternalModels?(): Promise<ExternalModel[]>
+  probeApiKey?(): Promise<void>
   chat?(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse>
   downloadModel?(url: string, quantization?: string): Promise<DownloadModelResponse>
   getDownloadStatus?(jobId: string): Promise<DownloadStatusResponse>

@@ -94,7 +94,8 @@ export function registerProviderHandlers(): void {
     async (_event, type: ProviderType, url: string, auth?: ProbeAuth): Promise<boolean> => {
       const provider = createProbeProvider(type, url, auth)
       try {
-        if (provider.fetchLocalModels) await provider.fetchLocalModels()
+        if (provider.probeApiKey) await provider.probeApiKey()
+        else if (provider.fetchLocalModels) await provider.fetchLocalModels()
         else if (provider.fetchExternalModels) await provider.fetchExternalModels()
         log.debug(
           `connection test successful for ${type} at ${url} with auth method ${auth?.authMethod}`

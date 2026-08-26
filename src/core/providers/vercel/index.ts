@@ -42,6 +42,13 @@ export function createVercelProvider(
       return data.data.map((m) => toExternalModel(m, instanceId))
     },
 
+    async probeApiKey(): Promise<void> {
+      const res = await fetch(`${normalizedBase}/v1/credits`, {
+        headers: { ...authHeader(apiKey) }
+      })
+      if (!res.ok) throw mapError(res.status, await res.text())
+    },
+
     async chat(request: ChatRequest, options?: ChatOptions): Promise<ChatResponse> {
       if (hasExtraRequestData(request)) {
         throw new ProviderError(
