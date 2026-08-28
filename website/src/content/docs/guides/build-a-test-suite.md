@@ -79,8 +79,8 @@ The usual workflow is:
 3. Run it again against the same models.
 4. Compare the two runs.
 
-Versioned prompts help here. Save the system prompt in **Prompts**, edit it to create a new
-version, and the run history tells you which version produced which result.
+Versioned prompts help here, since the run history tells you which version produced which
+result. See [Prompts and versioning](/docs/guides/prompts-and-versioning/).
 
 Because runs are stored locally as JSON, the history is yours: nothing expires, nothing is
 rate limited, and nothing leaves the machine (external providers excepted, obviously).

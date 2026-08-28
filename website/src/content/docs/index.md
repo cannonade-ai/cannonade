@@ -22,6 +22,8 @@ Start here if you are new.
   and iterate on a prompt.
 - [Understand your results](/docs/guides/understand-your-results/): how scoring works, and
   how to read the numbers a run reports.
+- [Prompts and versioning](/docs/guides/prompts-and-versioning/): reuse a system prompt
+  across cases, and pin one to a version.
 
 ## Reference
 
