@@ -5,9 +5,8 @@ sidebar:
   order: 2
 ---
 
-Most of a run reads itself: open a run from **Test Runs**, expand a model, expand a case.
-This page covers the parts that do not: how a score is arrived at, why judge cost is kept
-separate, and what the numbers do and do not tell you.
+Open a run from **Test Runs**, expand a model, then expand a case to see its output and how
+it was scored.
 
 ## Score and verdict are not the same thing
 

@@ -115,7 +115,7 @@ out of any repository regardless.
 :::
 
 `app-state.json` remembers your window geometry and, when the experimental
-[Cannonade-managed servers](/docs/reference/providers/#managed-server-processes) setting is
+[Cannonade-managed servers](/docs/reference/experiments/#cannonade-managed-servers) setting is
 on, which server processes Cannonade started, so it can stop exactly those and nothing else.
 
 ## Backing up

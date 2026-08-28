@@ -32,6 +32,9 @@ Look things up here.
   each one can do.
 - [Files and folders](/docs/reference/files-and-folders/): where Cannonade keeps your
   suites, runs, prompts, and settings on disk.
+- [Settings](/docs/reference/settings/): what each pane controls, and the choices with
+  consequences.
+- [Experiments](/docs/reference/experiments/): opt-in features that are not settled yet.
 
 ## Something missing?
 

@@ -70,20 +70,8 @@ above marks which is which.
 ### Cannonade-managed servers (experimental)
 
 Turn on **Cannonade-managed servers** in **Settings > Experiments** to get the controls for
-those providers. It is off by default, and until you enable it their provider cards show no
-server status at all.
-
-With it on, **Start** launches the server itself, which needs the provider's own executable
-on your `PATH`, and remembers the process it spawned. **Stop** ends that process, and
-Cannonade also ends anything it started when you quit.
-
-The rule it follows: **it only stops what it started.** An application you
-launched yourself, with its own window or tray icon, is left alone.
-
-:::caution
-Stopping means ending a process, not asking it politely. Anything in flight, such as a model
-download or a model being loaded, can be cut short.
-:::
+those providers. It only stops what it started, and stopping ends the process outright. See
+[Experiments](/docs/reference/experiments/).
 
 ## Credentials
 
