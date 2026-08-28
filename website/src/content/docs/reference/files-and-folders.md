@@ -106,8 +106,8 @@ It does not hold any API key. Keys go one of two ways:
   written to `credentials.json` as base64.
 
 `credentials.json` is therefore unreadable and tied to the machine and account that wrote
-it. Copying it to another computer does not carry your keys over — the new machine cannot
-decrypt it. Re-enter the keys there instead.
+it. Copying it to another computer does not carry your keys over, because the new machine
+cannot decrypt it. Re-enter the keys there instead.
 
 :::caution
 `settings.json` is safe to commit. `credentials.json` is not useful to commit, but leave it

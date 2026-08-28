@@ -20,6 +20,8 @@ Start here if you are new.
 
 - [Build a test suite](/docs/guides/build-a-test-suite/): write cases, attach evaluators,
   and iterate on a prompt.
+- [Understand your results](/docs/guides/understand-your-results/): how scoring works, and
+  how to read the numbers a run reports.
 
 ## Reference
 

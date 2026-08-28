@@ -60,7 +60,6 @@ While the run is in progress you can watch each case resolve. When it finishes, 
 reports:
 
 - cases passed and failed
-- average score
 - tokens per second, time to first token, and duration
 - token usage and cost, where the provider reports them
 
@@ -68,7 +67,8 @@ Judge model usage from `llm_rubric` and `g_eval` is tracked separately, so gradi
 never hides inside the numbers for the model under test.
 
 Every run is saved to **Test Runs** with its full output, so you can compare today's results
-against the run you did before you changed the system prompt.
+against the run you did before you changed the system prompt. See
+[Understand your results](/docs/guides/understand-your-results/) for how to read one.
 
 ## Iterating on prompts
 
