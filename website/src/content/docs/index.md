@@ -39,6 +39,8 @@ Look things up here.
 - [Settings](/docs/reference/settings/): what each pane controls, and the choices with
   consequences.
 - [Experiments](/docs/reference/experiments/): opt-in features that are not settled yet.
+- [Test suite format](/docs/reference/test-suite-format/): how a suite file is laid out, for
+  generating and reviewing them outside the app.
 
 ## Something missing?
 
