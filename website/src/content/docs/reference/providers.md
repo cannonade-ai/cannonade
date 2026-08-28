@@ -53,7 +53,8 @@ Downloads land wherever the provider stores its models; Cannonade does not keep 
 copy.
 
 You can also name a model that is not installed yet when starting a test run. Cannonade
-downloads it first, and a run option removes it again afterwards.
+downloads it first, and a run option removes it again afterwards. See
+[Model downloads](/docs/guides/model-downloads/).
 
 ## Managed server processes
 

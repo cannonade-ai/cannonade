@@ -26,6 +26,8 @@ Start here if you are new.
   across cases, and pin one to a version.
 - [Playground](/docs/guides/playground/): chat with one model, tune parameters, and try a
   prompt before it becomes a case.
+- [Model downloads](/docs/guides/model-downloads/): pull models from a registry or Hugging
+  Face, and pick a quantization.
 
 ## Reference
 
