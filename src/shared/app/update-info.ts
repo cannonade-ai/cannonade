@@ -15,3 +15,4 @@ export interface UpdateState {
 }
 
 export const CHANGELOG_URL = 'https://github.com/cannonade-ai/cannonade/blob/main/CHANGELOG.md'
+export const RELEASES_URL = 'https://github.com/cannonade-ai/cannonade/releases'

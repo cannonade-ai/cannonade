@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { IconCircleArrowUp, IconExternalLink } from '@tabler/icons-vue'
+import { IconCircleArrowUp } from '@tabler/icons-vue'
 import Badge from '@renderer/components/ui/Badge.vue'
 import Button from '@renderer/components/ui/Button.vue'
+import ExternalLink from '@renderer/components/ui/ExternalLink.vue'
 import Modal from '@renderer/components/ui/Modal.vue'
 import { useUpdaterStore } from '@renderer/stores/updater'
-import { CHANGELOG_URL } from '@shared/app/update-info'
+import { CHANGELOG_URL, RELEASES_URL } from '@shared/app/update-info'
 
 const updater = useUpdaterStore()
 const open = ref(false)
@@ -15,10 +16,6 @@ const badgeLabel = computed(() => {
   if (updater.isDownloading) return `Downloading ${updater.percent}%`
   return 'Update available'
 })
-
-function openChangelog(): void {
-  window.open(CHANGELOG_URL)
-}
 </script>
 
 <template>
@@ -39,10 +36,10 @@ function openChangelog(): void {
       </div>
     </div>
 
-    <button class="changelog-link" @click="openChangelog">
-      View changelog
-      <IconExternalLink :size="13" />
-    </button>
+    <div class="links">
+      <ExternalLink :href="CHANGELOG_URL">View changelog</ExternalLink>
+      <ExternalLink :href="RELEASES_URL">Releases</ExternalLink>
+    </div>
 
     <div v-if="updater.isDownloading || updater.isReady" class="progress">
       <div class="progress-track">
@@ -116,20 +113,10 @@ function openChangelog(): void {
   transform: rotate(90deg);
 }
 
-.changelog-link {
-  display: inline-flex;
+.links {
+  display: flex;
   align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: var(--text-xs);
-  color: var(--accent);
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
+  gap: 1rem;
 }
 
 .progress {
