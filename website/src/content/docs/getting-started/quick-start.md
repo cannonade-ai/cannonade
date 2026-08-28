@@ -68,7 +68,7 @@ See [Connect a provider](/docs/getting-started/connect-a-provider/) for per-prov
 
 The Playground is the fastest way to confirm everything works. Pick a model, type a
 prompt, and send it. Responses report tokens per second and time to first token, the same
-stats Cannonade records during a test run.
+stats Cannonade records during a test run. See [Playground](/docs/guides/playground/).
 
 ## 4. Run the bundled suite
 

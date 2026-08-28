@@ -24,6 +24,8 @@ Start here if you are new.
   how to read the numbers a run reports.
 - [Prompts and versioning](/docs/guides/prompts-and-versioning/): reuse a system prompt
   across cases, and pin one to a version.
+- [Playground](/docs/guides/playground/): chat with one model, tune parameters, and try a
+  prompt before it becomes a case.
 
 ## Reference
 
