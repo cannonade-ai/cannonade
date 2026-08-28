@@ -58,7 +58,10 @@ public/fonts/              vendored woff2 files, latin subsets only
   The prefix is added by `generateId` in `src/content.config.ts`. Two consequences:
   internal links must be written with the prefix (`/docs/guides/quick-start/`), while
   `autogenerate: { directory: ... }` in `astro.config.mjs` matches the **on-disk**
-  directory and must stay unprefixed (`guides`, not `docs/guides`).
+  directory and must stay unprefixed (`guides`, not `docs/guides`). A third: the
+  `starlight-page-actions` plugin derives its markdown twins from the on-disk path, so it
+  emits them unprefixed. `src/integrations/docs-markdown-prefix.ts` moves them under `/docs/`
+  after the build.
 - `/docs/` is a real page, `src/content/docs/index.md`. Keep its link lists in sync when
   adding or removing a guide.
 
