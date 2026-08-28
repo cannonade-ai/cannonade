@@ -36,6 +36,20 @@ trash, which is what an unsigned download looks like to Gatekeeper rather than a
 problem with the file. You only have to do this once per install, so repeat it after
 updating to a new version.
 
+#### If macOS still blocks the app
+
+Depending on your macOS version and how the file was downloaded, Gatekeeper may still
+refuse the first launch even after the commands above. In that case approve it from
+System Settings:
+
+1. Double-click `Cannonade.app` once and dismiss the warning dialog.
+2. Open **System Settings > Privacy & Security** and scroll to the **Security** section.
+3. Next to the message about Cannonade being blocked, click **Open Anyway**.
+4. Confirm with **Open** and authenticate if prompted.
+
+The **Open Anyway** button only appears right after a blocked launch attempt, so start
+with step 1. Like the `xattr` step, this is a one-time approval per installed version.
+
 ## 2. Add a provider
 
 A provider is a source of models. On first launch Cannonade has none, so it shows a
@@ -48,7 +62,7 @@ provider if you want to confirm the URL and credentials first.
 Once the provider is added, its models show up under **Local Models** or **External
 Models**, depending on whether it runs on your hardware or in the cloud.
 
-See [Connect a provider](/docs/guides/connect-a-provider/) for per-provider detail.
+See [Connect a provider](/docs/getting-started/connect-a-provider/) for per-provider detail.
 
 ## 3. Try a model in the Playground
 
@@ -79,9 +93,10 @@ and cost.
 
 ## Where your data lives
 
-Suites, prompts, runs, and settings are written to your OS application data directory as
-plain JSON. **Settings > General** shows the suites folder and can open it for you. The
-files are readable, diffable, and safe to back up or commit to a private repository.
+Suites, prompts, runs, and settings are written to `~/.cannonade` as plain JSON.
+**Settings > General** shows the suites folder and can open it for you. The files are
+readable, diffable, and safe to back up or commit to a private repository. See
+[Files and folders](/docs/reference/files-and-folders/) for the full layout.
 
 API keys are the exception: they are either read from an environment variable you name, or
 stored encrypted with the operating system's own secret storage.

@@ -32,6 +32,7 @@ export default defineConfig({
       customCss: ['./src/styles/fonts.css', './src/styles/tokens.css', './src/styles/docs.css'],
       sidebar: [
         { label: 'Overview', link: '/docs/' },
+        { label: 'Getting started', items: [{ autogenerate: { directory: 'getting-started' } }] },
         { label: 'Guides', items: [{ autogenerate: { directory: 'guides' } }] },
         { label: 'Reference', items: [{ autogenerate: { directory: 'reference' } }] }
       ]

@@ -7,14 +7,17 @@ Cannonade is a cross-platform desktop app for building test suites, running them
 several models, and comparing the results. There is no eval harness to write and nothing
 is sent to a third party unless you configure a cloud provider yourself.
 
-## Guides
+## Getting started
 
 Start here if you are new.
 
-- [Quick start](/docs/guides/quick-start/): install the app, add a provider, run the
-  bundled suite.
-- [Connect a provider](/docs/guides/connect-a-provider/): Ollama, LM Studio, llama.cpp,
-  OpenRouter, Vercel AI Gateway, and any OpenAI-compatible endpoint.
+- [Quick start](/docs/getting-started/quick-start/): install the app, add a provider, run
+  the bundled suite.
+- [Connect a provider](/docs/getting-started/connect-a-provider/): Ollama, LM Studio,
+  llama.cpp, OpenRouter, Vercel AI Gateway, and any OpenAI-compatible endpoint.
+
+## Guides
+
 - [Build a test suite](/docs/guides/build-a-test-suite/): write cases, attach evaluators,
   and iterate on a prompt.
 
@@ -25,6 +28,8 @@ Look things up here.
 - [Evaluators](/docs/reference/evaluators/): every scoring method and when to use it.
 - [Providers](/docs/reference/providers/): supported providers, their defaults, and what
   each one can do.
+- [Files and folders](/docs/reference/files-and-folders/): where Cannonade keeps your
+  suites, runs, prompts, and settings on disk.
 
 ## Something missing?
 

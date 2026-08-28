@@ -2,7 +2,7 @@
 title: Build a test suite
 description: Define test cases, attach evaluators, and run a suite against several models at once.
 sidebar:
-  order: 3
+  order: 1
 ---
 
 A test suite is a named set of cases. A case is one prompt plus the evaluators that decide
@@ -87,9 +87,10 @@ rate limited, and nothing leaves the machine (external providers excepted, obvio
 
 ## Sharing a suite
 
-Each suite is a JSON file in Cannonade's suites folder, which **Settings > General** can
-open for you. Copying that file to another machine, or committing it to a repository, is
-all it takes to share a suite or review a change to one in a pull request.
+Each suite is a JSON file in `~/.cannonade/suites`, which **Settings > General** can open
+for you. Copying that file to another machine, or committing it to a repository, is all it
+takes to share a suite or review a change to one in a pull request. See
+[Files and folders](/docs/reference/files-and-folders/) for what else is stored there.
 
 :::caution
 A suite can carry `custom` evaluators, which are JavaScript. Cannonade runs them in a
