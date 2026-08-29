@@ -2,7 +2,7 @@
 title: Build a test suite
 description: Define test cases, attach evaluators, and run a suite against several models at once.
 sidebar:
-  order: 3
+  order: 1
 ---
 
 A test suite is a named set of cases. A case is one prompt plus the evaluators that decide
@@ -60,7 +60,6 @@ While the run is in progress you can watch each case resolve. When it finishes, 
 reports:
 
 - cases passed and failed
-- average score
 - tokens per second, time to first token, and duration
 - token usage and cost, where the provider reports them
 
@@ -68,7 +67,8 @@ Judge model usage from `llm_rubric` and `g_eval` is tracked separately, so gradi
 never hides inside the numbers for the model under test.
 
 Every run is saved to **Test Runs** with its full output, so you can compare today's results
-against the run you did before you changed the system prompt.
+against the run you did before you changed the system prompt. See
+[Understand your results](/docs/guides/understand-your-results/) for how to read one.
 
 ## Iterating on prompts
 
@@ -79,17 +79,18 @@ The usual workflow is:
 3. Run it again against the same models.
 4. Compare the two runs.
 
-Versioned prompts help here. Save the system prompt in **Prompts**, edit it to create a new
-version, and the run history tells you which version produced which result.
+Versioned prompts help here, since the run history tells you which version produced which
+result. See [Prompts and versioning](/docs/guides/prompts-and-versioning/).
 
 Because runs are stored locally as JSON, the history is yours: nothing expires, nothing is
 rate limited, and nothing leaves the machine (external providers excepted, obviously).
 
 ## Sharing a suite
 
-Each suite is a JSON file in Cannonade's suites folder, which **Settings > General** can
-open for you. Copying that file to another machine, or committing it to a repository, is
-all it takes to share a suite or review a change to one in a pull request.
+Each suite is a JSON file in `~/.cannonade/suites`, which **Settings > General** can open
+for you. Copying that file to another machine, or committing it to a repository, is all it
+takes to share a suite or review a change to one in a pull request. See
+[Files and folders](/docs/reference/files-and-folders/) for what else is stored there.
 
 :::caution
 A suite can carry `custom` evaluators, which are JavaScript. Cannonade runs them in a

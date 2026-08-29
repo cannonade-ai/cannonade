@@ -1,11 +1,14 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
 import starlight from '@astrojs/starlight'
+import starlightPageActions from 'starlight-page-actions'
+import { docsMarkdownPrefix } from './src/integrations/docs-markdown-prefix'
 
 export default defineConfig({
   site: 'https://cannonade.app',
   integrations: [
     starlight({
+      plugins: [starlightPageActions({ baseUrl: 'https://cannonade.app' })],
       title: 'Cannonade',
       description:
         'A local-first desktop app for building test suites and running them against many LLMs at once.',
@@ -32,9 +35,11 @@ export default defineConfig({
       customCss: ['./src/styles/fonts.css', './src/styles/tokens.css', './src/styles/docs.css'],
       sidebar: [
         { label: 'Overview', link: '/docs/' },
+        { label: 'Getting started', items: [{ autogenerate: { directory: 'getting-started' } }] },
         { label: 'Guides', items: [{ autogenerate: { directory: 'guides' } }] },
         { label: 'Reference', items: [{ autogenerate: { directory: 'reference' } }] }
       ]
-    })
+    }),
+    docsMarkdownPrefix()
   ]
 })
