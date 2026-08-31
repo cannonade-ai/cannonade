@@ -29,6 +29,16 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     requiresApiKey: false,
     defaultEnvVar: 'LLAMACPP_API_KEY'
   },
+  unsloth: {
+    displayName: 'Unsloth',
+    description: 'Local or remote Unsloth Studio server',
+    defaultUrl: 'http://localhost:8888',
+    singleton: false,
+    supportsRemote: true,
+    isExternal: false,
+    requiresApiKey: true,
+    defaultEnvVar: 'UNSLOTH_API_KEY'
+  },
   custom: {
     displayName: 'Custom',
     description: 'Any OpenAI-compatible local API endpoint',

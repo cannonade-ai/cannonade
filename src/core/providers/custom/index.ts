@@ -15,14 +15,16 @@ export function createCustomProvider(
   baseUrl: string,
   apiKey?: string
 ): LLMProvider {
-  const normalizedBase = baseUrl.replace(/\/$/, '')
+  const normalizedBase = baseUrl.replace(/(\/v1)?\/?$/, '')
   const auth = authHeader(apiKey)
 
   async function fetchLocalModels(): Promise<LocalModel[]> {
-    const res = await fetch(`${normalizedBase}/v1/models`, {
+    const url = `${normalizedBase}/v1/models`
+    log.debug(`sending fetchLocalModels to ${url}`)
+    const res = await fetch(url, {
       headers: { 'Content-Type': 'application/json', ...auth }
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+    if (!res.ok) throw new Error(`HTTP ${res.status} - ${res.statusText} at ${url}`)
     const data = (await res.json()) as OpenAIModelsResponse
     return data.data.map((m) => toLocalModel(m, instanceId))
   }
