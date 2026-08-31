@@ -7,9 +7,9 @@ Providers are configuration-driven: the user adds provider *instances* at runtim
 
 ## Pre-requisite: Provider documentation
 
-Before starting any development, check if there is any documentation about the provider we are adding at `docs/<provider-type>/README.md`. If there is none, ask user to how to proceed. 
+Before starting any development, check if there is any documentation about the provider we are adding at `local_docs/<provider-type>/`. If there is none, ask user how to proceed.
 
-This file should cover:
+The docs should cover:
 - The npm package name (or HTTP API) used to talk to the provider
 - How to list available models
 - How to check which models are currently loaded/running (if supported) 
@@ -19,7 +19,7 @@ This file should cover:
 - How to delete a model (if supported)
 - The default base URL / host, and whether the API can require an API key
 
-Read this file before writing any code. Do not make assumptions about the API, derive every implementation detail from the docs. Use the docs to fill in the `LLMProvider` methods and the `capabilities` object accurately. If there are important decisions to make (architectural decisions, unsupported provider features, etc.), ask the user for confirmation by providing options.
+Read these files before writing any code. Do not make assumptions about the API, derive every implementation detail from the docs. Use the docs to fill in the `LLMProvider` methods and the `capabilities` object accurately. If there are important decisions to make (architectural decisions, unsupported provider features, etc.), ask the user for confirmation by providing options.
 
 ---
 
@@ -179,7 +179,7 @@ If you find yourself editing anything under `src/renderer/` to add a provider ty
 
 ## Checklist
 
-- [ ] `docs/<provider-type>/README.md` read and understood
+- [ ] `local_docs/<provider-type>/` listed, and every file in it read and understood
 - [ ] `src/shared/provider/configured-provider.ts` — entry added to `KNOWN_PROVIDER_DEFAULTS` with `isExternal: false`
 - [ ] `src/core/providers/<provider-type>/index.ts` — factory returning `LLMProvider`, capabilities matching implemented methods
 - [ ] `src/core/providers/<provider-type>/types.ts` — provider API types

@@ -1,15 +1,15 @@
 ---
 name: summarize-provider-docs
-description: Condense a vendor's API documentation at docs/<provider-type>/ down to only what Cannonade's provider implementation needs, for either a local or an external provider. Use before add-local-provider or add-external-provider when the vendor docs are long, cover many endpoints, or offer several alternative APIs for the same job.
+description: Condense a vendor's API documentation at local_docs/<provider-type>/ down to only what Cannonade's provider implementation needs, for either a local or an external provider. Use before add-local-provider or add-external-provider when the vendor docs are long, cover many endpoints, offer several alternative APIs for the same job, or read as a research artifact rather than a reference.
 ---
 
 Vendor API docs are written for everyone; a Cannonade provider uses a small slice. This skill turns a long vendor doc into a short implementation brief.
 
-Run this **before** `add-local-provider` / `add-external-provider`, not instead of them — those skills expect `docs/<provider-type>/README.md` to already answer their pre-requisite questions. The output is that same file rewritten in place, not a new file alongside it.
+Run this **before** `add-local-provider` / `add-external-provider`, not instead of them — those skills expect `local_docs/<provider-type>/README.md` to already answer their pre-requisite questions. The output is that same file rewritten in place, not a new file alongside it.
 
 ## Step 0 — Target and mode
 
-Sibling files (e.g. `EXAMPLE.md` with responses captured from the user's own environment) are **left untouched** — they are ground truth. Read them anyway; they often show an endpoint behaving differently than the vendor claims, which belongs in your final report.
+Sibling files (e.g. `EXAMPLE.md` with responses captured from the user's own environment) are **left untouched**. Read them anyway; they might show an endpoint behaving differently than the vendor claims, which belongs in your final report.
 
 Determine whether the provider is **local** or **external** — it decides what must survive the cut:
 
@@ -21,7 +21,7 @@ Determine whether the provider is **local** or **external** — it decides what 
 
 If the docs leave this ambiguous, ask — it drives `isExternal` in `KNOWN_PROVIDER_DEFAULTS` and cannot be quietly reversed later.
 
-**Before overwriting**, confirm the file is committed (`git status --porcelain docs/<provider-type>/README.md`). If it is dirty or untracked, the rewrite is unrecoverable — tell the user and ask how to proceed.
+`local_docs/` is gitignored, so there is nothing to commit or check before rewriting — read the file and edit it in place.
 
 ## Step 1 — Read the whole doc
 
@@ -38,6 +38,8 @@ Vendors expose the same capability several ways. Pick the one supporting the **m
 Where the choice is close, or the richer endpoint exists only under a particular server mode or flag, keep both, mark the trade-off, and raise it in Step 5.
 
 ## Step 3 — Keep, cut, restructure
+
+The bar is **keep it if we might need it, cut it if we definitely won't.** A borderline endpoint or field costs a few lines; a missing one costs a wrong implementation. Cut decisively where the answer is clear, and lean toward keeping where it is not.
 
 **Keep**, in enough detail to implement against: the endpoints backing this mode's capabilities; full request params with defaults and response shapes with real example JSON (these become `types.ts` and `mappers.ts`); base URL, auth method, and shared error shape; and anything constraining the implementation — required flags, operating modes, per-endpoint availability, rate limits, SSE formats, idle/sleep behavior.
 
@@ -65,12 +67,12 @@ Mark ✓ only where the doc shows an endpoint that implements it. `buildRegistry
 
 ## Step 5 — Report
 
-Tell the user which endpoints survived and which were cut, each alternative-endpoint choice with its reason, any restructuring beyond deletion, and — most importantly — **open decisions**: anything the docs cannot settle that changes the implementation (a capability existing only in one server mode, an unclear auth flow, a field `EXAMPLE.md` contradicts). Present these as options; do not resolve them yourself.
+**Open decisions**: anything the docs cannot settle that changes the implementation (a capability existing only in one server mode, an unclear auth flow, a field `EXAMPLE.md` contradicts). Present these as options; do not resolve them yourself. If there is no open decisions, just summarize what you did with few sentences. Keep it short.
 
 ## Checklist
 
 - [ ] Provider identified as local or external
-- [ ] `README.md` confirmed committed before overwriting;
+- [ ] Research-artifact noise removed — correction tables, provenance, doc-vs-doc asides — leaving only the facts
 - [ ] One endpoint chosen per capability, most-featured alternative, rejections recorded
 - [ ] Request params with defaults and example response JSON kept verbatim
 - [ ] Auth, base URL, and error shape kept
