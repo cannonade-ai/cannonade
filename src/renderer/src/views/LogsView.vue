@@ -209,9 +209,11 @@ async function openLogsFolder(): Promise<void> {
           }}
         </div>
         <div v-for="entry in filteredEntries" :key="entry.seq" class="log-row">
-          <span class="log-time">{{ formatTimestamp(entry.timestamp) }}</span>
-          <span class="log-level" :class="`log-level--${entry.level}`">{{ entry.level }}</span>
-          <span class="log-scope">{{ entry.scope }}</span>
+          <span class="log-time">[{{ formatTimestamp(entry.timestamp) }}]&nbsp;</span>
+          <span class="log-level" :class="`log-level--${entry.level}`">
+            [{{ entry.level.toUpperCase() }}]&nbsp;
+          </span>
+          <span class="log-scope">({{ entry.scope }}) >&nbsp;</span>
           <span class="log-message">{{ entry.message }}</span>
         </div>
       </div>
@@ -265,9 +267,6 @@ async function openLogsFolder(): Promise<void> {
 }
 
 .log-row {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
   padding: 2px 14px;
 
   &:hover {
@@ -276,13 +275,14 @@ async function openLogsFolder(): Promise<void> {
 }
 
 .log-time {
+  display: inline-block;
+  margin-right: 0.25rem;
   color: var(--text-muted);
-  flex-shrink: 0;
 }
 
 .log-level {
-  flex-shrink: 0;
-  text-transform: uppercase;
+  display: inline-block;
+  min-width: 3.5rem;
   font-weight: 600;
   color: var(--text-muted);
 
@@ -300,7 +300,7 @@ async function openLogsFolder(): Promise<void> {
 }
 
 .log-scope {
-  flex-shrink: 0;
+  display: inline-block;
   color: var(--text-secondary);
 }
 
@@ -308,6 +308,5 @@ async function openLogsFolder(): Promise<void> {
   color: var(--text-primary);
   white-space: pre-wrap;
   word-break: break-word;
-  min-width: 0;
 }
 </style>

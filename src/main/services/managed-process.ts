@@ -117,7 +117,9 @@ export async function startManagedProcess(
   const executable = await resolveExecutable(command)
 
   return new Promise((resolve, reject) => {
-    log.info(`Starting managed process "${key}": ${executable} ${args.join(' ')}`)
+    log.info(
+      `Starting managed process "${key}" from command ${command}: ${executable} ${args.join(' ')}`
+    )
     const child = spawn(executable, args, {
       windowsHide: true,
       detached: process.platform !== 'win32',
@@ -125,12 +127,18 @@ export async function startManagedProcess(
       env: env ? { ...process.env, ...env } : process.env
     })
 
-    child.stdout?.on('data', (chunk: Buffer) => log.silly(`[${key}] ${chunk.toString().trim()}`))
-    child.stderr?.on('data', (chunk: Buffer) => log.silly(`[${key}] ${chunk.toString().trim()}`))
+    child.stdout?.setEncoding('utf8')
+    child.stderr?.setEncoding('utf8')
+
+    child.stdout?.on('data', (chunk: string) => log.silly(`[${command}] ${chunk.trim()}`))
+    child.stderr?.on('data', (chunk: string) => log.silly(`[${command}] ${chunk.trim()}`))
 
     child.once('error', (err) => {
       tracked.delete(key)
-      log.error(`Managed process "${key}" failed to spawn:`, err)
+      log.error(
+        `Managed process "${key}" with command "${command}", args "${args}" failed to spawn.`,
+        err
+      )
       reject(err)
     })
 
