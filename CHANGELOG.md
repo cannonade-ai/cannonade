@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.4.8](https://github.com/cannonade-ai/cannonade/compare/v0.4.7...v0.4.8) (2026-08-31)
+
+
+### Features
+
+* **docs:** added copy markdown, open in actions and updated docs ([#66](https://github.com/cannonade-ai/cannonade/issues/66)) ([71e4653](https://github.com/cannonade-ai/cannonade/commit/71e465385cf35982774391a12a27d7c8a3f57ea6))
+* **logs:** reformatted log rows and updated some logs ([e84fd74](https://github.com/cannonade-ai/cannonade/commit/e84fd74371da5ffbab7e17a8b1742034d6773a68))
+* **models:** added model downloads with quantization picker ([#62](https://github.com/cannonade-ai/cannonade/issues/62)) ([9917e21](https://github.com/cannonade-ai/cannonade/commit/9917e213cc5a1ef593f1d0c11679689185fc0d52))
+* **provider:** added api key probe to connection test ([#64](https://github.com/cannonade-ai/cannonade/issues/64)) ([10640a9](https://github.com/cannonade-ai/cannonade/commit/10640a97c676f96fdde8a73ce9b37c3593e9b3b2))
+* **provider:** added unsloth provider support ([1aa7485](https://github.com/cannonade-ai/cannonade/commit/1aa748545fb414a02059b96699869dac530d0e14))
+* **storage:** moved app data to .cannonade in home directory ([#59](https://github.com/cannonade-ai/cannonade/issues/59)) ([8c93815](https://github.com/cannonade-ai/cannonade/commit/8c938153eb8438b3e3a9978c1d0c8da41d424197))
+* **test-suites:** reclaimed editor space on suite detail page ([#60](https://github.com/cannonade-ai/cannonade/issues/60)) ([5efe7e1](https://github.com/cannonade-ai/cannonade/commit/5efe7e1a4a7da9e22a4291d9aa06961625ac3bf8))
+
+
+### Styling
+
+* **website:** dropped mono font, reworked landing type, added seo meta tags ([#63](https://github.com/cannonade-ai/cannonade/issues/63)) ([009e687](https://github.com/cannonade-ai/cannonade/commit/009e687e87bafc60b533d8b241f2c33c3a21c192))
+
+
+### Refactoring
+
+* **update:** added releases link, reused external link component ([#65](https://github.com/cannonade-ai/cannonade/issues/65)) ([23267e0](https://github.com/cannonade-ai/cannonade/commit/23267e042318bb6f88fd91f0b68705bc27f81045))
+
+
+### Documentation
+
+* **skills:** updated provider docs path and summarize rules ([40fee51](https://github.com/cannonade-ai/cannonade/commit/40fee51af7d9cd745dc869dc670891fc984dc81e))
+
 ## [0.4.7](https://github.com/cannonade-ai/cannonade/compare/v0.4.6...v0.4.7) (2026-08-21)
 
 
