@@ -79,7 +79,7 @@ function onMenuButton(event: MouseEvent): void {
         <span class="stat-label">Params</span>
         <span class="stat-value">{{ model.meta.params_string }}</span>
       </span>
-      <span class="stat">
+      <span v-if="model.sizeBytes" class="stat">
         <span class="stat-label">Size</span>
         <span class="stat-value">{{ formatBytes(model.sizeBytes) }}</span>
       </span>
