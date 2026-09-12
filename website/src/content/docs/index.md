@@ -7,6 +7,11 @@ Cannonade is a cross-platform desktop app for building test suites, running them
 several models, and comparing the results. There is no eval harness to write and nothing
 is sent to a third party unless you configure a cloud provider yourself.
 
+## Use cases
+
+[Decisions it puts numbers behind](/docs/use-cases/): prompt iteration, model and provider
+comparison, cost, and local hardware tuning.
+
 ## Getting started
 
 Start here if you are new.
