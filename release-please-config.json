@@ -7,6 +7,7 @@
       "draft": true,
       "bump-minor-pre-major": true,
       "bump-patch-for-minor-pre-major": true,
+      "extra-files": ["website/src/config/site.ts"],
       "changelog-sections": [
         {
           "type": "feat",

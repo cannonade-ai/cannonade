@@ -35,6 +35,7 @@ harness or shipping your prompts to a third-party service.
 | LM Studio  | Local or remote LM Studio server         |
 | Ollama     | Local or remote Ollama server            |
 | llama.cpp  | Local or remote llama-server instance    |
+| Unsloth    | Local or remote Unsloth Studio server    |
 | Custom     | Any OpenAI-compatible local API endpoint |
 | OpenRouter | Access hundreds of models via OpenRouter |
 | Vercel     | Access hundreds of models via AI Gateway |

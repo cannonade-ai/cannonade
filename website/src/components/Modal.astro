@@ -1,0 +1,62 @@
+---
+interface Props {
+  id: string
+  label?: string
+  title: string
+}
+
+const { id, label, title } = Astro.props
+---
+
+<div class="modal" data-modal={id} hidden>
+  <div class="modal__scrim" data-modal-close></div>
+  <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby={`${id}-title`}>
+    <button class="modal__close" type="button" data-modal-close aria-label="Close">&times;</button>
+    {label && <p class="modal__label">{label}</p>}
+    <h3 class="modal__title" id={`${id}-title`}>{title}</h3>
+    <div class="modal__body">
+      <slot />
+    </div>
+    <div class="modal__actions">
+      <slot name="actions" />
+    </div>
+  </div>
+</div>
+
+<script lang="js">
+  document.querySelectorAll('[data-modal]').forEach((modal) => {
+    const id = modal.dataset.modal
+    const panel = modal.querySelector('.modal__panel')
+    let lastTrigger = null
+
+    function open(trigger) {
+      lastTrigger = trigger
+      modal.hidden = false
+      document.body.classList.add('modal-open')
+      const focusable = panel.querySelector('a, button')
+      if (focusable) focusable.focus()
+    }
+
+    function close() {
+      modal.hidden = true
+      document.body.classList.remove('modal-open')
+      if (lastTrigger) lastTrigger.focus()
+      lastTrigger = null
+    }
+
+    document.querySelectorAll(`[data-modal-open="${id}"]`).forEach((trigger) => {
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault()
+        open(trigger)
+      })
+    })
+
+    modal.querySelectorAll('[data-modal-close]').forEach((el) => {
+      el.addEventListener('click', close)
+    })
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !modal.hidden) close()
+    })
+  })
+</script>
