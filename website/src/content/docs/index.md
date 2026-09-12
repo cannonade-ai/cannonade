@@ -14,7 +14,7 @@ Start here if you are new.
 - [Quick start](/docs/getting-started/quick-start/): install the app, add a provider, run
   the bundled suite.
 - [Connect a provider](/docs/getting-started/connect-a-provider/): Ollama, LM Studio,
-  llama.cpp, OpenRouter, Vercel AI Gateway, and any OpenAI-compatible endpoint.
+  llama.cpp, Unsloth, OpenRouter, Vercel AI Gateway, and any OpenAI-compatible endpoint.
 
 ## Guides
 

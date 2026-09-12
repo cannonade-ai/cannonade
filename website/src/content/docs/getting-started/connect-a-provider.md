@@ -62,6 +62,21 @@ model management actions are unavailable.
 EXPERIMENTAL: If llama-server is started outside of Cannonade, server management won't be available. Cannonade only stops llama-server processes it started itself.
 :::
 
+### Unsloth
+
+1. Install Unsloth and run `unsloth studio --api-only`, or let Cannonade start it from the
+   provider card.
+2. Add the **Unsloth** provider. The default base URL is `http://localhost:8888`.
+3. Give it your API key. Unlike the other local providers, Unsloth Studio expects one on
+   every request.
+
+Models are pulled from Hugging Face, and you can pick a GGUF quantization when downloading.
+Loading, unloading, and deleting are all available from Local Models.
+
+:::note
+EXPERIMENTAL: Server management is hidden until you enable Cannonade-managed servers. Unsloth Studio can shut itself down, so stopping works even for a server Cannonade did not start.
+:::
+
 ## Cloud providers
 
 ### OpenRouter

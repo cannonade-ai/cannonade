@@ -12,11 +12,12 @@ sidebar:
 | [**Ollama**](https://github.com/ollama/ollama)     | Local | `http://localhost:11434`    | Optional    |
 | [**LM Studio**](https://github.com/lmstudio-ai)  | Local | `http://localhost:1234`     | Optional    |
 | [**llama.cpp**](https://github.com/ggml-org/llama.cpp)  | Local | `http://localhost:8080`     | Optional    |
+| [**Unsloth**](https://unsloth.ai)    | Local | `http://localhost:8888`     | API key     |
 | **Custom**     | Local | `http://localhost:8080`     | Optional    |
 | [**OpenRouter**](https://openrouter.ai) | Cloud | `https://openrouter.ai/api/v1` | API key  |
 | [**Vercel**](https://vercel.com/ai-gateway)     | Cloud | `https://ai-gateway.vercel.sh` | API key  |
 
-Ollama, LM Studio, and llama.cpp accept a remote address too. Point Cannonade at another
+Ollama, LM Studio, llama.cpp, and Unsloth accept a remote address too. Point Cannonade at another
 machine on your network and mark the entry as remote, and its models behave like local ones
 apart from the actions that have to run on the server's own machine.
 
@@ -25,16 +26,16 @@ side. OpenRouter and Vercel are limited to one entry each.
 
 ## What each provider supports
 
-| Capability                 | Ollama | LM Studio | llama.cpp | Custom | OpenRouter | Vercel |
-| -------------------------- | :----: | :-------: | :-------: | :----: | :--------: | :----: |
-| List models                | yes    | yes       | yes       | yes    | yes        | yes    |
-| Chat and Playground        | yes    | yes       | yes       | yes    | yes        | yes    |
-| Token and timing stats     | yes    | yes       | yes       | partial| partial    | partial|
-| Load and unload models     | yes    | yes       | yes       | no     | no         | no     |
-| Download models            | yes    | yes       | yes       | no     | no         | no     |
-| Delete models              | yes    | local only| yes       | no     | no         | no     |
-| Start and stop the server  | local, opt-in | local only | local, opt-in | no | no  | no     |
-| Pricing and context length | no     | no        | no        | no     | yes        | yes    |
+| Capability                 | Ollama | LM Studio | llama.cpp | Unsloth | Custom | OpenRouter | Vercel |
+| -------------------------- | :----: | :-------: | :-------: | :-----: | :----: | :--------: | :----: |
+| List models                | yes    | yes       | yes       | yes     | yes    | yes        | yes    |
+| Chat and Playground        | yes    | yes       | yes       | yes     | yes    | yes        | yes    |
+| Token and timing stats     | yes    | yes       | yes       | partial | partial| partial    | partial|
+| Load and unload models     | yes    | yes       | yes       | yes     | no     | no         | no     |
+| Download models            | yes    | yes       | yes       | yes     | no     | no         | no     |
+| Delete models              | yes    | local only| yes       | yes     | no     | no         | no     |
+| Start and stop the server  | local, opt-in | local only | local, opt-in | local, opt-in | no | no  | no     |
+| Pricing and context length | no     | no        | no        | no      | no     | yes        | yes    |
 
 Stats coverage on cloud and OpenAI-compatible endpoints depends on what the endpoint
 reports. Cannonade shows what it receives and leaves the rest blank rather than estimating.
@@ -48,7 +49,8 @@ The server controls marked opt-in are experimental and hidden until you enable t
 ## Model downloads
 
 For local providers, Cannonade can pull models from the provider's own registry or directly
-from Hugging Face, with progress reported in the app. llama.cpp is Hugging Face only.
+from Hugging Face, with progress reported in the app. llama.cpp and Unsloth are Hugging Face
+only.
 Downloads land wherever the provider stores its models; Cannonade does not keep a second
 copy.
 
@@ -78,7 +80,7 @@ those providers. It only stops what it started, and stopping ends the process ou
 
 A provider entry resolves its key one of three ways: none, an environment variable you name,
 or a key you paste, which is encrypted with the operating system's secret storage before it
-is written to disk. Local providers default to none, cloud providers require a key.
+is written to disk. Local providers mostly default to none and cloud providers require a key.
 
 ## Adding a provider that is not listed
 

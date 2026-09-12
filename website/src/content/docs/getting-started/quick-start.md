@@ -33,7 +33,7 @@ codesign --force --deep --sign - /Applications/Cannonade.app # if needed
 
 Skip the second step and macOS reports the app as damaged and offers to move it to the
 trash, which is what an unsigned download looks like to Gatekeeper rather than an actual
-problem with the file. You only have to do this once per install, so repeat it after
+problem with the file. **You only have to do this once per install**, so repeat it after
 updating to a new version.
 
 #### If macOS still blocks the app
