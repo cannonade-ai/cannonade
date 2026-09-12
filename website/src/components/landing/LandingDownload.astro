@@ -1,5 +1,9 @@
 ---
 import { site, downloadTargets } from '../../config/site'
+import Modal from '../Modal.astro'
+
+const macosSteps = '/docs/getting-started/quick-start/#macos-needs-an-extra-step'
+const macos = downloadTargets.find((target) => target.extraSteps)
 ---
 
 <section class="section" id="download">
@@ -12,7 +16,11 @@ import { site, downloadTargets } from '../../config/site'
     <div class="dl">
       {
         downloadTargets.map((target) => (
-          <a class="dl__card" href={site.latest}>
+          <a
+            class="dl__card"
+            href={target.url}
+            data-modal-open={target.extraSteps ? 'macos-setup' : null}
+          >
             <span class="dl__os">{target.os}</span>
             <span class="dl__fmt">{target.format}</span>
             <span>{target.note}</span>
@@ -25,4 +33,15 @@ import { site, downloadTargets } from '../../config/site'
       All builds are published on <a href={site.releases}>GitHub Releases</a>.
     </p>
   </div>
+  <Modal id="macos-setup" title="macOS needs an extra step">
+    <p>
+      Cannonade is not code-signed, so macOS blocks the app on first launch and may report it as
+      damaged.
+    </p>
+    <p>The <a href={macosSteps}>quick start guide</a> has the steps.</p>
+    <Fragment slot="actions">
+      <a class="btn btn--primary btn--sm" href={macos?.url}>Download for macOS</a>
+      <a class="btn btn--ghost btn--sm" href={macosSteps}>Read the steps</a>
+    </Fragment>
+  </Modal>
 </section>

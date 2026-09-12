@@ -7,6 +7,7 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -589,6 +590,113 @@ a:hover {
   color: var(--cn-text-3);
 }
 
+/* ---------- modal ---------- */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal[hidden] {
+  display: none;
+}
+
+.modal__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.66);
+  animation: modal-scrim-in 0.18s ease both;
+}
+
+.modal__panel {
+  position: relative;
+  width: min(520px, 100%);
+  border: 1px solid var(--cn-line-2);
+  border-radius: var(--cn-radius);
+  background: var(--cn-panel);
+  padding: 28px 28px 24px;
+  text-align: left;
+  animation: modal-panel-in 0.22s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes modal-scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+.modal__close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  border: 0;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--cn-text-3);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.modal__close:hover {
+  color: var(--cn-text);
+}
+
+.modal__label {
+  margin: 0 0 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cn-amber);
+}
+
+.modal__title {
+  margin: 0 0 14px;
+  font-family: var(--cn-display);
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--cn-text);
+}
+
+.modal__body p {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--cn-text-2);
+}
+
+.modal__body p:last-child {
+  margin-bottom: 0;
+}
+
+.modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modal__actions:empty {
+  display: none;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
 /* ---------- footer ---------- */
 
 .foot {
@@ -626,7 +734,9 @@ a:hover {
   }
 
   .readout__fill,
-  .readout__dot {
+  .readout__dot,
+  .modal__scrim,
+  .modal__panel {
     animation: none;
   }
 
