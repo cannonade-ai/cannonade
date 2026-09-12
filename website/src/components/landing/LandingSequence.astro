@@ -30,15 +30,15 @@ const steps: Step[] = [
       <p class="section-label">How it works</p>
       <h2 class="section-title">What a run looks like</h2>
     </div>
-    <div class="seq">
+    <ol class="seq">
       {
-        steps.map((step) => (
-          <article class="seq__step">
+        steps.map((step, i) => (
+          <li class="seq__step" style={`--seq-fill:${((i + 1) / steps.length) * 100}%`}>
             <h3 class="seq__t">{step.title}</h3>
             <p>{step.body}</p>
-          </article>
+          </li>
         ))
       }
-    </div>
+    </ol>
   </div>
 </section>

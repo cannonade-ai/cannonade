@@ -1,0 +1,78 @@
+---
+interface UseCase {
+  title: string
+  body: string
+  href: string
+}
+
+const useCases: UseCase[] = [
+  {
+    title: 'Prompt engineering',
+    body: 'Prompts version themselves on every save, so the next run says whether the new wording actually scored better.',
+    href: '/docs/use-cases/#prompt-engineering'
+  },
+  {
+    title: 'Comparing local models',
+    body: 'A suite built around the work you need done, with every candidate running it together on your own hardware.',
+    href: '/docs/use-cases/#comparing-local-models'
+  },
+  {
+    title: 'Model discovery',
+    body: 'A new model inherits the suite you already trust, so you get its numbers on your own cases the day it ships.',
+    href: '/docs/use-cases/#model-discovery'
+  },
+  {
+    title: 'Regression checks',
+    body: 'A provider bumps a version, someone edits a prompt. The next run of the same suite shows what moved.',
+    href: '/docs/use-cases/#regression-checks'
+  },
+  {
+    title: 'Structured output',
+    body: 'Valid JSON once in a chat is not valid JSON every time. The output contract gets scored apart from the content.',
+    href: '/docs/use-cases/#structured-output-reliability'
+  },
+  {
+    title: 'Cost calculation',
+    body: 'Your smallest, largest, and typical inputs as cases. The run reports what they cost, so there is nothing to estimate.',
+    href: '/docs/use-cases/#cost-calculation'
+  },
+  {
+    title: 'Cost optimization',
+    body: 'Does a cheaper model clear the same bar? One run next to the expensive one puts pass rate and cost side by side.',
+    href: '/docs/use-cases/#cost-optimization'
+  },
+  {
+    title: 'Provider comparison',
+    body: 'The same weights behind two gateways, or two local servers, differ in speed and what they report back. The same cases settle it.',
+    href: '/docs/use-cases/#provider-comparison'
+  },
+  {
+    title: 'Quantization tuning',
+    body: 'One model at three quantization levels is three models, each with its own answer on where quality drops.',
+    href: '/docs/use-cases/#quantization-and-hardware-tuning'
+  }
+]
+---
+
+<section class="section" id="use-cases">
+  <div class="wrap">
+    <div class="section__head">
+      <p class="section-label">Use cases</p>
+      <h2 class="section-title">Decisions it helps you make</h2>
+      <p class="section-intro">
+        A set of test cases costs you an afternoon to write, then pays it back every time you
+        run it again: against the next model, the next prompt, the next provider.
+      </p>
+    </div>
+    <div class="cases">
+      {
+        useCases.map((useCase) => (
+          <a class="case" href={useCase.href}>
+            <h3 class="case__t">{useCase.title}</h3>
+            <p>{useCase.body}</p>
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</section>

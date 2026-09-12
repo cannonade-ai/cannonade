@@ -41,6 +41,29 @@ harness or shipping your prompts to a third-party service.
 | Vercel     | Access hundreds of models via AI Gateway |
 | More       | More supported providers are coming soon |
 
+## Download
+
+Grab the build for your platform from the
+[latest release](https://github.com/cannonade-ai/cannonade/releases/latest):
+
+| Platform | Build                     |
+| -------- | ------------------------- |
+| Windows  | `.exe` installer          |
+| macOS    | `.dmg` (Apple silicon)    |
+| Linux    | `.AppImage` and `.deb`    |
+
+> [!NOTE]
+> The macOS build is not code-signed or notarized, so Gatekeeper reports it as damaged
+> on first launch. Copy `Cannonade.app` into `/Applications`, then remove the quarantine
+> flag before opening it:
+>
+> ```sh
+> xattr -dr com.apple.quarantine /Applications/Cannonade.app
+> ```
+>
+> Full instructions, including what to do if macOS still blocks the app, are in the
+> [macOS setup docs](https://cannonade.app/docs/getting-started/quick-start/#macos-needs-an-extra-step).
+
 ## Development
 
 Built with Electron, Vue 3, TypeScript, Vite, Pinia, and Sass.

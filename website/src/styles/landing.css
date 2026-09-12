@@ -356,12 +356,11 @@ a:hover {
 /* ---------- sequence ---------- */
 
 .seq {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: grid;
-  gap: 1px;
-  background: var(--cn-line);
-  border: 1px solid var(--cn-line);
-  border-radius: var(--cn-radius);
-  overflow: hidden;
+  gap: clamp(28px, 3.5vw, 44px);
 }
 
 @media (min-width: 700px) {
@@ -377,19 +376,19 @@ a:hover {
 }
 
 .seq__step {
-  background: var(--cn-panel);
-  padding: 28px 26px 30px;
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.seq__n {
-  font-size: 0.85rem;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
-  color: var(--cn-amber);
+  gap: 10px;
+  padding-top: 22px;
+  background-image: linear-gradient(
+    to right,
+    var(--cn-amber) var(--seq-fill, 100%),
+    var(--cn-line-2) var(--seq-fill, 100%)
+  );
+  background-size: 100% 3px;
+  background-repeat: no-repeat;
+  background-position: left top;
 }
 
 .seq__t {
@@ -405,6 +404,72 @@ a:hover {
 .seq__step p {
   margin: 0;
   font-size: 0.97rem;
+  color: var(--cn-text-2);
+  max-width: 34ch;
+}
+
+/* ---------- use cases ---------- */
+
+.cases {
+  display: grid;
+  gap: 1px;
+  background: var(--cn-line);
+  border: 1px solid var(--cn-line);
+  border-radius: var(--cn-radius);
+  overflow: hidden;
+}
+
+@media (min-width: 700px) {
+  .cases {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1060px) {
+  .cases {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.case {
+  background: var(--cn-panel);
+  padding: 26px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-decoration: none;
+  transition:
+    background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.case:hover,
+.case:focus-visible {
+  background: var(--cn-panel-2);
+  box-shadow: inset 2px 0 0 var(--cn-amber);
+  text-decoration: none;
+}
+
+.case__t {
+  font-family: var(--cn-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  font-size: 1.35rem;
+  line-height: 1.1;
+  color: var(--cn-text);
+  margin: 0;
+}
+
+.case:hover .case__t,
+.case:focus-visible .case__t {
+  color: var(--cn-amber);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.case p {
+  margin: 0;
+  font-size: 0.95rem;
   color: var(--cn-text-2);
 }
 
