@@ -11,4 +11,5 @@ export interface ProviderCapabilities {
   requiresApiKey: boolean
   modelRegistryUrl?: string
   huggingFaceModelsUrl?: string
+  providerNotice?: string
 }

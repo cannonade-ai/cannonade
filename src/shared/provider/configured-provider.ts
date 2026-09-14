@@ -59,6 +59,16 @@ export const KNOWN_PROVIDER_DEFAULTS = {
     requiresApiKey: true,
     defaultEnvVar: 'OPENROUTER_API_KEY'
   },
+  openai: {
+    displayName: 'OpenAI',
+    description: 'Access GPT and o-series models directly from OpenAI',
+    defaultUrl: 'https://api.openai.com/v1',
+    singleton: true,
+    supportsRemote: false,
+    isExternal: true,
+    requiresApiKey: true,
+    defaultEnvVar: 'OPENAI_API_KEY'
+  },
   vercel: {
     displayName: 'Vercel',
     description: 'Access hundreds of models via Vercel AI Gateway',

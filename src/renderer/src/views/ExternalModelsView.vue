@@ -1,6 +1,13 @@
 <script setup lang="ts">
 import { Button, Select } from '@renderer/components/ui'
-import { IconRefresh, IconSettings, IconAlertCircle, IconKey, IconLoader2 } from '@tabler/icons-vue'
+import {
+  IconRefresh,
+  IconSettings,
+  IconAlertCircle,
+  IconKey,
+  IconLoader2,
+  IconInfoCircle
+} from '@tabler/icons-vue'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useShortcut } from '@renderer/composables/useShortcut'
 import { formatDate } from '@renderer/utils/format'
@@ -51,6 +58,18 @@ const activeProvider = computed(() =>
 )
 
 const providerLabel = computed(() => activeProvider.value?.displayName ?? '')
+
+const modelsNotice = ref('')
+
+watch(
+  () => providersStore.activeExternalProvider,
+  async (instanceId) => {
+    modelsNotice.value = instanceId
+      ? ((await providersStore.getCapabilities(instanceId)).providerNotice ?? '')
+      : ''
+  },
+  { immediate: true }
+)
 
 const missingApiKey = computed(() => {
   const provider = activeProvider.value
@@ -112,6 +131,11 @@ useShortcut('F5', () => store.loadExternalModels(true), { preventDefault: true }
         <Button :icon="IconSettings" @click="navStore.openSettings('providers')">
           Configure Provider
         </Button>
+      </div>
+
+      <div v-if="modelsNotice" class="models-notice">
+        <IconInfoCircle :size="14" />
+        {{ modelsNotice }}
       </div>
 
       <div v-if="store.loading && store.externalModels.length === 0" class="state-message">
@@ -183,7 +207,8 @@ useShortcut('F5', () => store.loadExternalModels(true), { preventDefault: true }
   background: var(--surface);
 }
 
-.key-notice {
+.key-notice,
+.models-notice {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -194,6 +219,10 @@ useShortcut('F5', () => store.loadExternalModels(true), { preventDefault: true }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
+}
+
+.models-notice {
+  color: var(--text-muted);
 }
 
 .state-message {
