@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.9](https://github.com/cannonade-ai/cannonade/compare/v0.4.8...v0.4.9) (2026-09-14)
+
+
+### Features
+
+* **provider:** added openai provider with model metadata ([#72](https://github.com/cannonade-ai/cannonade/issues/72)) ([b5e0735](https://github.com/cannonade-ai/cannonade/commit/b5e0735abed52a0d3860d05642dc261d1788a3bc))
+* **website:** added macos setup modal and direct downloads ([#70](https://github.com/cannonade-ai/cannonade/issues/70)) ([fa2a01e](https://github.com/cannonade-ai/cannonade/commit/fa2a01ec7f3b643e1088136547dfd29029b388e0))
+
+
+### Documentation
+
+* **website:** added use cases to landing and docs ([#71](https://github.com/cannonade-ai/cannonade/issues/71)) ([c8d1338](https://github.com/cannonade-ai/cannonade/commit/c8d13382b1abe147965544926a425d35b721254b))
+
 ## [0.4.8](https://github.com/cannonade-ai/cannonade/compare/v0.4.7...v0.4.8) (2026-08-31)
 
 
