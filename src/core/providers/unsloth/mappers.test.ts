@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest'
 import {
   isModelLoaded,
   toChatRequest,
@@ -258,7 +258,17 @@ describe('unsloth provider toChatResponse', () => {
 })
 
 describe('unsloth provider toDownloadStatus', () => {
-  const startedAt = new Date(Date.now() - 10000).toISOString()
+  const now = new Date('2026-01-01T00:00:10.000Z')
+  const startedAt = new Date(now.getTime() - 10000).toISOString()
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+    vi.setSystemTime(now)
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
 
   it('takes the byte counts from the progress response', () => {
     const result = toDownloadStatus(
