@@ -3,6 +3,7 @@ import type { EvaluationResult } from '@shared/app/evaluation-result'
 import { l as rougeL } from 'js-rouge'
 import { distance as levenshteinDistance } from 'fastest-levenshtein'
 import { bleu } from 'bleu-score'
+import { textEquals, textIncludes } from './text-compare'
 
 function normalizeCase(text: string, caseSensitive: boolean | undefined): string {
   return caseSensitive ? text : text.toLowerCase()
@@ -50,8 +51,7 @@ export function evaluateF1(output: string, evaluation: EvaluationConfig): Evalua
 export function evaluateExactMatch(output: string, evaluation: EvaluationConfig): EvaluationResult {
   const expected = typeof evaluation.expected === 'string' ? evaluation.expected : ''
   const caseSensitive = evaluation.caseSensitive ?? true
-  const matched =
-    normalizeCase(output.trim(), caseSensitive) === normalizeCase(expected.trim(), caseSensitive)
+  const matched = textEquals(output.trim(), expected.trim(), caseSensitive)
   const score = matched ? 1 : 0
   return { score, passed: matched }
 }
@@ -81,9 +81,8 @@ export function evaluateContains(output: string, evaluation: EvaluationConfig): 
   if (!terms.length) {
     return { score: 0, passed: false, error: 'No search terms provided' }
   }
-  const caseSensitive = evaluation.caseSensitive
-  const haystack = normalizeCase(output, caseSensitive)
-  const matched = terms.filter((t) => haystack.includes(normalizeCase(t, caseSensitive)))
+  const caseSensitive = evaluation.caseSensitive ?? false
+  const matched = terms.filter((t) => textIncludes(output, t, caseSensitive))
   const score = matched.length / terms.length
   return {
     score,
