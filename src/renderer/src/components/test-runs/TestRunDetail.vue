@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { IconPlayerStop, IconTrash, IconEdit } from '@tabler/icons-vue'
+import { IconPlayerStop, IconTrash, IconEdit, IconRefresh } from '@tabler/icons-vue'
 import type { TestRun } from '@shared/app/test-run'
 import { Button, Panel } from '@renderer/components/ui'
 import ModelRunRow from '@renderer/components/test-runs/ModelRunRow.vue'
@@ -36,6 +36,10 @@ async function showStopConfirm(): Promise<void> {
   if (ok) store.cancelRun(props.run.id)
 }
 
+function rerun(): void {
+  store.rerunRun(props.run.id)
+}
+
 async function showDeleteConfirm(): Promise<void> {
   const ok = await confirm.confirm({
     title: 'Delete Run',
@@ -65,6 +69,7 @@ useShortcut('Ctrl+Delete', () => showDeleteConfirm(), { preventDefault: true })
       <Button v-if="isActive" type="danger-outline" :icon="IconPlayerStop" @click="showStopConfirm">
         Stop
       </Button>
+      <Button v-if="!isActive" type="secondary" :icon="IconRefresh" @click="rerun">Rerun</Button>
       <Button
         v-tooltip="'Ctrl + Delete'"
         type="danger-outline"
