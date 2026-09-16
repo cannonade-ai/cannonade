@@ -47,6 +47,16 @@ describe('exact_match', () => {
     expect(result.passed).toBe(true)
     expect(result.score).toBe(1)
   })
+
+  it('ignores turkish case differences when caseSensitive is false', () => {
+    const result = evaluateExactMatch('İşe giderken benzini bitmiş', {
+      ...base,
+      expected: 'İŞE GİDERKEN BENZİNİ BİTMİŞ',
+      caseSensitive: false
+    })
+    expect(result.passed).toBe(true)
+    expect(result.score).toBe(1)
+  })
 })
 
 describe('contains', () => {
@@ -101,6 +111,27 @@ describe('contains', () => {
     })
     expect(result.passed).toBe(false)
     expect(result.details).toBe('2/3 terms found')
+  })
+
+  it('matches turkish terms ignoring case when caseSensitive is false', () => {
+    const result = evaluateContains('Şaşkın\nÖrdek\nİŞÇİ\nÇAPKIN\nışıksız', {
+      ...base,
+      expected: 'şaşkın, ördek, işçi, çapkın, ışıksız',
+      caseSensitive: false
+    })
+    expect(result.passed).toBe(true)
+    expect(result.score).toBe(1)
+    expect(result.details).toBe('5/5 terms found')
+  })
+
+  it('matches turkish terms preserving case when caseSensitive is true', () => {
+    const result = evaluateContains('Şaşkın\nÖrdek\nİŞÇİ\nÇAPKIN\nışıksız', {
+      ...base,
+      expected: 'Şaşkın, Ördek, İŞÇİ, ÇAPKIN, ışıksız',
+      caseSensitive: true
+    })
+    expect(result.passed).toBe(true)
+    expect(result.details).toBe('5/5 terms found')
   })
 })
 
