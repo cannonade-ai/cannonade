@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, toRaw } from 'vue'
 import type { TestRun, TestRunConfig, PerModelRun, RunStatus } from '@shared/app/test-run'
 import type { TestSuite } from '@shared/app/test-suite'
 import { api } from '../api'
 import { usePromptsStore } from './prompts'
+import { useTestSuitesStore } from './test-suites'
 
 export interface SuiteSummary {
   id: string
@@ -154,6 +155,16 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     await api.startRun(JSON.parse(JSON.stringify(run)), JSON.parse(JSON.stringify(resolvedSuite)))
   }
 
+  async function rerunRun(id: string): Promise<void> {
+    const run = testRuns.value.find((r) => r.id === id)
+    if (!run) return
+    const suitesStore = useTestSuitesStore()
+    if (suitesStore.suites.length === 0) await suitesStore.load()
+    const suite = suitesStore.suites.find((s) => s.id === run.suiteId)
+    if (!suite) return
+    await submitRun(JSON.parse(JSON.stringify(toRaw(run.config))), suite)
+  }
+
   async function deleteRun(id: string): Promise<void> {
     const index = testRuns.value.findIndex((r) => r.id === id)
     if (index === -1) return
@@ -175,6 +186,7 @@ export const useTestRunsStore = defineStore('test-runs', () => {
     cancelNewRun,
     cancelRun,
     deleteRun,
+    rerunRun,
     submitRun,
     initEventListeners
   }
