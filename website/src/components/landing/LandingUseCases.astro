@@ -23,13 +23,13 @@ const useCases: UseCase[] = [
   },
   {
     title: 'Regression checks',
-    body: 'A provider bumps a version, someone edits a prompt. The next run of the same suite shows what moved.',
+    body: 'Nothing tells you when a model or a prompt starts behaving differently. Re-running the suite does.',
     href: '/docs/use-cases/#regression-checks'
   },
   {
-    title: 'Structured output',
-    body: 'Valid JSON once in a chat is not valid JSON every time. The output contract gets scored apart from the content.',
-    href: '/docs/use-cases/#structured-output-reliability'
+    title: 'Sampling settings',
+    body: 'Temperature, top_p, and the rest are usually set once and never looked at again. Run the same cases at different values and compare the scores.',
+    href: '/docs/use-cases/#sampling-settings'
   },
   {
     title: 'Cost calculation',
@@ -38,18 +38,18 @@ const useCases: UseCase[] = [
   },
   {
     title: 'Cost optimization',
-    body: 'Does a cheaper model clear the same bar? One run next to the expensive one puts pass rate and cost side by side.',
+    body: 'Does a cheaper model clear the same bar? Run the suite and check the pass rate and the cost.',
     href: '/docs/use-cases/#cost-optimization'
   },
   {
     title: 'Provider comparison',
-    body: 'The same weights behind two gateways, or two local servers, differ in speed and what they report back. The same cases settle it.',
+    body: 'The same model on two providers can differ in speed, price, and output. Run the same cases on both and see which one to pick.',
     href: '/docs/use-cases/#provider-comparison'
   },
   {
-    title: 'Quantization tuning',
-    body: 'One model at three quantization levels is three models, each with its own answer on where quality drops.',
-    href: '/docs/use-cases/#quantization-and-hardware-tuning'
+    title: 'Local model tuning',
+    body: 'Quantization and runtime settings change how good the answers are. A test run measures the difference instead of leaving it to guesswork.',
+    href: '/docs/use-cases/#local-model-tuning'
   }
 ]
 ---

@@ -65,6 +65,22 @@ public/fonts/              vendored woff2 files, latin subsets only
 - `/docs/` is a real page, `src/content/docs/index.md`. Keep its link lists in sync when
   adding or removing a guide.
 
+## Writing
+
+Applies to docs pages and to landing page copy.
+
+- Write literally. No metaphor, no personification, no rhetorical flourish. Software does
+  not *want*, *prefer*, *decide* or *settle* anything, and numbers do not *move*. State what
+  the software does and what the user does.
+- Do not recommend a value, a setting, or a practice unless the claim is verifiable from the
+  code or from a source that can be cited. Describe what a feature measures and let the
+  reader draw the conclusion. Best-practice advice invented on the spot is a hallucination
+  even when it reads as reasonable.
+- Do not describe features that are not shipped. Check the code before claiming a capability,
+  including that the control is reachable in the UI and not commented out.
+- Plain words over vague ones: *model* not *weights*, *output* not *what it reports back*.
+- Prefer short declarative sentences. Cut a clause before adding one.
+
 ## Fonts
 
 Fonts are vendored as woff2 files in `public/fonts/` rather than pulled from an npm

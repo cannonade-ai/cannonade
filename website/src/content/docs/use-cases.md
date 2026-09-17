@@ -103,8 +103,8 @@ Cloud providers report cost; local models usually report tokens and timing only.
 ## Cost optimization
 
 The suite you already have answers the next question for you: does a cheaper model clear the
-same bar? The expensive model and a few smaller ones in one run puts pass rate and cost side
-by side.
+same bar? Put the expensive model and a few smaller ones in one run and read the pass rate
+and the cost for each.
 
 The cases define what good enough means, so dropping down becomes a decision you can defend
 rather than a risk you are taking. A small model at 96% of the pass rate for a fraction of
@@ -137,11 +137,29 @@ between them is worth knowing about before you settle on one, and the same suite
 the same way it measures anything else: both providers configured, both given the identical
 cases, both reporting their own numbers.
 
-## Quantization and hardware tuning
+## Sampling settings
+
+Temperature, top_p, top_k, min_p, the repetition penalties, the seed, and max tokens are sent
+with every request, so their values are part of what a run measures. They are often set once
+from an example and not looked at again.
+
+A suite carries a default set of these values, and any test case can override them. Running
+the same cases at different values reports a pass rate and per-case scores for each, which is
+what the comparison is based on.
+
+These are request parameters rather than properties of the model or the machine, so they
+apply to hosted and local models alike.
+
+## Local model tuning
 
 Locally, the same model at several quantization levels is several models. Two or three of
 them in one run show where quality starts to go and whether the speed bought back is worth
 it.
+
+Quantization is not the only setting that affects the results. Context size, GPU offload, KV
+cache type, and batch size are set on the server that loads the model, and they change speed,
+memory use, and sometimes the output. A run measures the configuration as it was loaded, so
+comparing two of them means running the same suite against each.
 
 Advice about which quantization is safe gets passed around as a general rule, but it was
 formed on a particular model doing a particular job. A run tells you whether it holds for the
