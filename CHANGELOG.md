@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.4.9](https://github.com/cannonade-ai/cannonade/compare/v0.4.8...v0.4.9) (2026-09-17)
+
+
+### Features
+
+* **provider:** added openai provider with model metadata ([#72](https://github.com/cannonade-ai/cannonade/issues/72)) ([b5e0735](https://github.com/cannonade-ai/cannonade/commit/b5e0735abed52a0d3860d05642dc261d1788a3bc))
+* **test-runs:** added rerun button to run detail ([7d64ea4](https://github.com/cannonade-ai/cannonade/commit/7d64ea415d32dfaf0939f342b8d62726d087cfba))
+* **website:** added macos setup modal and direct downloads ([#70](https://github.com/cannonade-ai/cannonade/issues/70)) ([fa2a01e](https://github.com/cannonade-ai/cannonade/commit/fa2a01ec7f3b643e1088136547dfd29029b388e0))
+
+
+### Bug Fixes
+
+* **eval:** fixed case insensitive matching for turkish text ([bb72ae2](https://github.com/cannonade-ai/cannonade/commit/bb72ae2e0cac295a94c1a35fe49f1a82b00562bd))
+* **test-runs:** fixed eval result cell widths for long details ([1353cfc](https://github.com/cannonade-ai/cannonade/commit/1353cfc586e6efa527f8b991a373b7d65de06811))
+* **tooltip:** fixed tooltips never binding when content starts empty ([a6ebfb2](https://github.com/cannonade-ai/cannonade/commit/a6ebfb2f6c713091a8f41f34f5f4a3d6f8fd6fe0))
+
+
+### Documentation
+
+* **website:** added use cases to landing and docs ([#71](https://github.com/cannonade-ai/cannonade/issues/71)) ([c8d1338](https://github.com/cannonade-ai/cannonade/commit/c8d13382b1abe147965544926a425d35b721254b))
+* **website:** reworded use cases and added sampling settings ([#74](https://github.com/cannonade-ai/cannonade/issues/74)) ([94a7ab5](https://github.com/cannonade-ai/cannonade/commit/94a7ab56773bae2066a9f6978c6ab568d68b7b71))
+
 ## [0.4.8](https://github.com/cannonade-ai/cannonade/compare/v0.4.7...v0.4.8) (2026-08-31)
 
 
