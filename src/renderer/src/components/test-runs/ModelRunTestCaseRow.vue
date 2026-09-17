@@ -16,6 +16,7 @@ import type {
   TestCaseResult
 } from '@shared/app/test-suite'
 import type { JudgeUsage } from '@shared/app/judge'
+import type { TooltipOptions } from '@renderer/directives/tooltip'
 import type { FieldVisibility } from '@shared/app/field-visibility'
 import type { ChatMessage } from '@shared/provider/chat'
 import {
@@ -119,12 +120,13 @@ function evalResultState(result: EvaluationMethodResult): string {
   return result.passed ? 'passed' : 'failed'
 }
 
-function judgeTooltip(judgeUsage: JudgeUsage): string {
+function judgeTooltipOptions(judgeUsage: JudgeUsage | undefined): TooltipOptions {
+  if (!judgeUsage) return { content: '', delay: 200 }
   const parts = [`Graded by ${judgeUsage.model}`]
   if (judgeUsage.totalTokens != null)
     parts.push(`${formatTokens(judgeUsage.totalTokens)} judge tokens`)
   if (judgeUsage.cost != null) parts.push(`${formatCost(judgeUsage.cost)} judge cost`)
-  return parts.join(' · ')
+  return { content: parts.join(' · '), delay: 200 }
 }
 
 function formatMetricValue(value: number | undefined, suffix: string): string {
@@ -310,7 +312,7 @@ const hasMetrics = computed<boolean>(() => {
               v-for="(result, i) in caseRun.result.evalResults"
               :key="i"
               class="eval-result"
-              :class="evalResultState(result)"
+              :class="[evalResultState(result), { wide: Boolean(result.details || result.error) }]"
             >
               <div class="eval-result__row">
                 <div class="eval-result__cell eval-result__type">
@@ -330,19 +332,16 @@ const hasMetrics = computed<boolean>(() => {
                     </Tooltip>
                   </CopyButton>
                 </div>
-                <span v-if="result.details" class="eval-result__cell eval-result__detail">
+                <span
+                  v-if="result.details"
+                  v-tooltip="judgeTooltipOptions(result.judgeUsage)"
+                  class="eval-result__cell eval-result__detail"
+                >
                   {{ result.details }}
                 </span>
                 <span v-if="result.error" class="eval-result__cell eval-result__error">
                   <IconAlertTriangle :size="13" :stroke-width="2" />
                   {{ result.error }}
-                </span>
-                <span
-                  v-if="result.judgeUsage"
-                  v-tooltip="judgeTooltip(result.judgeUsage)"
-                  class="eval-result__cell eval-result__judge"
-                >
-                  {{ result.judgeUsage.model }}
                 </span>
                 <span
                   v-if="result.error"
@@ -716,6 +715,10 @@ const hasMetrics = computed<boolean>(() => {
       border-left-style: solid;
     }
 
+    &.wide {
+      flex: 1 1 100%;
+    }
+
     &__row {
       display: flex;
       align-items: stretch;
@@ -734,6 +737,7 @@ const hasMetrics = computed<boolean>(() => {
     }
 
     &__type {
+      flex: 0 0 auto;
       font-size: var(--text-xs);
       font-weight: 600;
       color: var(--text-primary);
@@ -741,32 +745,28 @@ const hasMetrics = computed<boolean>(() => {
     }
 
     &__expected {
+      flex: 0 0 auto;
       font-size: var(--text-xs);
       color: var(--text-muted);
       font-family: var(--font-mono, monospace);
     }
 
     &__detail {
+      flex: 1 1 0;
       font-size: var(--text-xs);
       color: var(--text-secondary);
       white-space: normal;
-      max-width: 32rem;
     }
 
     &__error {
+      flex: 1 1 0;
       font-size: var(--text-xs);
       color: #f59e0b;
       white-space: normal;
-      max-width: 32rem;
-    }
-
-    &__judge {
-      font-size: var(--text-xs);
-      color: var(--text-muted);
-      font-family: var(--font-mono, monospace);
     }
 
     &__score {
+      flex: 0 0 auto;
       font-size: var(--text-xs);
       font-weight: 700;
       font-family: var(--font-headline);
