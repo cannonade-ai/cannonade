@@ -1,7 +1,7 @@
 import type { Directive, DirectiveBinding } from 'vue'
 import { positionTooltip, type TooltipPlacement } from '@renderer/utils/tooltip'
 
-interface TooltipOptions {
+export interface TooltipOptions {
   content: string
   placement?: TooltipPlacement
   delay?: number
@@ -144,8 +144,7 @@ function onLeave(): void {
 export const vTooltip: Directive<HTMLElement, string | TooltipOptions> = {
   mounted(el, binding) {
     const state = parseBinding(binding)
-    if (!state) return
-    stateMap.set(el, state)
+    if (state) stateMap.set(el, state)
     el.addEventListener('mouseenter', onEnter)
     el.addEventListener('mouseleave', onLeave)
     el.addEventListener('focusin', onFocus)
